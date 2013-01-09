@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <files>
+       <net-file>Kirchberg.net.xml</net-file>
+   	<route-files>Kirchberg.rou.xml</route-files>
+        <additional-files value="Kirchberg_loops.add.xml Kirchberg.add.xml Kirchberg_dump.add.xml tlLogic.xml"/>
+    </files>
+   <time>
+      <begin>0</begin>
+      <end>39600</end>
+   </time>
+   <time-to-teleport>0</time-to-teleport>
+   <route-steps value="100" />
+   <lanechange.allow-swap value="true" />
+   <report>
+      <verbose>true</verbose>
+   </report>
+</configuration>

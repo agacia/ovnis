@@ -1,0 +1,167 @@
+commit 09898ed50bbca952cc65fdd3ca18ab0fcc3c04f3
+Author: agacia <agatagrzybek@gmail.com>
+Date:   Wed Jan 9 10:18:25 2013 +0100
+
+    fce appplication
+
+commit d48bb44752d353e92d999f1974afea047ecf05f8
+Author: agacia <agatagrzybek@gmail.com>
+Date:   Tue Jan 17 12:03:32 2012 +0100
+
+    authors
+
+commit d9fd85cebff2072e3f9521d923f50d9e5c698148
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Oct 5 17:29:46 2011 +0200
+
+    a test
+
+commit dc406f97c4aff3acfcf2cf73d166fd933888be0b
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Aug 24 13:34:19 2011 +0200
+
+    update kirchberg example for time-to-teleport
+
+commit 544882ccfb4968273944c78cb6b72e4dd40981d2
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Aug 24 09:45:30 2011 +0200
+
+    ok
+
+commit ae08d97a849b1af7812ce036ee19a6ca6e1b088b
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Aug 23 20:36:59 2011 +0200
+
+    ok
+
+commit eef7a6ca551a8233561e58fec83eea419321eddc
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Aug 23 20:14:59 2011 +0200
+
+    readme
+
+commit 654be2c1703e042895eda6f0cd3767fec2152181
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Aug 23 20:13:36 2011 +0200
+
+    no more configure file. Ovnis now needs autotools intalled to compile
+
+commit 5a7140ce187544cf3da4d9e9f1d4b2804369184f
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Aug 23 19:52:28 2011 +0200
+
+    ok
+
+commit ee0d7e6afb98774877f6b22f087b7f7256101167
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Aug 23 19:10:24 2011 +0200
+
+    bugzzz
+
+commit 50d592a280d9d23b01277e92ae8ef0a5dec6dc7d
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sat Feb 12 19:36:07 2011 +0100
+
+    Make ReceiveData virtual in ovnis-application
+
+commit fdbdd0be75efdab689cc457c6bb91c6fd4ab8b26
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sat Feb 12 19:33:45 2011 +0100
+
+    Simple changes in doxyfile
+
+commit f10878b7518e6495be1e46cc7b327964c8732945
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sat Feb 12 19:28:33 2011 +0100
+
+    changes in ovnis-wifi-phy.cc to fit the code of release 3.10 of NS
+
+commit 873fd202322456e421d747bd23a3c72a8336b16f
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sat Feb 12 19:20:44 2011 +0100
+
+    more traci commands to set the color of a car and to simulate a crash.
+
+commit cc7df1f33407d270780ccfaaa88dbccf5e79edd0
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Jan 26 17:02:56 2011 +0100
+
+    modification of test program
+
+commit 15370368f6cf5d0e7c192f4e0953cb7bc9ee7303
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Jan 26 16:33:36 2011 +0100
+
+    modification of test program
+
+commit ac77ddd63b819e2d9609ff510b9c5d980a1d3d99
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Jan 26 16:31:02 2011 +0100
+
+    modification of test program
+
+commit 1a669f8ac693d271616a2a6ea53dcdd5b465f242
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Wed Jan 26 15:49:29 2011 +0100
+
+    Readme update
+
+commit 6344ceeb44ca632a3cae5c96c333c21eed9ccefc
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 22:29:13 2011 +0100
+
+    readme...
+
+commit cde1babfdb84e7775bfa0678eed68ec4fdd4dcf2
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 22:02:51 2011 +0100
+
+    more files for GNU building...
+
+commit f6ac63bb0cd25a4dbf47b6d3b55269c04b484806
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 21:55:52 2011 +0100
+
+    added files for GNU building
+
+commit 5fc820975fbdbd4f27c6288e94aed17a6d273dfa
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 21:46:19 2011 +0100
+
+    added file for GNU building
+
+commit 1b963efad89eced68dad5f00d4c57ed766cbda0e
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 21:45:01 2011 +0100
+
+    added file for GNU building
+
+commit 48b3295a6ead24d304f8e5d89699a71b70d2d3de
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Tue Jan 18 21:34:18 2011 +0100
+
+    ...
+
+commit a3fa018333a6180def783a8de4010c82795c2785
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sun Jan 16 20:07:19 2011 +0100
+
+    README.rst editing...
+
+commit a2206d37e2f6808d015db141524448d2028a000d
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sun Jan 16 20:05:01 2011 +0100
+
+    start editing README
+
+commit b0340d7cb24ba7b98d7b7b09a51e5b66fc0411eb
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sun Jan 16 02:27:52 2011 +0100
+
+    initial import
+
+commit cb5023a87449aacdae38854cecb2b851d2f1849b
+Author: pigne <yoann.pigne@gmail.com>
+Date:   Sat Jan 15 15:45:30 2011 +0100
+
+    first commit

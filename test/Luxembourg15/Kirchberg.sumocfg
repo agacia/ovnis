@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <files>
+        <net-file value="../test/Luxembourg15/Kirchberg.net.xml"/>
+        <route-files value="Kirchberg.rou.xml"/>
+        <additional-files value="Kirchberg.add.xml ../test/Luxembourg15/tlLogic.xml"/>
+    </files>
+    <time>
+      <begin value="0" />
+      <end value="39600" />
+   </time>
+   <time-to-teleport value="0" />
+   <route-steps value="100" />
+   <lanechange.allow-swap value="true" />
+   <report>
+      <verbose value="true" />
+   </report>
+   <remote-port value="1233"/>
+</configuration>
+

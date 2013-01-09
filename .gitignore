@@ -1,0 +1,10 @@
+# Ignore all outputFolder directories
+outputFolder*/
+# Ignore all files ending with ~
+*~
+# Ignore all eclipse files
+.metadata/
+.settings/
+autom4te.cache
+.cproject
+.project

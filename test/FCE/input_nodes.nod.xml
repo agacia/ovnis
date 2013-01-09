@@ -1,0 +1,14 @@
+<nodes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/nodes_file.xsd">
+   <node id="0" x="0.0" y="0.0" type="priority"/>
+
+   <node id="1" x="-1000.0" y="0.0" type="priority"/>
+   <node id="m1" x="-500.0" y="0.0" type="priority"/>
+   <node id="2" x="1400.0" y="0.0" type="priority"/>
+   <node id="2a" x="1500.0" y="0.0" type="priority"/>
+   <node id="2b" x="1510" y="0.0" type="priority"/>
+   <node id="2c" x="2500" y="0.0" type="priority"/>
+   <node id="2d" x="2520" y="0.0" type="priority"/>
+   <node id="3" x="100.0" y="-40.0" type="priority"/>
+   <node id="4" x="2500.0" y="-40.0" type="priority"/>
+   <node id="4b" x="2520.0" y="-40.0" type="priority"/>
+</nodes>

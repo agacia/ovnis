@@ -1,0 +1,58 @@
+<additionals> 
+<inductionLoop id="401_0" lane="-49257489#0_0" pos="1" freq="3600" file="Kirchberg.e1.401_0.xml" friendlyPos="true" splitByType="false" />
+<inductionLoop id="401_1" lane="-49257489#0_1" pos="1" freq="3600" file="Kirchberg.e1.401_1.xml" friendlyPos="true" splitByType="false" /> 
+
+<!--
+<inductionLoop id="415_0" lane="-75627896#1_0" pos="1" freq="3600" file="Kirchberg.e1.415_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="415_1" lane="-75627896#1_1" pos="1" freq="3600" file="Kirchberg.e1.415_1.xml" friendlyPos="true" splitByType="false" /> 
+-->
+
+<inductionLoop id="403_0" lane="-80015627#2_0" pos="1" freq="3600" file="Kirchberg.e1.403_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="403_1" lane="-80015627#2_1" pos="1" freq="3600" file="Kirchberg.e1.403_1.xml" friendlyPos="true" splitByType="false" />
+ 
+<!--
+<inductionLoop id="1431_0" lane="30143811#2_0" pos="1" freq="3600" file="Kirchberg.e1.1431_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="1431_1" lane="30143811#2_1" pos="1" freq="3600" file="Kirchberg.e1.1431_1.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="1431_2" lane="30143811#2_2" pos="1" freq="3600" file="Kirchberg.e1.1431_2.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="1431_3" lane="30143811#2_3" pos="1" freq="3600" file="Kirchberg.e1.1431_3.xml" friendlyPos="true" splitByType="false" /> 
+-->
+
+<!--
+<inductionLoop id="1429_0" lane="71121158_0" pos="1" freq="3600" file="Kirchberg.e1.1429_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="1429_1" lane="71121158_1" pos="1" freq="3600" file="Kirchberg.e1.1429_1.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="1429_2" lane="71121158_2" pos="1" freq="3600" file="Kirchberg.e1.1429_2.xml" friendlyPos="true" splitByType="false" /> 
+-->
+
+
+<inductionLoop id="400_0" lane="116567652#2_0" pos="1" freq="3600" file="Kirchberg.e1.400_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="400_1" lane="116567652#2_1" pos="1" freq="3600" file="Kirchberg.e1.400_1.xml" friendlyPos="true" splitByType="false" /> 
+
+<inductionLoop id="404_0" lane="-26585595#1_0" pos="1" freq="3600" file="Kirchberg.e1.404_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="404_1" lane="-26585595#1_1" pos="1" freq="3600" file="Kirchberg.e1.404_1.xml" friendlyPos="true" splitByType="false" /> 
+
+<!--
+<inductionLoop id="432_0" lane="-160041888#3_0" pos="1" freq="3600" file="Kirchberg.e1.432_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="432_1" lane="-160041888#3_1" pos="1" freq="3600" file="Kirchberg.e1.432_1.xml" friendlyPos="true" splitByType="false" />
+-->
+
+<inductionLoop id="433_0" lane="-8599689_0" pos="1" freq="3600" file="Kirchberg.e1.433_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="433_1" lane="-8599689_1" pos="1" freq="3600" file="Kirchberg.e1.433_1.xml" friendlyPos="true" splitByType="false" />  
+
+<inductionLoop id="445_0" lane="-56760938#0_0" pos="1" freq="3600" file="Kirchberg.e1.445_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="445_1" lane="-56760938#0_1" pos="1" freq="3600" file="Kirchberg.e1.445_1.xml" friendlyPos="true" splitByType="false" /> 
+
+<!--
+<inductionLoop id="412_0" lane="-28961985#1_0" pos="1" freq="3600" file="Kirchberg.e1.412_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="412_1" lane="-28961985#1_1" pos="1" freq="3600" file="Kirchberg.e1.412_1.xml" friendlyPos="true" splitByType="false" /> 
+-->
+
+<!--
+<inductionLoop id="420_0" lane="-34425561#1_0" pos="1" freq="3600" file="Kirchberg.e1.420_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="420_1" lane="-34425561#1_1" pos="1" freq="3600" file="Kirchberg.e1.420_1.xml" friendlyPos="true" splitByType="false" /> 
+-->
+
+<inductionLoop id="407_0" lane="-114300094#2_0" pos="1" freq="3600" file="Kirchberg.e1.407_0.xml" friendlyPos="true" splitByType="false" /> 
+<inductionLoop id="407_1" lane="-114300094#2_1" pos="1" freq="3600" file="Kirchberg.e1.407_1.xml" friendlyPos="true" splitByType="false" /> 
+
+</additionals>
+

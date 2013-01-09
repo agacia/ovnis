@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+
+<!-- generated on Wed Aug 22 14:59:16 2012 by SUMO duarouter Version 0.15.0
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/duarouterConfiguration.xsd">
+
+    <input>
+        <net-file value="Kirchberg.net.xml"/>
+        <flow-files value="Kirchberg.flows.xml"/>
+    </input>
+
+    <output>
+        <output-file value="Kirchberg.rou.xml"/>
+    </output>
+
+</configuration>
+-->
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/routes_file.xsd">
+    <vehicle id="0_0" depart="0.00">
+        <route edges="22811813 51719927 55444664#1 94661965#0 94661965#1 50079836 50118062#0 50118062#1 50118066 50118056#1 50118056#2 50118056#3 56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1 53349130#2 9882486"/>
+    </vehicle>
+    <vehicle id="1_0" depart="0.00">
+        <route edges="9882508 49248915 71197436#0 71197436#0-AddedOffRampEdge 71197436#1 71197436#2 55444657#0 55444657#1 55444657#2 55444657#3 55444657#4 55444657#5 55444657#6 55444657#7 55444657#8 56640726#0 56640726#1 56640726#2 56640726#3 48962303#0 48962303#1 56640719#1 50118067 50118063#0 50118063#1 48962306#0 48962306#1 50079838#0 50079838#1 22811838 51719926"/>
+    </vehicle>
+</routes>
