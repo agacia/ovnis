@@ -1,3 +1,0 @@
-Fatal Error: An exception occurred! Type:RuntimeException, Message:The primary document entity could not be opened. Id=/home/agata/workspace/ovnis/Luxembourg15/LuxVille.sumo.cfg at line: 0
-Fatal Error: An exception occurred! Type:RuntimeException, Message:The primary document entity could not be opened. Id=/home/agata/workspace/ovnis/Luxembourg15/ at line: 0
-tcpip::Socket::connect() @ connect: Connection refused
