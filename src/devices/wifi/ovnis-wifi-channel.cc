@@ -52,13 +52,10 @@ namespace ns3
   {
     static TypeId
         tid =
-            TypeId("ns3::OvnisWifiChannel")
-            .SetParent<WifiChannel> ()
-            .AddConstructor<OvnisWifiChannel> () .AddAttribute(
+            TypeId("ns3::OvnisWifiChannel") .SetParent<WifiChannel> () .AddConstructor<OvnisWifiChannel> () .AddAttribute(
                 "PropagationLossModel", "A pointer to the propagation loss model attached to this channel.",
                 PointerValue(), MakePointerAccessor(&OvnisWifiChannel::m_loss),
-                MakePointerChecker<PropagationLossModel> ())
-                .AddAttribute("PropagationDelayModel",
+                MakePointerChecker<PropagationLossModel> ()) .AddAttribute("PropagationDelayModel",
                 "A pointer to the propagation delay model attached to this channel.", PointerValue(),
                 MakePointerAccessor(&OvnisWifiChannel::m_delay), MakePointerChecker<PropagationDelayModel> ());
     return tid;
@@ -95,7 +92,7 @@ namespace ns3
   OvnisWifiChannel::Send(Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiMode wifiMode,
       WifiPreamble preamble) const
   {
-    NS_LOG_FUNCTION_NOARGS();
+    //NS_LOG_FUNCTION_NOARGS();
 
     Ptr<MobilityModel> senderMobility = sender->GetMobility()->GetObject<MobilityModel> ();
     NS_ASSERT (senderMobility != 0);
@@ -103,9 +100,11 @@ namespace ns3
     NS_ASSERT (senderCell != 0);
     int nbcells=0;
     int i, j;
-    for (i = (senderCell->i - 1) > 0 ? (senderCell->i - 1) : 0; i <= ((senderCell->i + 1) < cells.size() ? (senderCell->i + 1) : cells.size()-1); i++)
+    for (i = (senderCell->i - 1) > 0 ? (senderCell->i - 1) : 0; i
+        <= ((senderCell->i + 1) < cells.size() ? (senderCell->i + 1) : cells.size()-1); i++)
     {
-      for (j = (((senderCell->j - 1) > 0) ? (senderCell->j - 1) : 0); j <= ((senderCell->j + 1) < cells[0].size() ? (senderCell->j + 1) : cells[0].size()-1); j++)
+      for (j = (((senderCell->j - 1) > 0) ? (senderCell->j - 1) : 0); j
+          <= ((senderCell->j + 1) < cells[0].size() ? (senderCell->j + 1) : cells[0].size()-1); j++)
       {
         Ptr<ChannelCell> thatCell = cells[i][j];
         nbcells++;
@@ -121,10 +120,11 @@ namespace ns3
             Ptr<MobilityModel> receiverMobility = (*it)->GetMobility()->GetObject<MobilityModel> ();
             Time delay = m_delay->GetDelay(senderMobility, receiverMobility);
             double rxPowerDbm = m_loss->CalcRxPower(txPowerDbm, senderMobility, receiverMobility);
-
-            NS_LOG_DEBUG ("propagation: txPower="<<txPowerDbm<<"dbm, rxPower="<<rxPowerDbm<<"dbm, " << "distance="<<senderMobility->GetDistanceFrom (receiverMobility)<<"m, delay="<<delay);
-//            cout << "distance=" << senderMobility->GetDistanceFrom (receiverMobility) << endl;
-
+            //if (senderMobility->GetDistanceFrom (receiverMobility)>1400)
+            //{
+            NS_LOG_DEBUG ("propagation: txPower="<<txPowerDbm<<"dbm, rxPower="<<rxPowerDbm<<"dbm, "<<
+               "distance="<<senderMobility->GetDistanceFrom (receiverMobility)<<"m, delay="<<delay);
+              //}
             Ptr<Packet> copy = packet->Copy();
             Ptr<Object> dstNetDevice = (*it)->GetDevice();
             uint32_t dstNode;
@@ -159,7 +159,7 @@ namespace ns3
   {
     NS_LOG_FUNCTION_NOARGS();
     Ptr<MobilityModel> mob = phy->GetMobility()->GetObject<MobilityModel> ();
-    // Ptr<ChannelCell> cell = phy->cell; //GetObject<ChannelCell> ();
+    // Ptr<ChannelCell> cell = phy->cell;//GetObject<ChannelCell> ();
 
     if (phy->cell == 0)
     { // a new one...
@@ -188,7 +188,9 @@ namespace ns3
         //Ptr<ChannelCell> cell = phy->GetObject<ChannelCell> ();
         if (phy->cell != cells[0][0])
         {
-          std::vector<Ptr<OvnisWifiPhy> >::iterator it = std::find(phy->cell->content.begin(), phy->cell->content.end(),phy);
+
+          std::vector<Ptr<OvnisWifiPhy> >::iterator it = std::find(phy->cell->content.begin(), phy->cell->content.end(),
+              phy);
           if (it != phy->cell->content.end())
           {
             phy->cell->content.erase(it);
@@ -197,16 +199,18 @@ namespace ns3
           //phy->AggregateObject(cells[0][0]);
           phy->cell = cells[0][0];
         }
+
       }
       else
       {
         Vector v = mob->GetPosition();
         int nx = (int) (v.x / range);
         int ny = (int) (v.y / range);
-        // XXX
+
         if (phy->cell != cells[nx][ny])
         {
-          std::vector<Ptr<OvnisWifiPhy> >::iterator it = std::find(phy->cell->content.begin(), phy->cell->content.end(), phy);
+          std::vector<Ptr<OvnisWifiPhy> >::iterator it = std::find(phy->cell->content.begin(), phy->cell->content.end(),
+              phy);
           if (it != phy->cell->content.end())
           {
             phy->cell->content.erase(it);
@@ -257,14 +261,7 @@ OvnisWifiChannel::updateArea(double x, double y, double r)
     area_y = y;
     range = r;
 
-    int numberFullCellsX = area_x/range;
-    int numberFullCellsY = area_y/range;
-    double restX = area_x - numberFullCellsX * range;
-    double restY = area_y - numberFullCellsY * range;
-    NS_LOG_DEBUG ("last cell: " << restX << "," << restY << endl);
-
     // update nodes;
-    // xxx
     for (PhyList::const_iterator i = m_phyList.begin(); i != m_phyList.end(); i++)
     {
       updatePhy(*i);

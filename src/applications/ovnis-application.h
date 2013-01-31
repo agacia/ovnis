@@ -84,7 +84,7 @@
 #include "ns3/global-value.h"
 #include <vector>
 #include "ns3/data-rate.h"
-
+#include  "ns3/constant-velocity-mobility-model.h"
 #include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/log.h"
@@ -127,49 +127,11 @@ namespace ns3
   protected:
     virtual void DoDispose(void);
 
-    void GetEdgeInfo();
-
-    void Action();
-
     TypeId m_tid;
-
-    //Ptr<TraciClient> traciClient;
 
     Ptr<ConstantVelocityMobilityModel> mobilityModel;
 
-    ovnis::Vehicle vehicle;
-
-    /**
-     * The vehicle's actual route
-     */
-    //vector<string> m_route;
-
-    /**
-     * Vehicle's name in SUMO. accessible through Names::[...]
-     */
-    //string m_name;
-
-    /**
-     * Vehicle's current edge
-     */
-    //string m_edge;
-
-    /**
-     * Vehicle's current max speed according to it's current lane.
-     */
-    //float m_max_speed;
-
-    /**
-     * Vehicle's current speed.
-     */
-    //float m_speed;
-
     EventId m_simulationEvent; // to obtain information about vehicle - current speed and edge
-
-    EventId m_beaconEvent; // to send periodic packets
-
-    EventId m_actionEvent; // to send action based packets
-
 
     Time m_realStartDate;
 

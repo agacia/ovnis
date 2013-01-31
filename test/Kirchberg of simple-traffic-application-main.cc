@@ -58,15 +58,13 @@ int main(int argc, char ** argv) {
 //  LogComponentEnable("Ovnis", LOG_LEVEL_ALL);
 
 	string outputFolder = "outputFolder";
-	outputFolder = "outputFolder_FCE";
 	string sumoConfig = "Kirchberg.sumocfg";
-	sumoConfig = "fce.sumocfg";
 	string sumoPath="/usr/local/bin/sumo";
 	sumoPath="/usr/local/bin/sumo-gui";
 	string sumoHost = "localhost";
 	int startTime = 0;
 	int stopTime = 3700;
-	stopTime = 3600;
+	stopTime = 300;
 //	stopTime = 14400;
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	bool startSumo = true;

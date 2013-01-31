@@ -27,6 +27,7 @@
 //#include "ns3/mac-tx-middle.h"
 #include "ns3/mac-rx-middle.h"
 #include "ns3/mac-low.h"
+#include "ns3/mac48-address.h"
 
 
 namespace ns3 {
@@ -42,7 +43,6 @@ public:
 
   BeaconingAdhocWifiMac ();
   virtual ~BeaconingAdhocWifiMac ();
-
   /**
    * \param address the current address of this MAC layer.
    */
@@ -97,7 +97,6 @@ private:
     MacAddrMap    m_neighborList;
     Callback<void,Ptr<Packet>, Mac48Address, double> m_neighborCallback;
     Callback<void,Ptr<Packet>, Mac48Address> m_neighborLostCallback;
-
     TracedCallback<Ptr<const Packet>, Mac48Address > m_neighborLostTraceSource;
     TracedCallback<Ptr<const Packet>, Mac48Address,double  > m_newNeighborTraceSource;
 

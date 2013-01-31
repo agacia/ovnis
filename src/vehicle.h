@@ -36,72 +36,62 @@ public:
 	Vehicle();
 	virtual ~Vehicle();
 
-    void initialize(std::string id, long departureTime);
-
-    void setScenario(Scenario scenario);
-    Scenario & getScenario();
+    void initialize(std::string id);
 
     std::string getId();
-    void setId(std::string id);
 
-    int getDepartureTime() const;
-    int getArrivalTime() const;
+    Scenario & getScenario();
+    void setScenario(Scenario scenario);
 
-    int getTravelTime() const;
-    void setArrivalTime(int arrivalTime);
-
-    void requestCurrentVehicleState(double currentTime);
-	ovnis::Itinerary & getItinerary();
+    ovnis::Itinerary & getItinerary();
 	std::map<std::string, Route> & getAlternativeRoutes();
+	string getDestinationEdgeId();
 
-    void requestCurrentEdge(double currentTime);
+	double getLastSpeed() const;
+	void setLastSpeed(double lastSpeed);
+
+	void requestCurrentEdge(double currentTime);
+
+	void requestCurrentSpeed();
+	double getCurrentSpeed() const;
+
+	void requestCurrentPosition();
+    Position2D getCurrentPosition() const;
+
     void updateEdge(Edge & edge, double currentTime);
     void setEdgeLeavingTime(std::string edgeId, double currentTime);
 
-    void requestCurrentSpeed();
-    double getCurrentSpeed() const;
-
-    void requestCurrentPosition();
-    Position2D getCurrentPosition() const;
-
-//    void tryReroute(std::string unavailableEdge);
-    void requestCurrentTravelTimes();
 
     void reroute(std::string routeId);
-	void recordPacket(long id);
-	int getPacketCount(long id);
-    void recordDouble(std::string id, long packetId, std::string senderId, double time, double value);
-    void printLocalDatabase();
-    void printDynamicCost();
+
+  void printPacketCounts(ostream & out);
     std::map<std::string,RecordEntry> getRecords() const;
-    void setRecords(std::map<std::string,RecordEntry> records);
-    void printPacketCounts(ostream & out);
-    void setTravelTime(int travelTime);
-    map<string, double> getVanetCosts();
-    map<string, double> getGlobalCosts();
-    double getLastSpeed() const;
-    void setLastSpeed(double lastSpeed);
+
+    void recordEdge(std::string edgeId, long packetId, std::string senderId, double time, double travelTime);
+    std::map<std::string,RecordEntry> getlocalKnowledge() const;
+    map<std::string, double> computeTravelTimesOnRoutes(map<std::string,RecordEntry> edges, map<std::string, Route> routes, string startEdgeId, string endEdgeId);
+
+    map<string, double> getVanetCosts(std::string startEdgeId, std::string endEdgeId);
+    map<string, double> getGlobalCosts(std::string startEdgeId, std::string endEdgeId);
+
 
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;
     std::string id;
 
-    int departureTime;
-    int arrivalTime;
-    int travelTime;
-
     Position2D currentPosition;
     double currentSpeed;
     double lastSpeed;
-    Scenario scenario;
 
+    Scenario scenario;
     Route currentRoute ;
     Itinerary itinerary;
+
+    std::map<std::string, double> neighbourList;
 
 private:
     void requestRoute(std::string routeId);
 
-    std::map<std::string, RecordEntry> records;
     std::map<long,int> packets;
 };
 

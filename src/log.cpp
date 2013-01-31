@@ -204,7 +204,7 @@ void Log::vehicleEnter(double time, string routeId) {
 //	cout << "entered " << vehiclesOnRoutes << " (" << routeId << "," << vehiclesOnRoute[routeId] << ")" << endl;
 }
 
-void Log::vehicleLeave(double time, string routeId, double travelTime) {
+void Log::vehicleLeaveRoute(double time, string routeId, double travelTime) {
 	vehiclesOnRoute[routeId]--;
 	travelTimeDateOnRoute[routeId] = time;
 //	travelTimesOnRoute[routeId] = travelTime;
@@ -213,9 +213,10 @@ void Log::vehicleLeave(double time, string routeId, double travelTime) {
 			travelTimesOnRoute[routeId] = travelTime;
 	}
 	else {
-	// smooth
-		double alfa = 0.5;
-		travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId];
+		// smooth
+//		double alfa = 0.5;
+//		travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId];
+		travelTimesOnRoute[routeId] = travelTime;
 	}
 //	cout << "left " << " (" << routeId << "," << travelTimesOnRoute[routeId] << ", " << vehiclesOnRoute[routeId] << ")" << endl;
 }

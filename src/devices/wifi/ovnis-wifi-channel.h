@@ -36,8 +36,7 @@
 #include "ns3/wifi-channel.h"
 #include "ns3/wifi-mode.h"
 #include "ns3/wifi-preamble.h"
-#include "devices/wifi/ovnis-wifi-phy.h"
-
+#include "ovnis-wifi-phy.h"
 namespace ns3 {
 
 class NetDevice;
@@ -94,7 +93,8 @@ public:
    * delivers packets only between PHYs with the same m_channelNumber,
    * e.g. PHYs that are operating on the same channel.
    */
-virtual void Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiMode wifiMode, WifiPreamble preamble) const;
+  virtual void Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
+             WifiMode wifiMode, WifiPreamble preamble) const;
 
   void
   updateArea(double x, double y, double r);

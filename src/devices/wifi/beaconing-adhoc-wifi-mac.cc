@@ -37,6 +37,8 @@
 #include "ns3/mgt-headers.h"
 #include "common/myEnergy-tag.h"
 
+#include "log.h"
+
 /***************DEFINITION AREA*****************/
 
 /// Beacon time interval.
@@ -44,8 +46,6 @@
 #define BEACON_LOST_RATIO	4  //Como si fueran 3 intervalos de tiempo
 
 /***************END DEFINITION AREA*************/
-
-NS_LOG_COMPONENT_DEFINE ("BeaconingAdhocWifiMac");
 
 namespace ns3 {
 
@@ -71,8 +71,8 @@ BeaconingAdhocWifiMac::GetTypeId (void)
 //                       MakeBooleanAccessor (&BeaconingAdhocWifiMac::SetBeaconGeneration,
 //                                            &BeaconingAdhocWifiMac::GetBeaconGeneration),
 //                       MakeBooleanChecker ())
-      .AddTraceSource ("NeighborLost", "A neighbor is lost",
-                   					 MakeTraceSourceAccessor (&BeaconingAdhocWifiMac::m_neighborLostTraceSource))
+	 .AddTraceSource ("NeighborLost", "A neighbor is lost",
+										 MakeTraceSourceAccessor (&BeaconingAdhocWifiMac::m_neighborLostTraceSource))
       .AddTraceSource ("NewNeighbor", "A neighbor is found",
                    					 MakeTraceSourceAccessor (&BeaconingAdhocWifiMac::m_newNeighborTraceSource))
   ;
@@ -85,7 +85,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
 
   // Let the lower layers know that we are acting in an IBSS
   SetTypeOfStation (ADHOC_STA);
-  Time t1 = Seconds(1);// m_beaconInterval;
+  Time t1 = Seconds(BEACON_INTERVAL);// m_beaconInterval;
   Time t2;
   // Random value to start the devices at different moments
   UniformVariable randomRange (0.01, 0.2);
@@ -93,13 +93,14 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+//  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 
 BeaconingAdhocWifiMac::~BeaconingAdhocWifiMac ()
 {
   NS_LOG_FUNCTION (this);
+  m_beaconEvent.Cancel ();
 }
 
 void
@@ -114,6 +115,8 @@ BeaconingAdhocWifiMac::SetAddress (Mac48Address address)
   RegularWifiMac::SetAddress (address);
   RegularWifiMac::SetBssid (address);
 }
+
+NS_LOG_COMPONENT_DEFINE ("BeaconingAdhocWifiMac");
 
 void
 BeaconingAdhocWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
@@ -178,10 +181,15 @@ BeaconingAdhocWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
     {
       // Sanity check that the TID is valid
       NS_ASSERT (tid < 8);
+      ovnis::Log::getInstance().packetSent();
+//      cout << "a" << endl;
       m_edca[QosUtilsMapTidToAc (tid)]->Queue (packet, hdr);
     }
   else
     {
+	  // here when I send a packet with application layer
+//      cout << "b" << endl;
+	  ovnis::Log::getInstance().packetSent();
       m_dca->Queue (packet, hdr);
     }
 }
@@ -222,6 +230,10 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
     }
   else if (hdr->IsBeacon ())
     {
+//	  std::cout<<"Beacon received"<<std::endl;
+
+	  ovnis::Log::getInstance().packetReceived();
+
 	  MgtBeaconHeader beacon;
 	  packet->RemoveHeader (beacon);
 	  ProcessBeacon(packet,hdr->GetAddr2 ());
@@ -310,8 +322,10 @@ BeaconingAdhocWifiMac::SendOneBeacon (void)
 
 //  Enqueue(packet,Mac48Address::GetBroadcast () );
   m_dca->Queue (packet, hdr);
+//  cout << "c" << endl;
+  ovnis::Log::getInstance().packetSent();
 //  m_dca->Queue (packet, beacon);
-
+//cout << "sending! " << endl;
   m_beaconEvent = Simulator::Schedule (Seconds(BEACON_INTERVAL), &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 
@@ -324,18 +338,21 @@ void BeaconingAdhocWifiMac::ProcessBeacon( Ptr<Packet> packet, Mac48Address addr
 		//std::cout<<addrFrom<<" Addd en beaconing wifi mac "<<std::endl;
 	}
 	  //Added by Patricia Ruiz (for changing the tx power)
-	  	MyEnergyTag neighborPower=MyEnergyTag();
-	  	Ptr<Packet> packet2 = packet->Copy();
-	  	bool aux =packet2->RemovePacketTag (neighborPower);
-	  	double rxPowerDbm=-95;
-	  	if (aux){
-	  		rxPowerDbm = neighborPower.GetTagDouble();
-	  	}
+//	  	MyEnergyTag neighborPower=MyEnergyTag();
+//	  	Ptr<Packet> packet2 = packet->Copy();
+//	  	bool aux =packet2->RemovePacketTag (neighborPower);
+//	  	double rxPowerDbm=-95;
+//	  	if (aux){
+//	  		rxPowerDbm = neighborPower.GetTagDouble();
+//	  	}
 
 
 	m_neighborList[addrFrom] = m_numberBeaconLost;
 	//Call back every beacon to be able to update the rxEg otherwise inside the if!!
-	m_newNeighborTraceSource (packet, addrFrom,rxPowerDbm);
+//	m_newNeighborTraceSource (packet, addrFrom,rxPowerDbm);
+
+	m_rxPwDbm = 16.02;
+	m_newNeighborTraceSource (packet, addrFrom,m_rxPwDbm);
 
 	//std::cout<<Simulator::Now()<<GetAddress()<<" Incremento contador de  "<<addrFrom<<" a "<<m_neighborList[addrFrom]<<" con potencia "<<rxPowerDbm<<std::endl;
 

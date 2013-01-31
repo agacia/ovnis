@@ -34,6 +34,8 @@ public:
 	double computeAverageValue();
 	double getLatestValue();
 	double getLatestTime();
+	double getAverageValue();
+	double getAverageTime();
 	std::string getLatestSenderId();
 	long getLatestPacketId();
 	void reset();

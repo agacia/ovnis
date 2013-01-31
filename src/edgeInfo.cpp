@@ -27,6 +27,14 @@ EdgeInfo::EdgeInfo(string edgeId) :
 		maxSpeed = traci->GetLaneMaxSpeed(laneId);
 		length = traci->GetLaneLength(laneId);
 		currentTravelTime = traci->GetEdgeTravelTime(edgeId);
+		if (maxSpeed > 0) {
+			staticCost = length / maxSpeed;
+		}
+		else {
+			// XXX If maxSpeed is set to 0 (simulated accident), then return the expected travel time with the avg speed of 25m/s for calculating expected costs f the whole route (we assume we don't know any information)
+			staticCost = length / 25;
+		}
+//		cout << edgeId << ": " << staticCost << "(" << length <<"/" << maxSpeed << ")" << endl;
 	}
 	catch (TraciException &e) { }
 }
@@ -54,6 +62,10 @@ double EdgeInfo::getLength() {
 
 double EdgeInfo::getMaxSpeed() {
 	return maxSpeed;
+}
+
+double EdgeInfo::getStaticCost() {
+	return staticCost;
 }
 
 double EdgeInfo::requestCurrentTravelTime() {

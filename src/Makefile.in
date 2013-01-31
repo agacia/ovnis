@@ -74,16 +74,20 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libovnis_ladir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libovnis_la_LIBADD =
 am__objects_1 =
-am_libovnis_la_OBJECTS = $(am__objects_1) ovnis-adhoc-wifi-mac.lo \
-	ovnis-error-rate-model.lo ovnis-wifi-channel.lo \
-	ovnis-wifi-phy.lo channel-cell.lo ovnis-wifi-helper.lo \
+am_libovnis_la_OBJECTS = $(am__objects_1) myEnergy-tag.lo \
+	myMessageID-header.lo myTxEnergy-tag.lo \
+	ovnis-adhoc-wifi-mac.lo ovnis-error-rate-model.lo \
+	ovnis-wifi-channel.lo ovnis-wifi-phy.lo channel-cell.lo \
+	beaconing-adhoc-wifi-mac.lo ovnis-wifi-helper.lo \
 	traci-client.lo sumoTraciConnection.lo query.lo \
 	simStepQuery.lo traciException.lo subscribeQuery.lo \
 	vehicleQuery.lo closeQuery.lo edgeQuery.lo laneQuery.lo \
 	simulationQuery.lo command.lo status.lo ovnis-application.lo \
 	ovnis.lo xml-sumo-conf-parser.lo log.lo vehicle.lo scenario.lo \
 	storage.lo socket.lo route.lo itinerary.lo edge.lo edgeInfo.lo \
-	recordEntry.lo ovnisPacket.lo
+	recordEntry.lo ovnisPacket.lo knowledge.lo \
+	trafficInformationSystem.lo dataPacket.lo dissemination.lo \
+	commonHelper.lo
 libovnis_la_OBJECTS = $(am_libovnis_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -257,8 +261,10 @@ AM_CXXFLAGS = -I$(top_srcdir) @AM_CPPFLAGS@
 lib_LTLIBRARIES = libovnis.la
 libovnis_ladir = $(includedir)
 libovnis_la_HEADERS = ./applications/ovnis-application.h \
+	./common/myEnergy-tag.h ./common/myMessageID-header.h ./common/myTxEnergy-tag.h \
 	./devices/wifi/channel-cell.h ./devices/wifi/ovnis-adhoc-wifi-mac.h ./devices/wifi/ovnis-error-rate-model.h \
 	./devices/wifi/ovnis-wifi-channel.h ./devices/wifi/ovnis-wifi-phy.h \
+	./devices/wifi/beaconing-adhoc-wifi-mac.h \
 	./helper/ovnis-wifi-helper.h \
 	./ovnis-constants.h ./ovnis.h \
 	./traci/traci-client.h ./traci/sumoTraciConnection.h ./traci/query/query.h ./traci/query/simStepQuery.h ./traci/traciException.h ./traci/query/subscribeQuery.h ./traci/query/vehicleQuery.h \
@@ -268,15 +274,20 @@ libovnis_la_HEADERS = ./applications/ovnis-application.h \
 	./traci/storage.h ./traci/socket.h \
 	./route.h ./itinerary.h ./edge.h ./edgeInfo.h \
 	./recordEntry.h ./ovnisPacket.h \
+	./knowledge.h ./applications/trafficInformationSystem.h   \
+	./applications/dissemination/dataPacket.h ./applications/dissemination/dissemination.h \
+	./common/commonHelper.h \
 	./xml_writer.hpp
 
 
 #libovnis_la_LIBADD = 
 libovnis_la_SOURCES = \
                      ${libovnis_la_HEADERS} \
-                       ./devices/wifi/ovnis-adhoc-wifi-mac.cc ./devices/wifi/ovnis-error-rate-model.cc \
+                       ./common/myEnergy-tag.cc ./common/myMessageID-header.cc ./common/myTxEnergy-tag.cc \
+                        ./devices/wifi/ovnis-adhoc-wifi-mac.cc ./devices/wifi/ovnis-error-rate-model.cc \
                        ./devices/wifi/ovnis-wifi-channel.cc ./devices/wifi/ovnis-wifi-phy.cc ./devices/wifi/channel-cell.cpp \
-                       ./helper/ovnis-wifi-helper.cc \
+                       ./devices/wifi/beaconing-adhoc-wifi-mac.cc  \
+						./helper/ovnis-wifi-helper.cc \
                        ./traci/traci-client.cc ./traci/sumoTraciConnection.cpp ./traci/query/query.cpp ./traci/query/simStepQuery.cpp ./traci/traciException.cpp ./traci/query/subscribeQuery.cpp ./traci/query/vehicleQuery.cpp \
                        ./traci/query/closeQuery.cpp ./traci/query/edgeQuery.cpp ./traci/query/laneQuery.cpp ./traci/query/simulationQuery.cpp \
                        ./traci/protocol/command.cpp ./traci/protocol/status.cpp \
@@ -284,7 +295,10 @@ libovnis_la_SOURCES = \
                        ./ovnis.cpp ./xml-sumo-conf-parser.cpp ./log.cpp ./vehicle.cpp ./scenario.cpp \
                        ./traci/storage.cpp ./traci/socket.cpp \
                        ./route.cpp ./itinerary.cpp ./edge.cpp ./edgeInfo.cpp \
-                       ./recordEntry.cpp ./ovnisPacket.cpp \
+                       ./recordEntry.cpp ./ovnisPacket.cpp  \
+						./knowledge.cpp ./applications/trafficInformationSystem.cpp \
+						./applications/dissemination/dataPacket.cpp ./applications/dissemination/dissemination.cpp \
+						./common/commonHelper.cpp \
 						./xml_writer.hpp
 
 all: config.h
@@ -379,15 +393,23 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/beaconing-adhoc-wifi-mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/channel-cell.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/closeQuery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/command.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commonHelper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dataPacket.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dissemination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edge.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edgeInfo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edgeQuery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/itinerary.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/knowledge.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/laneQuery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/myEnergy-tag.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/myMessageID-header.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/myTxEnergy-tag.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ovnis-adhoc-wifi-mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ovnis-application.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ovnis-error-rate-model.Plo@am__quote@
@@ -409,6 +431,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sumoTraciConnection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/traci-client.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/traciException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trafficInformationSystem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vehicle.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vehicleQuery.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xml-sumo-conf-parser.Plo@am__quote@
@@ -433,6 +456,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+myEnergy-tag.lo: ./common/myEnergy-tag.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT myEnergy-tag.lo -MD -MP -MF $(DEPDIR)/myEnergy-tag.Tpo -c -o myEnergy-tag.lo `test -f './common/myEnergy-tag.cc' || echo '$(srcdir)/'`./common/myEnergy-tag.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/myEnergy-tag.Tpo $(DEPDIR)/myEnergy-tag.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./common/myEnergy-tag.cc' object='myEnergy-tag.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o myEnergy-tag.lo `test -f './common/myEnergy-tag.cc' || echo '$(srcdir)/'`./common/myEnergy-tag.cc
+
+myMessageID-header.lo: ./common/myMessageID-header.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT myMessageID-header.lo -MD -MP -MF $(DEPDIR)/myMessageID-header.Tpo -c -o myMessageID-header.lo `test -f './common/myMessageID-header.cc' || echo '$(srcdir)/'`./common/myMessageID-header.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/myMessageID-header.Tpo $(DEPDIR)/myMessageID-header.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./common/myMessageID-header.cc' object='myMessageID-header.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o myMessageID-header.lo `test -f './common/myMessageID-header.cc' || echo '$(srcdir)/'`./common/myMessageID-header.cc
+
+myTxEnergy-tag.lo: ./common/myTxEnergy-tag.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT myTxEnergy-tag.lo -MD -MP -MF $(DEPDIR)/myTxEnergy-tag.Tpo -c -o myTxEnergy-tag.lo `test -f './common/myTxEnergy-tag.cc' || echo '$(srcdir)/'`./common/myTxEnergy-tag.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/myTxEnergy-tag.Tpo $(DEPDIR)/myTxEnergy-tag.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./common/myTxEnergy-tag.cc' object='myTxEnergy-tag.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o myTxEnergy-tag.lo `test -f './common/myTxEnergy-tag.cc' || echo '$(srcdir)/'`./common/myTxEnergy-tag.cc
 
 ovnis-adhoc-wifi-mac.lo: ./devices/wifi/ovnis-adhoc-wifi-mac.cc
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ovnis-adhoc-wifi-mac.lo -MD -MP -MF $(DEPDIR)/ovnis-adhoc-wifi-mac.Tpo -c -o ovnis-adhoc-wifi-mac.lo `test -f './devices/wifi/ovnis-adhoc-wifi-mac.cc' || echo '$(srcdir)/'`./devices/wifi/ovnis-adhoc-wifi-mac.cc
@@ -468,6 +512,13 @@ channel-cell.lo: ./devices/wifi/channel-cell.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./devices/wifi/channel-cell.cpp' object='channel-cell.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o channel-cell.lo `test -f './devices/wifi/channel-cell.cpp' || echo '$(srcdir)/'`./devices/wifi/channel-cell.cpp
+
+beaconing-adhoc-wifi-mac.lo: ./devices/wifi/beaconing-adhoc-wifi-mac.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT beaconing-adhoc-wifi-mac.lo -MD -MP -MF $(DEPDIR)/beaconing-adhoc-wifi-mac.Tpo -c -o beaconing-adhoc-wifi-mac.lo `test -f './devices/wifi/beaconing-adhoc-wifi-mac.cc' || echo '$(srcdir)/'`./devices/wifi/beaconing-adhoc-wifi-mac.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/beaconing-adhoc-wifi-mac.Tpo $(DEPDIR)/beaconing-adhoc-wifi-mac.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./devices/wifi/beaconing-adhoc-wifi-mac.cc' object='beaconing-adhoc-wifi-mac.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o beaconing-adhoc-wifi-mac.lo `test -f './devices/wifi/beaconing-adhoc-wifi-mac.cc' || echo '$(srcdir)/'`./devices/wifi/beaconing-adhoc-wifi-mac.cc
 
 ovnis-wifi-helper.lo: ./helper/ovnis-wifi-helper.cc
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ovnis-wifi-helper.lo -MD -MP -MF $(DEPDIR)/ovnis-wifi-helper.Tpo -c -o ovnis-wifi-helper.lo `test -f './helper/ovnis-wifi-helper.cc' || echo '$(srcdir)/'`./helper/ovnis-wifi-helper.cc
@@ -664,6 +715,41 @@ ovnisPacket.lo: ./ovnisPacket.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./ovnisPacket.cpp' object='ovnisPacket.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ovnisPacket.lo `test -f './ovnisPacket.cpp' || echo '$(srcdir)/'`./ovnisPacket.cpp
+
+knowledge.lo: ./knowledge.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT knowledge.lo -MD -MP -MF $(DEPDIR)/knowledge.Tpo -c -o knowledge.lo `test -f './knowledge.cpp' || echo '$(srcdir)/'`./knowledge.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/knowledge.Tpo $(DEPDIR)/knowledge.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./knowledge.cpp' object='knowledge.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o knowledge.lo `test -f './knowledge.cpp' || echo '$(srcdir)/'`./knowledge.cpp
+
+trafficInformationSystem.lo: ./applications/trafficInformationSystem.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT trafficInformationSystem.lo -MD -MP -MF $(DEPDIR)/trafficInformationSystem.Tpo -c -o trafficInformationSystem.lo `test -f './applications/trafficInformationSystem.cpp' || echo '$(srcdir)/'`./applications/trafficInformationSystem.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/trafficInformationSystem.Tpo $(DEPDIR)/trafficInformationSystem.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./applications/trafficInformationSystem.cpp' object='trafficInformationSystem.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o trafficInformationSystem.lo `test -f './applications/trafficInformationSystem.cpp' || echo '$(srcdir)/'`./applications/trafficInformationSystem.cpp
+
+dataPacket.lo: ./applications/dissemination/dataPacket.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dataPacket.lo -MD -MP -MF $(DEPDIR)/dataPacket.Tpo -c -o dataPacket.lo `test -f './applications/dissemination/dataPacket.cpp' || echo '$(srcdir)/'`./applications/dissemination/dataPacket.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/dataPacket.Tpo $(DEPDIR)/dataPacket.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./applications/dissemination/dataPacket.cpp' object='dataPacket.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dataPacket.lo `test -f './applications/dissemination/dataPacket.cpp' || echo '$(srcdir)/'`./applications/dissemination/dataPacket.cpp
+
+dissemination.lo: ./applications/dissemination/dissemination.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dissemination.lo -MD -MP -MF $(DEPDIR)/dissemination.Tpo -c -o dissemination.lo `test -f './applications/dissemination/dissemination.cpp' || echo '$(srcdir)/'`./applications/dissemination/dissemination.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/dissemination.Tpo $(DEPDIR)/dissemination.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./applications/dissemination/dissemination.cpp' object='dissemination.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dissemination.lo `test -f './applications/dissemination/dissemination.cpp' || echo '$(srcdir)/'`./applications/dissemination/dissemination.cpp
+
+commonHelper.lo: ./common/commonHelper.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT commonHelper.lo -MD -MP -MF $(DEPDIR)/commonHelper.Tpo -c -o commonHelper.lo `test -f './common/commonHelper.cpp' || echo '$(srcdir)/'`./common/commonHelper.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/commonHelper.Tpo $(DEPDIR)/commonHelper.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='./common/commonHelper.cpp' object='commonHelper.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o commonHelper.lo `test -f './common/commonHelper.cpp' || echo '$(srcdir)/'`./common/commonHelper.cpp
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

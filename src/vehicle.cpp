@@ -14,17 +14,14 @@ using namespace std;
 namespace ovnis {
 
 	Vehicle::Vehicle() {
-		initialize("", 0);
+		initialize("");
 	}
 
-	void Vehicle::initialize(string id, long departureTime) {
+	void Vehicle::initialize(string id) {
 		this->id = id;
-		this->departureTime = departureTime;
-		this->arrivalTime = 0;
-		this->travelTime = 0;
 		this->currentSpeed = 0;
 		this->lastSpeed = 0;
-		if (id !="") {
+		if (id!="") {
 			traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 			requestRoute("");
 		}
@@ -33,15 +30,17 @@ namespace ovnis {
 	Vehicle::~Vehicle() {
 	}
 
+	string Vehicle::getId() {
+		return id;
+	}
+
 	void Vehicle::setScenario(Scenario scenario) {
 		this->scenario.setAlternativeRoutes(scenario.getAlternativeRoutes());
 		this->scenario.setDecisionEdges(scenario.getDecisionEdges());
 		this->scenario.setNotificationEdges(scenario.getNotificationEdges());
-
 		for (map<string,Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
 			it->second.computeLength();
 			it->second.computeStaticCost();
-			records[it->first].add(0,"",0,0);
 		}
 	}
 
@@ -49,48 +48,12 @@ namespace ovnis {
 		return this->scenario;
 	}
 
-	void Vehicle::setId(string id) {
-		this->id = id;
-	}
-
-	string Vehicle::getId() {
-		return id;
-	}
-
 	Itinerary & Vehicle::getItinerary() {
-		return itinerary;
+		return this->itinerary;
 	}
 
 	map<string, Route> & Vehicle::getAlternativeRoutes() {
 		return this->scenario.getAlternativeRoutes();
-	}
-
-	int Vehicle::getDepartureTime() const
-	{
-		return departureTime;
-	}
-
-	int Vehicle::getArrivalTime() const
-	{
-		return arrivalTime;
-	}
-
-	int Vehicle::getTravelTime() const
-	{
-		return travelTime;
-	}
-
-	void Vehicle::setArrivalTime(int arrivalTime)
-	{
-		this->arrivalTime = arrivalTime;
-		itinerary.setArrivalTime(arrivalTime);
-
-		this->travelTime = arrivalTime - this->departureTime;
-		itinerary.getCurrentEdge().setLeftTime(arrivalTime);
-
-		itinerary.computeLength();
-		itinerary.computeStaticCost();
-		itinerary.computeTravelTime();
 	}
 
     double Vehicle::getLastSpeed() const
@@ -100,32 +63,29 @@ namespace ovnis {
 
     void Vehicle::setLastSpeed(double lastSpeed)
     {
-        this->lastSpeed = lastSpeed;}
+        this->lastSpeed = lastSpeed;
+    }
+
+    string Vehicle::getDestinationEdgeId() {
+    	int size = currentRoute.getEdgeIds().size() ;
+    	if (size > 0) {
+    		return currentRoute.getEdgeIds()[size - 1];
+    	}
+    	return "";
+    }
 
 	void Vehicle::requestRoute(string routeId) {
 		double routeDepartureTime = Simulator::Now().GetSeconds();
 		if (routeId=="") {
 			routeId = traci->GetVehicleRouteId(id);
-			routeDepartureTime = departureTime;
 		}
 		itinerary.setId(routeId);
 		currentRoute = Route(routeId, traci->GetVehicleEdges(id));
-		if (currentRoute.getRoute().size() > 0) {
-			for (vector<string>::iterator it = scenario.getDecisionEdges().begin(); it != scenario.getDecisionEdges().end(); it++) {
-				if (currentRoute.containsEdge(*it)) {
-					itinerary.setDepartedEdge(*it);
-				}
-			}
-			for (vector<string>::iterator it = scenario.getNotificationEdges().begin(); it != scenario.getNotificationEdges().end(); it++) {
-				if (currentRoute.containsEdge(*it)) {
-					itinerary.setArrivalEdge(*it);
-				}
-			}
-			string newEdge = currentRoute.getRoute()[0];
+		if (currentRoute.getEdgeIds().size() > 0) {
+			string newEdge = currentRoute.getEdgeIds()[0];
 			if (itinerary.getCurrentEdge().getId() == "" || newEdge != itinerary.getCurrentEdge().getId()) {
 				itinerary.addEdge(newEdge);
 				itinerary.setCurrentEdge(newEdge);
-				itinerary.setDepartedTime(routeDepartureTime);
 				itinerary.getCurrentEdge().setEnteredTime(routeDepartureTime);
 			}
 		}
@@ -146,16 +106,6 @@ namespace ovnis {
     	catch (TraciException &e) {
     		throw e;
     	}
-    }
-
-    void Vehicle::requestCurrentVehicleState(double currentTime) {
-    	try {
-    		requestCurrentEdge(currentTime);
-			requestCurrentSpeed();
-		}
-		catch (TraciException &e) {
-			throw e;
-		}
     }
 
     void Vehicle::requestCurrentPosition() {
@@ -187,169 +137,30 @@ namespace ovnis {
 		return currentSpeed;
 	}
 
-    std::map<std::string,RecordEntry> Vehicle::getRecords() const
-    {
-        return records;
-    }
-
-    void Vehicle::setRecords(std::map<std::string,RecordEntry> records)
-    {
-        this->records = records;
-    }
-
-    void Vehicle::setTravelTime(int travelTime)
-    {
-        this->travelTime = travelTime;
-    }
-
-	void Vehicle::requestCurrentTravelTimes() {
-		for (map<string,Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
-			it->second.updateCurrentTravelTime();
-		}
-	}
-
 	void Vehicle::reroute(string routeId) {
+		vector<string> reroute = vector<string>();
 		try {
-
-			vector<string> chosenRoute = getAlternativeRoutes()[routeId].getRoute();
-			vector<string> reroute = vector<string>();
+			vector<string> chosenRoute = getAlternativeRoutes()[routeId].getEdgeIds();
 			bool metCurrentEdge = false;
 			for (vector<string>::iterator it = chosenRoute.begin(); it != chosenRoute.end(); ++it) {
-				if (*it == itinerary.getCurrentEdge().getId()) {
+				if (itinerary.getCurrentEdge().getId().compare(*it)==0) {
 					metCurrentEdge = true;
 				}
 				if (metCurrentEdge) {
 					reroute.push_back(*it);
 				}
 			}
-
 			traci->ChangeVehicleEdges(id, reroute);
 			requestRoute(routeId);
 		}
 		catch (TraciException & e) {
-			cerr << "Cannot reroute vehicle " << id << " from:" << endl;
+			cerr << "Cannot reroute vehicle " << id << " from " << routeId << ": " << endl;
 			cerr << currentRoute.printRoute();
 			cerr << "to:" << endl;
-			cerr << getAlternativeRoutes()[routeId].printRoute();
 			cerr << e.what() << endl;
 		}
 	}
 
-	void Vehicle::printLocalDatabase() {
-		int size = records.size();
-		if (size > 0) {
-//			cout << "local: " ;
-			map<string,RecordEntry> localrecords = records;
-			for (map<string, RecordEntry>::iterator it = localrecords.begin(); it != localrecords.end(); ++it) {
-//				it->second.printValues();
-				Log::getInstance().getStream(it->first+"_vanet") << it->second.getLatestTime() << "\t" << it->second.getLatestValue() <<  endl;
-//				cout << it->first << "," << it->second.getLatestTime() << "," << it->second.getLatestValue() << "\t";
-			}
-//			cout << endl;
-		}
-	}
-
-	map<string, double> Vehicle::getGlobalCosts() {
-		map<string, double> costs;
-		map<string, double> packetAges;
-
-		double now = Simulator::Now().GetSeconds();
-
-		Log::getInstance().getStream("global_knowledge") << id << "\t" << now << "\t";
-
-		for (map<string, Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
-			costs[it->first] = it->second.getStaticCost();
-		}
-		map<string,int> vehicles = Log::getInstance().getVehiclesOnRoute();
-		map<string,double> travelTimes = Log::getInstance().getTravelTimesOnRoute();
-		map<string,double> travelTimeDates = Log::getInstance().getTravelTimeDateOnRoute();
-
-		for (map<string,double>::iterator it = travelTimes.begin(); it != travelTimes.end(); ++it) {
-			double packetAge = 0;
-			if (it->second != 0) {
-				packetAge = travelTimeDates[it->first] == 0 ? 0 : now-travelTimeDates[it->first];
-				if (packetAge < PACKET_TTL) {
-					costs[it->first] = it->second;
-				}
-				else {
-					packetAge = 0;
-				}
-			}
-			packetAges[it->first] = packetAge;
-		}
-
-		for (map<string, Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
-			Log::getInstance().getStream("global_knowledge") << it->first << ":" << costs[it->first] << "," << packetAges[it->first] << "," << vehicles[it->first] << "\t";
-		}
-		Log::getInstance().getStream("global_knowledge") << endl;
-
-		return costs;
-	}
-
-	map<string, double> Vehicle::getVanetCosts() {
-		map<string, double> costs;
-		map<string, double> packetAges;
-
-		double vehsOnRoute = 0;
-		double now = Simulator::Now().GetSeconds();
-
-		Log::getInstance().getStream("local_knowledge") << id << "\t" << now << "\t";
-
-		for (map<string, Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
-			costs[it->first] = it->second.getStaticCost();
-		}
-
-		int size = records.size();
-		if (size > 0) {
-			map<string,RecordEntry> localrecords = records;
-			for (map<string, RecordEntry>::iterator it = localrecords.begin(); it != localrecords.end(); ++it) {
-				double packetAge = 0;
-				if (it->second.getLatestValue() != 0) {
-					packetAge = it->second.getLatestTime() == 0 ? 0 : now - it->second.getLatestTime();
-					if (packetAge < PACKET_TTL) {
-						costs[it->first] = it->second.getLatestValue();
-					}
-					else {
-						packetAge = 0;
-						records[it->first].reset();
-					}
-				}
-				packetAges[it->first] = packetAge;
-			}
-		}
-
-		for (map<string, Route>::iterator it = getAlternativeRoutes().begin(); it != getAlternativeRoutes().end(); ++it) {
-			Log::getInstance().getStream("local_knowledge") << it->first << ":" << costs[it->first] << "," << packetAges[it->first] << "," << vehsOnRoute << "\t";
-		}
-		Log::getInstance().getStream("local_knowledge") << endl;
-
-		return costs;
-	}
-
-	void Vehicle::recordPacket(long id) {
-		if (packets.find(id) == packets.end()) {
-			packets[id] = 0;
-		}
-		++packets[id];
-	}
-
-	int Vehicle::getPacketCount(long id) {
-		return packets[id];
-	}
-
-	void Vehicle::printPacketCounts(ostream & out) {
-		out << "size: \t" << packets.size() << endl;
-		for (map<long,int>::iterator it = packets.begin(); it != packets.end(); ++it) {
-			out << it->first << "," << it->second << " " ;
-		}
-		out << endl;
-	}
-
-	void Vehicle::recordDouble(string id, long packetId, string senderId, double time, double value) {
-		if (records[id].getLatestTime() < time) {
-			records[id].add(packetId, senderId, time, value);
-		}
-	}
 
 	//    void Vehicle::tryReroute(string unavailableEdge) {
 	//    	set<string> ignoredEdges; // Edges that are ignored in the changing route process because not avoidable (no alternative route can be taken)
@@ -357,7 +168,7 @@ namespace ovnis {
 	//		if (ignoredEdges.find(unavailableEdge) == ignoredEdges.end()) {
 	//			// check if the jammed edge is in the planned route
 	//			// TODO iterating should start from m_edge+1
-	//			vector<string> route = this->route.getRoute();
+	//			vector<string> route = this->route.getEdgeIds();
 	//			vector<string>::iterator it = route.begin();
 	//			while (it != route.end() && (*it) != unavailableEdge) {
 	//				++it;

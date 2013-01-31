@@ -42,13 +42,15 @@ void RecordEntry::add(long packetId, string senderId, double time, double value)
 	values[count%LOCAL_MEMORY_SIZE] = value;
 	senders[count%LOCAL_MEMORY_SIZE] = senderId;
 	packetIds[count%LOCAL_MEMORY_SIZE] = packetId;
-	++count;
+	if (senderId.size() > 0) {
+		++count;
+	}
 }
 
 void RecordEntry::printValues() {
 	cout << "[";
 	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
-		cout << times[i] << "," << values[i] << " ";
+		cout << times[i] << "," << values[i] << "," << senders[i] << " ";
 	}
 	cout << "]";
 }
@@ -56,6 +58,31 @@ void RecordEntry::printValues() {
 double RecordEntry::getLatestValue() {
 	return values[(count-1+LOCAL_MEMORY_SIZE)%LOCAL_MEMORY_SIZE];
 }
+
+double RecordEntry::getAverageValue() {
+	double sum = 0;
+	int count = 0;
+	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
+		if (senders[i] != "") {
+			sum += values[i];
+			++count;
+		}
+	}
+	return sum/count;
+}
+
+double RecordEntry::getAverageTime() {
+	double sum = 0;
+	int count = 0;
+	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
+		if (senders[i] != "") {
+			sum += times[i];
+			++count;
+		}
+	}
+	return sum/count;
+}
+
 
 double RecordEntry::getLatestTime() {
 	return times[(count-1+LOCAL_MEMORY_SIZE)%LOCAL_MEMORY_SIZE];

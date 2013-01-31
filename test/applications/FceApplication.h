@@ -61,8 +61,10 @@
 #include "applications/ovnis-application.h"
 #include "vehicle.h"
 #include "scenario.h"
+#include "knowledge.h"
 #include "route.h"
 #include "ovnisPacket.h"
+#include "applications/trafficInformationSystem.h"
 
 using namespace std;
 
@@ -78,14 +80,15 @@ namespace ns3
     FceApplication();
     virtual ~FceApplication();
 
-    /**
-     * Gets address of the neighbor.
-     * Gets Packet.
-     */
-    virtual void ReceiveData(Ptr<Socket> );
+    // neighborhood discovery
+    void NewNeighborFound(std::string context, Ptr<const Packet> packet, Mac48Address addr, double rxPwDbm);
+    void NeighborLost(std::string context, Ptr<const Packet> packet, Mac48Address addr);
+    typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
+    typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
 
 
   protected:
+
     virtual void DoDispose(void);
 
   private:
@@ -96,54 +99,26 @@ namespace ns3
     virtual void StartApplication(void);
     virtual void StopApplication(void);
 
-    /**
-     * Gets information about current edge and vehicle speed from SUMO.
-     *
-     */
-    void GetCurrentSimulationState();
-    void GetCurrentVehicleState();
-
-
-    void AnalyseVehicleState();
-
-    /**
-	 * Sets m_jam_state according whether condition for traffic jam are met for the second time in a row.
-	 * If there is traffic jam then broadcasts alert message containing egde's name.
-	 */
-    void DetectJam(std::string currentEdge);
-    void TakeDecision(std::string currentEdge);
-    void SendTrafficConditions(std::string currentEdge);
-    void SendRouteTravelTime(std::string currentEdge);
-    void EstimateTrafficConditionChanges(std::string currentEdge);
-
-    void PrintCosts(std::string fileName, map<std::string, double> costs);
-
-    std::string ChooseMinTravelTimeRoute(std::map<std::string,double> costs);
-    std::string ChooseProbTravelTimeRoute(std::map<std::string,double> costs);
-    std::string ChooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
-	std::string ChooseRandomRoute();
-
-    /**
-	 * Beaconing action.
-	 * Broadcasts periodic message.
-	 * One-hop
-	 */
-    void Beacon();
-
+    virtual void ReceivePacket(Ptr<Socket> );
     void SendPacket(Ptr<Packet> packet);
 
-    Ptr<Packet> CreateTravelTimePacket();
-    Ptr<Packet> CreateWarningPacket();
-
-    void ReceiveTravelTimePacket(OvnisPacket ovnisPacket);
-    void ReceiveWarningPacket(OvnisPacket ovnisPacket);
-    void TryRebroadcast(OvnisPacket packet);
-//    void CheckRebroadcast(OvnisPacket packet);
-
-    string GetEvent(vector<pair<string, double> > probabilities);
     /**
+     * Gets current information from SUMO.
      *
      */
+    void SimulationRun();
+
+    /**
+	 * Periodic sending of traffic information
+	 */
+    void SendTrafficInformation();
+
+
+
+    void ReceiveTravelTimePacket(OvnisPacket ovnisPacket);
+    void ReceiveTravelTimeRoutePacket(OvnisPacket ovnisPacket);
+    void ReceiveTravelTimeEdgePacket(OvnisPacket ovnisPacket);
+
     bool m_verbose;
 
     /**
@@ -163,34 +138,25 @@ namespace ns3
      */
     Ptr<Socket> m_socket;
 
-    /**
-     * Last time a packet was re-send.
-     */
-    double m_last_resend;
 
-    /**
-     * True if this vehicle is considered in a traffic jam.
-     */
-    bool m_jam_state;
-    double m_time_jammed;
 
     bool arrived;
 
-    std::string trackedVehicleId;
-    bool tracked;
-
-    double flow;
 
     bool decisionTaken;
     bool notificationSent;
+    string decisionEdgeId;
 
-    EventId m_travelTimeEvent;
+    EventId m_trafficInformationEvent;
 
+    Vehicle vehicle;
     Scenario scenario;
+    Knowledge knowledge;
 
-    const static double eps = 1e-9;
 
     const std::vector<std::string> split(std::string sentence);
+    TrafficInformationSystem tis;
+    MacAddrMap m_neighborList;
 
   };
 

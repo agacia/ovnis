@@ -38,12 +38,12 @@ MyTxEnergyTag::GetTypeId (void)
 uint32_t 
 MyTxEnergyTag::GetSerializedSize (void) const
 {
-	return 4;
+	return sizeof(double);
 }
 void 
 MyTxEnergyTag::Serialize (TagBuffer i) const
 {
-	//i.WriteU32 (m_flowId);
+//	i.WriteU32 (m_flowId);
 	i.WriteDouble (m_flowIdDouble);
 }
 void 

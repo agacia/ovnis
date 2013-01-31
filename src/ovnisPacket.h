@@ -17,15 +17,22 @@
 
 namespace ovnis {
 
+typedef struct data {
+	std::string edgeId;
+	double travelTime;
+	int numberOfVehicles;
+	double date;
+} Data;
+
+
 class OvnisPacket {
 public:
 	OvnisPacket();
 	OvnisPacket(ns3::Ptr<ns3::Packet> packet);
 	virtual ~OvnisPacket();
-    double getDate() const;
     int getPacketType() const;
     std::string getSenderId() const;
-    std::string getVehicleId() const;
+    double getSendingDate() const;
     Position2D getPosition() const;
     double computeDistance(double x, double y);
     double computeWaitingTime(double x, double y);
@@ -38,18 +45,20 @@ public:
 	double getWaitingTime() const;
 //	static ns3::Ptr<ns3::Packet> BuildTravelTimePacket(double sendingTime, std::string senderId, double x, double y, int type, long id, double date, std::string vehicleId, std::string routeId, double travelTime);
 	static ns3::Ptr<ns3::Packet> BuildPacket(double sendingTime, std::string senderId, double x, double y, int type, long id, double date, std::string vehicleId, std::string objectId, double objectValue);
+	static ns3::Ptr<ns3::Packet> BuildTravelTimePacket(double sendingTime, std::string senderId, double x, double y, int type, long id, std::string routeId, std::string currentEdgeId, double currentSpeed, double travelTime, double estimatedTravelTime, double estimationDate);
+//	static ns3::Ptr<ns3::Packet> BuildTrafficInfoPacket(double sendingTime, std::string senderId, double x, double y, int type, long id, int numberOfRecords);
+	static ns3::Ptr<ns3::Packet> BuildTrafficInfoPacket(double sendingTime, std::string senderId, double x, double y, int type, long id, int numberOfRecords, Data records[]);
 	void setPosition(double x, double y);
+
     void print() const;
 
 private:
     void ReadHeader(ns3::Ptr<ns3::Packet> packet);
     ns3::Ptr<ns3::Packet> packet;
     ns3::TagBuffer tg;
-    double sendingTime;
+    double sendingDate;
     std::string senderId;
     Position2D position;
-    double date;
-    std::string vehicleId;
     int type;
     long id;
     std::string stringValue;

@@ -84,7 +84,7 @@ class Log
 		std::map<std::string,double> & getTravelTimeDateOnRoute();
 
 		void vehicleEnter(double time, std::string routeId);
-		void vehicleLeave(double time, std::string routeId, double travelTime);
+		void vehicleLeaveRoute(double time, std::string routeId, double travelTime);
 		void vehicleOnRoadsInitialize(std::string routeId);
 
     private:
@@ -108,7 +108,7 @@ class Log
         int start, end;
         int currentTime;
         std::vector<int> stepTimes;
-        long sent;
+        volatile long sent;
         long forwarded;
         std::map<ns3::WifiPhy::State,long> dropped;
         long received;

@@ -33,21 +33,24 @@
 /// interval of time between 2 active decisions about JAMEs
 #define PROACTIVE_INTERVAL  5
 
-#define BEACONING_INTERVAL  1
+#define TRAFFIC_INFORMATION_SENDING_INTERVAL  1
 
 /// simulation step interval time
 #define SIMULATION_STEP_INTERVAL  1
 
 #define STATE_PACKET_ID 1
-#define TRAVELTIME_PACKET_ID 2
-#define WARNING_PACKET_ID 3
+#define TRAFFICINFO_PACKET_ID 2
+#define TRAVELTIME_PACKET_ID 3
+#define TRAVELTIME_ROUTE_PACKET_ID 4
+#define TRAVELTIME_EDGE_PACKET_ID 5
+#define WARNING_PACKET_ID 6
 
 #define BROADCASTING_DISTANCE_THRESHOLD 60
 
 #define LOCAL_MEMORY_SIZE 10
 
 #define RESEND_INTERVAL 1 // interval between two packet re-sending
-#define PACKET_TTL  300 // Time is seconds a packet is allowed to be forward
+#define PACKET_TTL  100 // Time is seconds a packet is allowed to be forward
 #define SPEED_THRESHOLD  0.2 // ratio of max speed under which I consider it's a JAM
 #define JAMMED_TIME_THRESHOLD 5 // number of seconds after which a vehicle that has speed less than SPEED_THRESHOLD*maxLaneSpeed i sconsidered to be jammed
 #define SPEED_SENSIVITY 5 // m/s after which change a vehicle will notify 5ms=18kmh

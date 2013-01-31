@@ -16,6 +16,8 @@
 #include "edge.h"
 #include "edgeInfo.h"
 
+using namespace std;
+
 namespace ovnis {
 
 class Route {
@@ -34,20 +36,22 @@ public:
 	std::string print();
 	virtual std::string printRoute();
 
-	std::vector<std::string> & getRoute();
+	std::vector<std::string> & getEdgeIds();
+	std::vector<EdgeInfo> & getEdgeInfos();
 	bool containsEdge(string edgeId);
+	bool containsEdgeExcludedMargins(string edgeId, string startEdgeId, string endEdgeId);
 	double getEdgeMaxSpeed(std::string edgeId);
-
 	double getCapacity();
 	void setCapacity(double capacity);
 	virtual double computeLength();
+	double computeLengthExcludingMargins(string startEdgeId, string endEdgeId);
 	double computeLength(std::string startEdgeId, std::string endEdgeId);
 	virtual double computeStaticCost();
 	void updateCurrentTravelTime();
 	double computeStaticCost(std::string startEdge, std::string endEdge);
+	double computeStaticCostExcludingMargins(std::string startEdgeId, std::string endEdgeId);
 	double getStaticCost();
 	double getLength();
-
 	EdgeInfo getEdgeInfo(std::string edgeId);
 
 protected:

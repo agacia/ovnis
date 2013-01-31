@@ -285,8 +285,9 @@ FceApplication.o: applications/FceApplication.cpp \
  /home/agata/workspace/ns3/build/ns3/wifi-net-device.h \
  /home/agata/workspace/ns3/build/ns3/config.h \
  /home/agata/workspace/ns3/build/ns3/integer.h \
- ../src/applications/ovnis-application.h /usr/include/c++/4.4/set \
- /usr/include/c++/4.4/bits/stl_set.h \
+ ../src/applications/ovnis-application.h \
+ /home/agata/workspace/ns3/build/ns3/constant-velocity-mobility-model.h \
+ /usr/include/c++/4.4/set /usr/include/c++/4.4/bits/stl_set.h \
  /usr/include/c++/4.4/bits/stl_multiset.h ../src/traci/traci-client.h \
  ../src/traci/storage.h /usr/include/c++/4.4/stdexcept \
  ../src/traci/socket.h ../src/traci/storage.h \
@@ -341,11 +342,15 @@ FceApplication.o: applications/FceApplication.cpp \
  /usr/include/c++/4.4/iomanip /usr/include/c++/4.4/ctime ../src/vehicle.h \
  ../src/scenario.h ../src/route.h ../src/edge.h ../src/edgeInfo.h \
  ../src/itinerary.h ../src/recordEntry.h ../src/traci/structs.h \
- ../src/vehicle.h ../src/scenario.h ../src/route.h ../src/ovnisPacket.h \
- ../test/my-constants.h /usr/include/c++/4.4/iterator \
+ ../src/vehicle.h ../src/scenario.h ../src/knowledge.h \
+ ../src/applications/ovnis-application.h ../src/knowledge.h \
+ ../src/ovnisPacket.h ../test/my-constants.h ../src/route.h \
+ ../src/ovnisPacket.h ../src/applications/trafficInformationSystem.h \
+ ../src/itinerary.h ../src/recordEntry.h /usr/include/c++/4.4/iterator \
  /usr/include/c++/4.4/bits/stream_iterator.h \
  /home/agata/workspace/ns3/build/ns3/ipv4-interface.h \
- /home/agata/workspace/ns3/build/ns3/ipv4-interface-address.h
+ /home/agata/workspace/ns3/build/ns3/ipv4-interface-address.h \
+ ../src/common/commonHelper.h
 
 applications/FceApplication.h:
 
@@ -1001,6 +1006,8 @@ applications/FceApplication.h:
 
 ../src/applications/ovnis-application.h:
 
+/home/agata/workspace/ns3/build/ns3/constant-velocity-mobility-model.h:
+
 /usr/include/c++/4.4/set:
 
 /usr/include/c++/4.4/bits/stl_set.h:
@@ -1157,11 +1164,25 @@ applications/FceApplication.h:
 
 ../src/scenario.h:
 
-../src/route.h:
+../src/knowledge.h:
+
+../src/applications/ovnis-application.h:
+
+../src/knowledge.h:
 
 ../src/ovnisPacket.h:
 
 ../test/my-constants.h:
+
+../src/route.h:
+
+../src/ovnisPacket.h:
+
+../src/applications/trafficInformationSystem.h:
+
+../src/itinerary.h:
+
+../src/recordEntry.h:
 
 /usr/include/c++/4.4/iterator:
 
@@ -1170,3 +1191,5 @@ applications/FceApplication.h:
 /home/agata/workspace/ns3/build/ns3/ipv4-interface.h:
 
 /home/agata/workspace/ns3/build/ns3/ipv4-interface-address.h:
+
+../src/common/commonHelper.h:

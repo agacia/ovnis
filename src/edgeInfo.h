@@ -27,12 +27,13 @@ public:
 	std::string getLaneId();
 	double getLength();
 	double getMaxSpeed();
-	double getLeftTime();
+//	double getLeftTime();
 	void setLaneId(std::string laneId);
 	void setLength(double length);
 	void setMaxSpeed(double maxSpeed);
 	double getCurrentTravelTime();
 	double requestCurrentTravelTime();
+	double getStaticCost();
 
 private:
     ns3::Ptr<ovnis::SumoTraciConnection> traci;
@@ -40,6 +41,7 @@ private:
 	std::string laneId;
 	double length;
 	double maxSpeed;
+	double staticCost;
 	double currentTravelTime;
 };
 

@@ -54,6 +54,7 @@
 // ----- Ovnis application includes
 #include "applications/ovnis-application.h"
 #include "helper/ovnis-wifi-helper.h"
+#include "devices/wifi/beaconing-adhoc-wifi-mac.h"
 #include "ovnis.h"
 #include "ovnis-constants.h"
 #include "log.h"
@@ -99,6 +100,9 @@ void Ovnis::DoDispose() {
 //	for (map<int,int> ::iterator it = Log::getInstance().forwardedPackets.begin(); it != Log::getInstance().forwardedPackets.end(); ++it) {
 //		cout << it->first << " " << it->second << endl;
 //	}
+//	time_t stop =  time(0);
+//	Log::getInstance().getStream("simulation") << "Stop time: " << stop << endl;
+//	Log::getInstance().getStream("simulation") << "duration: " << stop-start << endl;
 	Object::DoDispose();
 }
 
@@ -190,7 +194,10 @@ string propagationDelayModel = "ns3::ConstantSpeedPropagationDelayModel";
 WifiPhyStandard wifiPhyStandard = WIFI_PHY_STANDARD_80211_10MHZ;
 string phyMode ("OfdmRate6MbpsBW10MHz");
 string remoteStationManager = "ns3::ConstantRateWifiManager";
-string macType = "ns3::AdhocWifiMac";
+string macType = "ns3::BeaconingAdhocWifiMac";
+//macType = "BeaconingAdhocWifiMacOriginal";
+//string macType = "ns3::AdhocWifiMac";
+
 
 void Ovnis::InitializeNetwork() {
 	isOvnisChannel = true;
@@ -228,6 +235,11 @@ void Ovnis::InitializeDefaultNetwork() {
 	address.SetBase("10.0.0.0", "255.0.0.0");
 	mac = NqosWifiMacHelper::Default();
 	mac.SetType(macType);
+	BeaconingAdhocWifiMac * mm = new BeaconingAdhocWifiMac();
+//	BeaconingAdhocWifiMacOriginal * mm = new BeaconingAdhocWifiMacOriginal();
+//	mac = NqosWifiMacHelper::Default();
+//	mac.SetType("ns3::BeaconingAdhocWifiMac");
+
 }
 
 //	string propagationLossModel = "ns3::NakagamiPropagationLossModel";
@@ -327,6 +339,9 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 				Ptr<WifiNetDevice> wd = DynamicCast<WifiNetDevice>(d);
 				Ptr<WifiPhy> wp = wd->GetPhy();
 				Ptr<OvnisWifiPhy> ywp = DynamicCast<OvnisWifiPhy>(wp);
+				Ptr<WifiMac> wm = wd->GetMac();
+				Ptr<BeaconingAdhocWifiMac> bwm = DynamicCast<BeaconingAdhocWifiMac>(wm);
+				bwm->StopBeaconing();
 				ovnisChannel->Remove(ywp);
 			}
 		}

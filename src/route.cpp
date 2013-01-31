@@ -84,7 +84,7 @@ string Route::printRoute() {
 	return out.str();
 }
 
-vector<string> & Route::getRoute() {
+vector<string> & Route::getEdgeIds() {
 	return edgeIds;
 }
 
@@ -103,13 +103,39 @@ double Route::getLength() {
 	return this->length;
 }
 
+/**
+ * Checks if route contains the edge after startEdge and before endEdge (margin edges excluded)
+ */
+bool Route::containsEdgeExcludedMargins(string edgeId, string startEdgeId, string endEdgeId) {
+	bool isMonitored = false;
+	for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+		if (*it == endEdgeId) {
+			isMonitored = false;
+		}
+		if (isMonitored) {
+			if (*it == edgeId) {
+				return true;
+			}
+		}
+		if (*it == startEdgeId) {
+			isMonitored = true;
+		}
+	}
+	return false;
+}
+
 bool Route::containsEdge(string edgeId) {
-	for (vector<EdgeInfo>::iterator it = edgeInfos.begin(); it != edgeInfos.end(); ++it) {
-		if (it->getId() == edgeId) {
+	for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+		if (*it == edgeId) {
 			return true;
 		}
 	}
 	return false;
+}
+
+
+std::vector<EdgeInfo> & Route::getEdgeInfos() {
+	return this->edgeInfos;
 }
 
 double Route::computeLength() {
@@ -119,6 +145,25 @@ double Route::computeLength() {
 	else {
 		return 0;
 	}
+}
+
+double Route::computeLengthExcludingMargins(string startEdgeId, string endEdgeId) {
+	staticCost = 0;
+	if (edgeIds.size() > 0) {
+		bool isMonitored = false;
+		for (vector<EdgeInfo>::iterator it = edgeInfos.begin(); it != edgeInfos.end(); ++it) {
+			if (it->getId() == endEdgeId) {
+				isMonitored = false;
+			}
+			if (isMonitored) {
+				length += it->getLength();
+			}
+			if (it->getId() == startEdgeId) {
+				isMonitored = true;
+			}
+		}
+	}
+	return staticCost;
 }
 
 double Route::computeLength(string startEdgeId, string endEdgeId) {
@@ -158,6 +203,7 @@ double Route::getEdgeMaxSpeed(std::string edgeId) {
 	}
 	return speed;
 }
+
 double Route::computeStaticCost() {
 	if (edgeIds.size() > 0) {
 			return computeStaticCost(edgeIds[0], edgeIds[edgeIds.size()-1]);
@@ -167,11 +213,30 @@ double Route::computeStaticCost() {
 		}
 }
 
+double Route::computeStaticCostExcludingMargins(string startEdgeId, string endEdgeId) {
+	staticCost = 0;
+	if (edgeIds.size() > 0) {
+		bool isMonitored = false;
+		for (vector<EdgeInfo>::iterator it = edgeInfos.begin(); it != edgeInfos.end(); ++it) {
+			if (it->getId() == endEdgeId) {
+				isMonitored = false;
+			}
+			if (isMonitored) {
+				double maxSpeed = it->getMaxSpeed();
+				staticCost += it->getStaticCost();
+			}
+			if (it->getId() == startEdgeId) {
+				isMonitored = true;
+			}
+		}
+	}
+	return staticCost;
+}
+
 double Route::computeStaticCost(string startEdgeId, string endEdgeId) {
 	staticCost = 0;
 	if (edgeIds.size() > 0) {
 		bool isMonitored = false;
-//		cout <<  endl;
 		for (vector<EdgeInfo>::iterator it = edgeInfos.begin(); it != edgeInfos.end(); ++it) {
 			if (it->getId() == startEdgeId) {
 				isMonitored = true;
@@ -180,15 +245,11 @@ double Route::computeStaticCost(string startEdgeId, string endEdgeId) {
 				isMonitored = false;
 			}
 			if (isMonitored) {
-//				cout << it->getId() << ":" << it->getLength() << "," << it->getMaxSpeed() << " ";
 				double maxSpeed = it->getMaxSpeed();
-				if (maxSpeed > 0) {
-					staticCost += it->getLength() / it->getMaxSpeed();
-				}
+				staticCost += it->getStaticCost();
 			}
 		}
 	}
-//	cout << " static cost: " << staticCost << endl;
 	return staticCost;
 }
 

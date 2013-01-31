@@ -83,8 +83,6 @@ OvnisApplication::~OvnisApplication() {
 }
 
 void OvnisApplication::DoDispose(void) {
-	Simulator::Cancel(m_actionEvent);
-	Simulator::Cancel(m_beaconEvent);
 	// chain up
 	Application::DoDispose();
 }
@@ -92,9 +90,6 @@ void OvnisApplication::DoDispose(void) {
 void OvnisApplication::SetStopTime (Time stop) {
        m_stopTime = stop;
        if (m_stopTime != TimeStep (0)) {
-    	   if (vehicle.getId() == "_h0_58") {
-    		  cout << "sceduling closing for " << Simulator::Now() << endl;
-    	   }
     	   m_stopEvent = Simulator::Schedule (TimeStep(fabs(stop.GetSeconds()-Simulator::Now().GetSeconds())), &OvnisApplication::StopApplication, this);
        }
 }
@@ -106,48 +101,12 @@ void OvnisApplication::StartApplication(void) {
 		m_realStartDate = Simulator::Now();
 	}
 
-	// ask my name
-	vehicle.setId(Names::FindName(GetNode()));
-
-	// get the mobility model (for speed requests)
 	Ptr<Object> object = GetNode();
 	mobilityModel = object->GetObject<ConstantVelocityMobilityModel>();
-
-//	m_actionEvent = Simulator::Schedule( Seconds(rando.GetValue(0, PROACTIVE_INTERVAL)), &OvnisApplication::Action, this);
-
 }
 
 void OvnisApplication::StopApplication(void) {
 	cout << "OvnisApplication::StopApplication" << endl;
-}
-
-void OvnisApplication::Action() {
-	if (m_stopTime != TimeStep(0) && Simulator::Now() >= m_stopTime) {
-		return;
-	}
-
-//	string currentEdge = vehicle.getCurrentEdge();
-//	if (currentEdge.empty()) {
-//		currentEdge = vehicle.requestCurrentEdge();
-//	}
-//	else {
-//		// ask for my current edge
-//		string newEdge = vehicle.requestCurrentEdge();
-//		// if I changed edge then I ask for new speed limits
-//		if (newEdge.empty()) {
-//			// if new_edge is empty, then there is a problem. The vehicle has been removed from
-//			cerr
-//					<< vehicle.getId()
-//					<< " can't access it cunning edge. It has probably been removed in SUMO. Let stop it."
-//					<< endl;
-//			m_stopTime == Simulator::Now();
-//			return;
-//		}
-//	}
-
-	m_actionEvent = Simulator::Schedule(Seconds(PROACTIVE_INTERVAL),
-			&OvnisApplication::Action, this);
-
 }
 
 void OvnisApplication::ReceiveData(Ptr<Socket> x) {
