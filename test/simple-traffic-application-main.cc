@@ -66,7 +66,7 @@ int main(int argc, char ** argv) {
 	string sumoHost = "localhost";
 	int startTime = 0;
 	int stopTime = 3700;
-	stopTime = 3600;
+	stopTime = 300;
 //	stopTime = 14400;
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	bool startSumo = true;
