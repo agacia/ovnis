@@ -143,7 +143,7 @@ void FceApplication::StartApplication(void) {
 	// start simualtion
 	running = true;
 	m_simulationEvent = Simulator::Schedule(Seconds(rando.GetValue(0, SIMULATION_STEP_INTERVAL)), &FceApplication::SimulationRun, this);
-	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
+//	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
 
 }
 
@@ -175,8 +175,8 @@ void FceApplication::SimulationRun(void) {
 				double travelTimeOnLastEdge = lastEdge.getTravelTime();
 				string lastEdgeId = lastEdge.getId();
 				Vector position = mobilityModel->GetPosition();
-				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, Log::getInstance().getPacketId(), lastEdgeId, travelTimeOnLastEdge, currentEdge);
-				SendPacket(p);
+//				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, Log::getInstance().getPacketId(), lastEdgeId, travelTimeOnLastEdge, currentEdge);
+//				SendPacket(p);
 			}
 
 			// if approaching an intersection

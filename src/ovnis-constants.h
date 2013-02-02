@@ -33,10 +33,10 @@
 /// interval of time between 2 active decisions about JAMEs
 #define PROACTIVE_INTERVAL  5
 
-#define TRAFFIC_INFORMATION_SENDING_INTERVAL  1
+#define TRAFFIC_INFORMATION_SENDING_INTERVAL  3
 
 /// simulation step interval time
-#define SIMULATION_STEP_INTERVAL  2
+#define SIMULATION_STEP_INTERVAL  1
 
 #define STATE_PACKET_ID 1
 #define TRAFFICINFO_PACKET_ID 2
