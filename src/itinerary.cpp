@@ -48,6 +48,7 @@ string Itinerary::printRoute() {
 }
 
 void Itinerary::addEdge(string edgeId) {
+	lastEdgeId = currentEdge->getId();
 	edgeIds.push_back(edgeId);
 	edges[edgeId] = Edge(edgeId);
 	edgeInfos.push_back(EdgeInfo(edgeId));
@@ -82,6 +83,10 @@ Edge & Itinerary::getCurrentEdge() {
 	return *currentEdge;
 }
 
+Edge & Itinerary::getLastEdge() {
+	return edges.find(lastEdgeId)->second;
+}
+
 void Itinerary::setCurrentEdge(string edgeId) {
 	if (edgeId.length() != 0) {
 		this->currentEdge = &edges.find(edgeId)->second;
@@ -91,15 +96,15 @@ void Itinerary::setCurrentEdge(string edgeId) {
 std::map<std::string,Edge> & Itinerary::getEdges() {
 	return edges;
 }
-//
-//Edge & Itinerary::getEdge(string edgeId) {
-//	map<string,Edge>::iterator it = edges.find(edgeId);
-//	if (it != edges.end()) {
-//		return (*it).second;
-//	}
-//	Edge * edge = new Edge();
-//	return * edge;
-//}
+
+Edge & Itinerary::getEdge(string edgeId) {
+	Edge edge;
+	map<string,Edge>::iterator it = edges.find(edgeId);
+	if (it != edges.end()) {
+		edge = (*it).second;
+	}
+	return edge;
+}
 
 double Itinerary::computeTravelTime(string startEdgeId, string endEdgeId) {
 	double travelTime = 0;
@@ -113,7 +118,7 @@ double Itinerary::computeTravelTime(string startEdgeId, string endEdgeId) {
 			fixTravelTime(endEdgeId);
 		}
 		travelTime = edges.find(endEdgeId)->second.getEnteredTime() - edges.find(startEdgeId)->second.getLeftTime();
-		cout << "travel time on " << id << " " <<  travelTime << " [" << startEdgeId << " " << "," << endEdgeId << "]" << endl;
+//		cout << "travel time on " << id << " " <<  travelTime << " [" << startEdgeId << " " << "," << endEdgeId << "]" << endl;
 	}
 	return travelTime;
 }
@@ -134,8 +139,8 @@ void Itinerary::fixTravelTime(string edgeId) {
 	// if edge is found
 	if (i != edgeIds.size()) {
 		// if untraversed edge is first
-		if (i == 0) {
-			cerr << "fixing on route " << id << " edge:" << edgeId << endl;
+		if (i == 0 && edgeIds.size() > 1) {
+			cerr << "fixing first edge on route " << id << " edge:" << edgeId << endl;
 //			edges.find(edgeId)->second.setEnteredTime(departureTime); // normal that it's 0
 			edges.find(edgeId)->second.setLeftTime(edges.find(edgeIds[i+1])->second.getEnteredTime());
 		}
@@ -144,6 +149,10 @@ void Itinerary::fixTravelTime(string edgeId) {
 			if (edges.find(edgeIds[i-1])->second.getLeftTime() != 0) { // fix only when the length of the edge was too short and the edge before before has been traversed
 				cerr << "the last edge was not traversed -- too short";
 //				edges.find(edgeId)->second.setLeftTime(arrivalTime);
+			}
+			if (edges.find(edgeId)->second.getEnteredTime() == 0) {
+				cerr << " nie moze byc 0 " << endl;
+				cerr << "dajemy wiec z poprzedniej krawedzi " << edges.find(edgeIds[i-1])->second.getLeftTime();
 			}
 			edges.find(edgeId)->second.setEnteredTime(edges.find(edgeIds[i-1])->second.getLeftTime());
 		}

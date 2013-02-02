@@ -20,9 +20,8 @@
  * @date Apr 21, 2010
  *
  * @author Yoann Pigné
+ * @author Agata Grzybek
  */
-//#include "ovnis.h"
-
 
 #include <iostream>
 #include <cmath>
@@ -30,7 +29,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-//
 // ----- NS-3 related includes
 #include "ns3/core-module.h"
 #include "ns3/wifi-helper.h"
@@ -46,7 +44,7 @@
 #include "ns3/propagation-loss-model.h"
 #include "ns3/propagation-delay-model.h"
 #include "ns3/random-variable.h"
-//
+
 // ----- SUMO related includes
 #include <traci-server/TraCIConstants.h>
 #include "xml-sumo-conf-parser.h"
@@ -95,14 +93,6 @@ Ovnis::~Ovnis() {
 
 void Ovnis::DoDispose() {
 	Log::getInstance().summariseSimulation("simulation");
-	cout << "created: " << Log::getInstance().getPacketId() << " forwarded: " << Log::getInstance().getForwardedPackets() << " sent: " << Log::getInstance().getSentPackets() << " received: " << Log::getInstance().getReceivedPackets() << endl;
-	cout << "maxDistance "  << Log::getInstance().getMaxDistance() << "\tavgDistance "  << Log::getInstance().getAvgDistance() << endl;
-//	for (map<int,int> ::iterator it = Log::getInstance().forwardedPackets.begin(); it != Log::getInstance().forwardedPackets.end(); ++it) {
-//		cout << it->first << " " << it->second << endl;
-//	}
-//	time_t stop =  time(0);
-//	Log::getInstance().getStream("simulation") << "Stop time: " << stop << endl;
-//	Log::getInstance().getStream("simulation") << "duration: " << stop-start << endl;
 	Object::DoDispose();
 }
 

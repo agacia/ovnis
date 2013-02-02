@@ -32,38 +32,53 @@ using namespace std;
 namespace ovnis
 {
 
-class TrafficInformationSystem {
+class TIS {
 public:
-	TrafficInformationSystem();
-	virtual ~TrafficInformationSystem();
-    void ReportRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId, double travelTime, int numberOfVehicles);
 
-	std::string ChooseMinTravelTimeRoute(std::map<std::string,double> costs);
-	    std::string ChooseProbTravelTimeRoute(std::map<std::string,double> costs);
-	    std::string ChooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
-		std::string ChooseRandomRoute();
-		    std::string TakeDecision(Knowledge knowledge, std::string currentEdge, std::string destinationEdge);
-		    void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
-		    string GetEvent(vector<pair<string, double> > probabilities);
-		    /**
-			 * Sets m_jam_state according whether condition for traffic jam are met for the second time in a row.
-			 * If there is traffic jam then broadcasts alert message containing egde's name.
-			 */
-		    void SendTrafficConditions(std::string currentEdge);
-		    void setScenario(Scenario scenario);
+	virtual ~TIS();
+	static TIS & getInstance(); // Guaranteed to be destroyed. Instantiated on first use.
+
+	void reportStartingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId);
+    void reportEndingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId, double travelTime);
+
+    std::map<std::string,int> & getVehiclesOnRoute();
+	std::map<std::string,double> & getTravelTimesOnRoute();
+	std::map<std::string,double> & getTravelTimeDateOnRoute();
+
+	void vehicleOnRoadsInitialize(std::string routeId);
+
+	void initializeStaticTravelTimes(map<string, Route> routes);
+	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
+
+	std::string chooseMinTravelTimeRoute(std::map<std::string,double> costs);
+	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
+	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
+	std::string chooseRandomRoute();
+	string getEvent(vector<pair<string, double> > probabilities);
+
+//	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
 
 private:
-		    bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2);
-		    /**
-		         * True if this vehicle is considered in a traffic jam.
-		         */
-		        bool m_jam_state;
-		        double m_time_jammed;
 
-		        Scenario scenario;
-		        UniformVariable  rando;
-		        double flow;
-		        const static double eps = 1e-9;
+    TIS();
+    TIS(TIS const&);           	// Don't Implement
+	void operator=(TIS const&); 						// Don't implement
+	static TIS * instance;
+
+	std::map<std::string, EdgeInfo> staticRecords; // info about expected travel times on routes (whith max speed)
+
+    std::map<std::string,Route> routes;
+    std::map<std::string,int> vehiclesOnRoute;
+    std::map<std::string,double> travelTimesOnRoute;
+    std::map<std::string,double> travelTimeDateOnRoute;
+
+//		        bool m_jam_state;
+//		        double m_time_jammed;
+//		        double flow;
+	bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2);
+	UniformVariable  rando;
+	const static double eps = 1e-9;
+	const static double alfa = 0.5;
 };
 
 }

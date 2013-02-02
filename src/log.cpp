@@ -1,4 +1,14 @@
 /*
+ * Logging about:
+ * - simulation statistics:
+ * 		- start and end times, duration
+ * 		- any generic data: e.g. vehicles departed, arrived, left in simulation every step
+ * - network performance:
+ * 		- number of sent, received, dropped packets, mean distance of received packets
+ * 		- keeping track on packetId *
+ *
+ * Writing to outstream.
+ *
  * log.cpp
  *
  *  Created on: Mar 6, 2012
@@ -17,7 +27,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-//#include "applications/Vehicle.h"
 
 using namespace std;
 namespace ovnis {
@@ -37,19 +46,10 @@ Log::Log() {
 	dropped[ns3::WifiPhy::RX] = 0;
 	dropped[ns3::WifiPhy::SWITCHING] = 0;
 	sumDistance = 0;
-	avgDistance = 0;
 	countDistance = 0;
 	maxDistance = 0;
 	packetId = 0;
 	logFiles = map<string, ofstream *>();
-	routeInitialization = true;
-//	time_t now = time(0);
-//	char  buf[80];
-//	tm* localtm = localtime(&now);
-//	strftime(buf, sizeof(buf), "%Y%m%d-%H%M", localtm);
-//	outputFolder = buf;
-//	string cmd = string("mkdir ") + outputFolder + " -p /tmp/a/b/c";
-//	system(cmd.c_str());
 }
 
 Log::~Log() {
@@ -83,57 +83,6 @@ void Log::closeStream(string name) {
 		log->close();
 	}
 }
-
-//vector<vector<string> > & Log::readRoutesFromFile(string name) {
-//	routes.clear();
-//	ifstream routeFile(name.c_str());
-//	if (routeFile.is_open()) {
-//		int i = 1;
-//		while (routeFile.good() ) {
-//			string routeStr;
-//			getline(routeFile,routeStr);
-//			if (routeStr.size() > 0) {
-//				stringstream ss(routeStr);
-//				string edgeId;
-//				vector<string> route;
-//				while (ss >> edgeId) {
-//					route.push_back(edgeId);
-//				}
-//				routes.push_back(route);
-//			}
-//		}
-//		routeFile.close();
-//	}
-//	else {
-//		cerr << "Cannot open file " << name << endl;
-//	}
-//	return routes;
-//}
-
-void Log::openXml(string name) {
-	monitoredRoutesFile = new ofstream();
-	monitoredRoutesFile->open(name.c_str());
-	ostream & outstream = *monitoredRoutesFile;
-	writer = new Writer(outstream);
-	writer->openElt("tripinfos");
-}
-
-void Log::writeXml(const char * name, map<string, string> attrs) {
-	writer->openElt(name);
-	for (map<string,string>::iterator it = attrs.begin(); it != attrs.end(); ++it) {
-		writer->attr(it->first.c_str(), it->second);
-	}
-	writer->closeElt();
-}
-
-void Log::closeXml() {
-	writer->closeAll();
-	monitoredRoutesFile->close();
-}
-
-//vector<vector<string> > & Log::getRoutes() {
-//	return routes;
-//}
 
 void Log::packetSent() {
 	sent++;
@@ -176,49 +125,6 @@ long Log::getDroppedPackets(enum ns3::WifiPhy::State state) {
 		return dropped[state];
 	}
 	return 0;
-}
-
-
-std::map<std::string,int> & Log::getVehiclesOnRoute() {
-	return vehiclesOnRoute;
-}
-
-std::map<std::string,double> & Log::getTravelTimesOnRoute() {
-	return travelTimesOnRoute;
-}
-
-std::map<std::string,double> & Log::getTravelTimeDateOnRoute() {
-	return travelTimeDateOnRoute;
-}
-
-void Log::vehicleOnRoadsInitialize(string routeId) {
-	if (vehiclesOnRoute.count(routeId) == 0) {
-		vehiclesOnRoute[routeId] = 0;
-		travelTimesOnRoute[routeId] = 0;
-		travelTimeDateOnRoute[routeId] = 0;
-	}
-}
-
-void Log::vehicleEnter(double time, string routeId) {
-	vehiclesOnRoute[routeId]++;
-//	cout << "entered " << vehiclesOnRoutes << " (" << routeId << "," << vehiclesOnRoute[routeId] << ")" << endl;
-}
-
-void Log::vehicleLeaveRoute(double time, string routeId, double travelTime) {
-	vehiclesOnRoute[routeId]--;
-	travelTimeDateOnRoute[routeId] = time;
-//	travelTimesOnRoute[routeId] = travelTime;
-	// overwrite with the latest record
-	if (travelTimesOnRoute[routeId] == 0) {
-			travelTimesOnRoute[routeId] = travelTime;
-	}
-	else {
-		// smooth
-//		double alfa = 0.5;
-//		travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId];
-		travelTimesOnRoute[routeId] = travelTime;
-	}
-//	cout << "left " << " (" << routeId << "," << travelTimesOnRoute[routeId] << ", " << vehiclesOnRoute[routeId] << ")" << endl;
 }
 
 long Log::getDroppedPackets() {
@@ -270,19 +176,26 @@ void Log::printStatistic(VariableType key) {
 	}
 	cout << endl;
 	cout << key << " sum: " << stats->second.sum << endl;
-
 }
 
 void Log::summariseSimulation(string name) {
 	getStream(name) << endl;
+	getStream(name) << "Simulation: " << endl;
 	getStream(name) << "start time [s]:\t\t" << start/1000 <<  endl;
 	getStream(name) << "current time [s]:\t" << currentTime/1000 << endl;
 	getStream(name) << "duration time [s]:\t" << (currentTime - start)/1000 << endl;
-
+	getStream(name) << "Vehicles: " << endl;
 	statEnumType::iterator departured = statistics.find(VEHICLES_DEPARTURED);
 	statEnumType::iterator arrived = statistics.find(VEHICLES_ARRIVED);
-	getStream(name) << "departured.sum:\t" << departured->second.sum << endl;
-	getStream(name) << "arrived.sum:\t" << arrived->second.sum  << endl;
+	getStream(name) << "departured:\t" << departured->second.sum << endl;
+	getStream(name) << "arrived:\t" << arrived->second.sum  << endl;
+	getStream(name) << "Packets:\t" << endl;
+	getStream(name) << "created:\t" << packetId <<  endl;
+	getStream(name) << "forwarded:\t" << forwarded << endl;
+	getStream(name) << "sent:\t" << sent << endl;
+	getStream(name) << "received:\t" << received << endl;
+	getStream(name) <<	"maxDistance:\t"  << maxDistance << "\tavgDistance "  << getAvgDistance() << endl;
+
 
 }
 
@@ -332,5 +245,25 @@ string Log::outList(std::vector<string> & list) {
 	return sout.str();
 }
 
+//void Log::openXml(string name) {
+//	monitoredRoutesFile = new ofstream();
+//	monitoredRoutesFile->open(name.c_str());
+//	ostream & outstream = *monitoredRoutesFile;
+//	writer = new Writer(outstream);
+//	writer->openElt("tripinfos");
+//}
+//
+//void Log::writeXml(const char * name, map<string, string> attrs) {
+//	writer->openElt(name);
+//	for (map<string,string>::iterator it = attrs.begin(); it != attrs.end(); ++it) {
+//		writer->attr(it->first.c_str(), it->second);
+//	}
+//	writer->closeElt();
+//}
+//
+//void Log::closeXml() {
+//	writer->closeAll();
+//	monitoredRoutesFile->close();
+//}
 
 }

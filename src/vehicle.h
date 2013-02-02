@@ -1,4 +1,9 @@
 /*
+ * An abstraction of a physical vehicle.
+ * Information:
+ * current speed
+ * position (x,y)
+ * Itinerary: sequence of edge ids being travelled. It records entering and leaving times
  * vehicle.h
  *
  *  Created on: Mar 18, 2012
@@ -50,7 +55,7 @@ public:
 	double getLastSpeed() const;
 	void setLastSpeed(double lastSpeed);
 
-	void requestCurrentEdge(double currentTime);
+	bool requestCurrentEdge(double currentTime);
 
 	void requestCurrentSpeed();
 	double getCurrentSpeed() const;
@@ -61,19 +66,19 @@ public:
     void updateEdge(Edge & edge, double currentTime);
     void setEdgeLeavingTime(std::string edgeId, double currentTime);
 
+    std::vector<std::string> getEdgesAhead();
 
     void reroute(std::string routeId);
 
-  void printPacketCounts(ostream & out);
-    std::map<std::string,RecordEntry> getRecords() const;
+//    void printPacketCounts(ostream & out);
+//    std::map<std::string,RecordEntry> getRecords() const;
+//    void recordEdge(std::string edgeId, long packetId, std::string senderId, double time, double travelTime);
+//    std::map<std::string,RecordEntry> getlocalKnowledge() const;
+//    map<std::string, double> computeTravelTimesOnRoutes(map<std::string,RecordEntry> edges, map<std::string, Route> routes, string startEdgeId, string endEdgeId);
+//    map<string, double> getVanetCosts(std::string startEdgeId, std::string endEdgeId);
+//    map<string, double> getGlobalCosts(std::string startEdgeId, std::string endEdgeId);
 
-    void recordEdge(std::string edgeId, long packetId, std::string senderId, double time, double travelTime);
-    std::map<std::string,RecordEntry> getlocalKnowledge() const;
-    map<std::string, double> computeTravelTimesOnRoutes(map<std::string,RecordEntry> edges, map<std::string, Route> routes, string startEdgeId, string endEdgeId);
-
-    map<string, double> getVanetCosts(std::string startEdgeId, std::string endEdgeId);
-    map<string, double> getGlobalCosts(std::string startEdgeId, std::string endEdgeId);
-
+//    std::string getLastEdgeId();
 
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;
@@ -81,18 +86,14 @@ protected:
 
     Position2D currentPosition;
     double currentSpeed;
-    double lastSpeed;
 
     Scenario scenario;
     Route currentRoute ;
     Itinerary itinerary;
-
-    std::map<std::string, double> neighbourList;
-
-private:
     void requestRoute(std::string routeId);
 
-    std::map<long,int> packets;
+private:
+
 };
 
 } /* namespace ovnis */

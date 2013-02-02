@@ -25,18 +25,20 @@ public:
 	std::string printEdges();
 	Edge & getCurrentEdge();
 	void setCurrentEdge(std::string edgeId);
-//	Edge & getEdge(std::string edgeId);
+	Edge & getEdge(std::string edgeId);
+	Edge & getLastEdge();
 	std::map<std::string,Edge> & getEdges();
 	void addEdge(std::string edgeId);
 	double computeTravelTime(std::string startEdge, std::string endEdge);
+	void fixTravelTime(std::string edgeId);
 
 private:
 
 	std::map<std::string, Edge> edges;
 	Edge * currentEdge;
+    std::string lastEdgeId;
 
 	void initializeEdges(std::vector<std::string> route);
-	void fixTravelTime(std::string edgeId);
 };
 
 } /* namespace ovnis */

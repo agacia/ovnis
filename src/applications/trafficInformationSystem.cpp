@@ -11,92 +11,85 @@ using namespace std;
 
 namespace ovnis
 {
-TrafficInformationSystem::TrafficInformationSystem() {
-	// TODO Auto-generated constructor stub
 
+TIS & TIS::getInstance() {
+	static TIS instance; // Guaranteed to be destroyed. Instantiated on first use.
+	return instance;
 }
 
-TrafficInformationSystem::~TrafficInformationSystem() {
-	// TODO Auto-generated destructor stub
+TIS::TIS() {
+}
+
+TIS::~TIS() {
 }
 
 
-void TrafficInformationSystem::ReportRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime, int numberOfVehicles) {
-	double date = Simulator::Now().GetSeconds();
-	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << numberOfVehicles;
+void TIS::reportStartingRoute(string routeId, string startEdgeId, string endEdgeId) {
+	++vehiclesOnRoute[routeId];
+	//travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
+}
+
+void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime) {
+	--vehiclesOnRoute[routeId];
+	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
+	travelTimesOnRoute[routeId] = travelTime;
+//	travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId]; // smooth
+	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId];
 	Log::getInstance().getStream("fixedTIS") << endl;
 }
 
-void TrafficInformationSystem::DetectJam(double currentSpeed, double maxSpeed, string currentEdge) {
-
-//	double maxLaneSpeed = vehicle.getItinerary().getEdgeMaxSpeed(currentEdge);
-	//decide if JAM or not according to a threshold
-	if (currentSpeed < (SPEED_THRESHOLD * maxSpeed)) {
-		if (m_time_jammed == 0) {
-			m_time_jammed = Simulator::Now().GetSeconds();
-		}
-		if (Simulator::Now().GetSeconds() - m_time_jammed > JAMMED_TIME_THRESHOLD) {
-			// I am in a jam for more than JAMMED_TIME_THRESHOLD send only ofr the first time
-			if (!m_jam_state) {
-//				Ptr<Packet> packet = CreateWarningPacket();
-//				SendPacket(packet);
-	//			m_sendEvent = Simulator::ScheduleNow(&TestApplication::SendMyState,this, Simulator::Now().GetSeconds(), vehicle.getCurrentEdge());
-			}
-			m_jam_state = true;
-			}
+void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
+	if (this->routes.size() != 0) {
+		return;
 	}
-	else {
-		// if ever I was in JAM state, then I am not anymore
-		if (m_jam_state) {
-//			Ptr<Packet> packet = CreateWarningPacket();
-//			SendPacket(packet);
-			m_jam_state = false;
-			m_time_jammed = 0;
+	this->routes = routes;
+	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+		Route route = it->second;
+		vehiclesOnRoute[it->first] = 0;
+		travelTimeDateOnRoute[it->first] = 0;
+		travelTimesOnRoute[it->first] = 0;
+		for (vector<string>::iterator it2 = route.getEdgeIds().begin(); it2 != route.getEdgeIds().end(); ++it2) {
+			if (staticRecords.find(*it2) != staticRecords.end()) {
+				// add info about the edge
+				staticRecords[*it2] = route.getEdgeInfo(*it2);
+			}
 		}
 	}
 }
 
-void TrafficInformationSystem::setScenario(Scenario scenario) {
-		this->scenario.setAlternativeRoutes(scenario.getAlternativeRoutes());
+map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId) {
+	map<string, double> costs;
+	map<string, double> packetAges;
+	double now = Simulator::Now().GetSeconds();
+
+	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+		costs[it->first] = it->second.computeStaticCostExcludingMargins(startEdgeId, endEdgeId);
+	}
+	for (map<string,double>::iterator it = travelTimesOnRoute.begin(); it != travelTimesOnRoute.end(); ++it) {
+		double packetAge = 0;
+		if (it->second != 0) {
+			packetAge = travelTimeDateOnRoute[it->first] == 0 ? 0 : now-travelTimeDateOnRoute[it->first];
+			if (packetAge < PACKET_TTL) {
+				costs[it->first] = it->second;
+			}
+			else {
+				packetAge = 0;
+			}
+		}
+		packetAges[it->first] = packetAge;
 	}
 
-string TrafficInformationSystem::TakeDecision(Knowledge knowledge, string currentEdge, string destinationEdge) {
+	Log::getInstance().getStream("global_costs") << now << "\t";
+	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+		Log::getInstance().getStream("global_costs") << it->first << "," << costs[it->first] << "," << packetAges[it->first] << "," << vehiclesOnRoute[it->first] << "\t";
+	}
+	Log::getInstance().getStream("global_costs") << endl;
 
-		double now = Simulator::Now().GetSeconds();
-
-		// costs global (vehicles report their travel time when they finish their route)
-		map<string, double> globalCosts = knowledge.getGlobalCosts(scenario.getAlternativeRoutes(), currentEdge, destinationEdge);
-
-		string global_minTravelTimeChoice = ChooseMinTravelTimeRoute(globalCosts);
-		string global_proportionalProbabilisticChoice = ChooseProbTravelTimeRoute(globalCosts);
-
-//		double capacity = scenario.getAlternativeRoutes()[chosenRouteId].getCapacity();
-		string global_routeChoice = ChooseFlowAwareRoute(flow, globalCosts);
-
-		map<string, double> vanetCosts = knowledge.getVanetCosts(scenario.getAlternativeRoutes(), currentEdge, destinationEdge);
-		// costs vanets
-		string vanet_minTravelTimeChoice = ChooseMinTravelTimeRoute(vanetCosts);
-		string vanet_proportionalProbabilisticChoice = ChooseProbTravelTimeRoute(vanetCosts);
-		string vanet_routeChoice = ChooseFlowAwareRoute(flow, vanetCosts);
-
-		// select strategy
-		string routeChoice = global_minTravelTimeChoice;
-//		routeChoice = vanet_minTravelTimeChoice;
-		// TODO temp
-//		routeChoice = vehicle.getItinerary().getId();
-
-		Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_routeChoice << endl;
-		Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_routeChoice << endl;
-		Log::getInstance().getStream("routing") << now << "\t" << routeChoice << endl;
-
-
-
-		return routeChoice;
+	return costs;
 }
 
-string TrafficInformationSystem::GetEvent(vector<pair<string, double> > probabilities) {
-    double r = TrafficInformationSystem::rando.GetValue(0, 1);
-
+string TIS::getEvent(vector<pair<string, double> > probabilities) {
+    double r = rando.GetValue(0, 1);
 //    Log::getInstance().getStream("prob") << r << "\t" << endl;
 //	for (vector<pair<string, double> >::iterator it = probabilities.begin(); it != probabilities.end(); ++it)
 //	{
@@ -116,8 +109,7 @@ string TrafficInformationSystem::GetEvent(vector<pair<string, double> > probabil
     return "";
 }
 
-
-string TrafficInformationSystem::ChooseMinTravelTimeRoute(map<string,double> costs) {
+string TIS::chooseMinTravelTimeRoute(map<string,double> costs) {
 	double minCost = numeric_limits<double>::max();
 	string chosenRouteId = "";
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
@@ -130,11 +122,11 @@ string TrafficInformationSystem::ChooseMinTravelTimeRoute(map<string,double> cos
 	return chosenRouteId;
 }
 
-string TrafficInformationSystem::ChooseRandomRoute() {
+string TIS::chooseRandomRoute() {
 	string chosenRouteId = "";
-	int chosenIndex = rand() % scenario.getAlternativeRoutes().size();
+	int chosenIndex = rand() % routes.size();
 	int i = 0;
-	for (map<string,Route>::iterator it = scenario.getAlternativeRoutes().begin(); it != scenario.getAlternativeRoutes().end(); ++it) {
+	for (map<string,Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		if (i == chosenIndex) {
 			chosenRouteId = it->second.getId();
 		}
@@ -143,10 +135,9 @@ string TrafficInformationSystem::ChooseRandomRoute() {
 	return chosenRouteId;
 }
 
-
-string TrafficInformationSystem::ChooseFlowAwareRoute(double flow, map<string,double> costs) {
-	string chosenRouteId = ChooseMinTravelTimeRoute(costs);
-	double capacity = scenario.getAlternativeRoutes()[chosenRouteId].getCapacity();
+string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
+	string chosenRouteId = chooseMinTravelTimeRoute(costs);
+	double capacity = routes[chosenRouteId].getCapacity();
 	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
 	if (flowRatioNeededToUseOtherAlternatives <= 0) {
 		flowRatioNeededToUseOtherAlternatives = 0;
@@ -154,14 +145,14 @@ string TrafficInformationSystem::ChooseFlowAwareRoute(double flow, map<string,do
 	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
 		flowRatioNeededToUseOtherAlternatives = 1;
 	}
-	double random = TrafficInformationSystem::rando.GetValue(0, 1);
+	double random = rando.GetValue(0, 1);
 
 	if (random < flowRatioNeededToUseOtherAlternatives) {
 		map<string, double>::iterator it = costs.find(chosenRouteId);
 		if (it != costs.end()) {
 			costs.erase(it);
 		}
-		chosenRouteId = ChooseProbTravelTimeRoute(costs);
+		chosenRouteId = chooseProbTravelTimeRoute(costs);
 	}
 	return chosenRouteId;
 }
@@ -170,7 +161,8 @@ bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 {
 	return v1.second < v2.second;
 }
-string TrafficInformationSystem::ChooseProbTravelTimeRoute(map<string,double> costs) {
+
+string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 	double minCost = numeric_limits<double>::max();
 	double sumCost = 0;
 
@@ -193,8 +185,39 @@ string TrafficInformationSystem::ChooseProbTravelTimeRoute(map<string,double> co
 	}
 //	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 
-	chosenRouteId = GetEvent(sortedProbabilities);
+	chosenRouteId = getEvent(sortedProbabilities);
 	return chosenRouteId;
 }
+
+
+//void TIS::DetectJam(double currentSpeed, double maxSpeed, string currentEdge) {
+//
+////	double maxLaneSpeed = vehicle.getItinerary().getEdgeMaxSpeed(currentEdge);
+//	//decide if JAM or not according to a threshold
+//	if (currentSpeed < (SPEED_THRESHOLD * maxSpeed)) {
+//		if (m_time_jammed == 0) {
+//			m_time_jammed = Simulator::Now().GetSeconds();
+//		}
+//		if (Simulator::Now().GetSeconds() - m_time_jammed > JAMMED_TIME_THRESHOLD) {
+//			// I am in a jam for more than JAMMED_TIME_THRESHOLD send only ofr the first time
+//			if (!m_jam_state) {
+////				Ptr<Packet> packet = CreateWarningPacket();
+////				SendPacket(packet);
+//	//			m_sendEvent = Simulator::ScheduleNow(&TestApplication::SendMyState,this, Simulator::Now().GetSeconds(), vehicle.getCurrentEdge());
+//			}
+//			m_jam_state = true;
+//			}
+//	}
+//	else {
+//		// if ever I was in JAM state, then I am not anymore
+//		if (m_jam_state) {
+////			Ptr<Packet> packet = CreateWarningPacket();
+////			SendPacket(packet);
+//			m_jam_state = false;
+//			m_time_jammed = 0;
+//		}
+//	}
+//}
+
 
 }

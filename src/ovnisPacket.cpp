@@ -31,8 +31,8 @@ OvnisPacket::~OvnisPacket() {
 	void OvnisPacket::ReadHeader(Ptr<Packet> packet) {
 		try {
 			this->packet = packet;
-			t = (uint8_t*)(((malloc(200 * sizeof (uint8_t)))));
-			int size = packet->CopyData(t, 200);
+			t = (uint8_t*)(((malloc(MAX_PACKET_SIZE * sizeof (uint8_t)))));
+			int size = packet->CopyData(t, MAX_PACKET_SIZE);
 			tg = TagBuffer(t, t + size);
 			sendingDate = tg.ReadDouble();
 			uint32_t s_size = tg.ReadU32();
@@ -153,11 +153,10 @@ OvnisPacket::~OvnisPacket() {
 //		}
 //    }
 
-    Ptr<Packet> OvnisPacket::BuildPacket(double sendingTime, string senderId, double x, double y, int type, long id, double date, string vehicleId, string objectId, double objectValue) {
+    Ptr<Packet> OvnisPacket::BuildPacket(double sendingTime, string senderId, double x, double y, int type, long id, string objectId, double objectValue) {
 		int senderIdSize = senderId.size();
-		int vehicleIdSize = vehicleId.size();
-		int routeIdSize = objectId.size();
-		int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long) + sizeof (double) + sizeof (int) + vehicleIdSize * sizeof (char) + sizeof (int) + routeIdSize * sizeof (char) + sizeof (double);
+		int objectIdSize = objectId.size();
+		int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long) + sizeof (int) + objectIdSize * sizeof (char) + sizeof (double);
 		try {
 			uint8_t * t = (uint8_t*) malloc(size);
 			TagBuffer tg(t, t + size);
@@ -168,11 +167,8 @@ OvnisPacket::~OvnisPacket() {
 			tg.WriteDouble(y);
 			tg.WriteU32(type);
 			tg.WriteU64(id);
-			tg.WriteDouble(date);
-			tg.WriteU32(vehicleIdSize);
-			tg.Write((uint8_t*) vehicleId.c_str(), vehicleIdSize);
-			tg.WriteU32(routeIdSize);
-			tg.Write((uint8_t*) objectId.c_str(), routeIdSize);
+			tg.WriteU32(objectIdSize);
+			tg.Write((uint8_t*) objectId.c_str(), objectIdSize);
 			tg.WriteDouble(objectValue);
 			Ptr<Packet> p = Create<Packet>(t, size);
 			free(t);
@@ -183,15 +179,14 @@ OvnisPacket::~OvnisPacket() {
 		}
 	}
 
-    Ptr<Packet> OvnisPacket::BuildTrafficInfoPacket(double sendingTime, string senderId, double x, double y, int type, long id, int numberOfRecords, Data records[]) {
+    Ptr<Packet> OvnisPacket::BuildTrafficInfoPacket(double sendingTime, string senderId, double x, double y, int type, long id, int numberOfRecords, vector<Data> records) {
 		int senderIdSize = senderId.size();
-		int dataRecordSize = numberOfRecords * (2 * sizeof (double) + sizeof(int) +sizeof(int));
+		int dataRecordSize = numberOfRecords * (2 * sizeof (double) + sizeof(int));
 		for (int i = 0; i < numberOfRecords; ++i) {
 			dataRecordSize +=  records[i].edgeId.size() * sizeof (char);
 		}
 		int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long) +
 			+ sizeof (int) + dataRecordSize;
-		cout << "Traffic info packet: " << size << endl;
 
 		try {
 		uint8_t * t = (uint8_t*) malloc(size);
@@ -203,93 +198,69 @@ OvnisPacket::~OvnisPacket() {
 		tg.WriteDouble(y);
 		tg.WriteU32(type);
 		tg.WriteU64(id);
-
 		tg.WriteU32(numberOfRecords);
+
 		for (int i = 0; i < numberOfRecords; ++i) {
-			// string edgeId;
-			cout << "writing edge " << records[i].edgeId << " of size " << records[i].edgeId.size() << endl;
 			int edgeIdSize = records[i].edgeId.size();
 			tg.WriteU32(edgeIdSize);
 			tg.Write((uint8_t*) records[i].edgeId.c_str(), edgeIdSize);
-			// double travelTime;
 			tg.WriteDouble(records[i].travelTime);
-			// int numberOfVehicles;
-			tg.WriteU32(records[i].numberOfVehicles);
-			// double date;
 			tg.WriteDouble(records[i].date);
 		}
-
 		Ptr<Packet> p = Create<Packet>(t, size);
 		free(t);
-		return p;
+			return p;
 		}
 		catch (exception & e) {
-		return NULL;
+			return NULL;
 		}
 	}
 
-//    Ptr<Packet> OvnisPacket::BuildTrafficInfoPacket(double sendingTime, string senderId, double x, double y, int type, long id, int numberOfRecords) {
-//    		int senderIdSize = senderId.size();
-//    		int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long) + sizeof (int) ;
-//    		cout << "Traffic info packet: " << size << endl;
-//
-//    		try {
-//				uint8_t * t = (uint8_t*) malloc(size);
-//				TagBuffer tg(t, t + size);
-//				tg.WriteDouble(sendingTime);
-//				tg.WriteU32(senderIdSize);
-//				tg.Write((uint8_t*) senderId.c_str(), senderIdSize);
-//				tg.WriteDouble(x);
-//				tg.WriteDouble(y);
-//				tg.WriteU32(type);
-//				tg.WriteU64(id);
-//
-//				tg.WriteU32(numberOfRecords);
-//
-//				Ptr<Packet> p = Create<Packet>(t, size);
-//				free(t);
-//				return p;
-//    		}
-//    		catch (exception & e) {
-//    			return NULL;
-//    		}
-//    	}
+    vector<Data> OvnisPacket::ReadTrafficInfoPacket() {
+    	vector<Data> records;
+		int numberOfRecords = tg.ReadU32();
+		for (int i = 0; i < numberOfRecords; ++i) {
+			Data record;
+			record.edgeId = readString();
+			record.travelTime = tg.ReadDouble();
+			record.date = tg.ReadDouble();
+			records.push_back(record);
+		}
+		return records;
+    }
 
-    Ptr<Packet> OvnisPacket::BuildTravelTimePacket(double sendingTime, string senderId, double x, double y, int type, long id, string routeId, string currentEdgeId, double currentSpeed, double travelTime, double estimatedTravelTime, double estimationDate) {
-	int senderIdSize = senderId.size();
-	   int routeIdSize = routeId.size();
-	   int edgeIdSize = currentEdgeId.size();
-	   int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long) +
-				+ sizeof (int) + routeIdSize * sizeof (char) + sizeof (int) + edgeIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (double) + sizeof (double);
-	   try {
-		uint8_t * t = (uint8_t*) malloc(size);
-		TagBuffer tg(t, t + size);
-		tg.WriteDouble(sendingTime);
-		tg.WriteU32(senderIdSize);
-		tg.Write((uint8_t*) senderId.c_str(), senderIdSize);
-		tg.WriteDouble(x);
-		tg.WriteDouble(y);
-		tg.WriteU32(type);
-		tg.WriteU64(id);
 
-		tg.WriteU32(routeIdSize);
-		tg.Write((uint8_t*) routeId.c_str(), routeIdSize);
-		tg.WriteU32(edgeIdSize);
-		tg.Write((uint8_t*) currentEdgeId.c_str(), edgeIdSize);
+    Ptr<Packet> OvnisPacket::BuildChangedEdgePacket(double sendingTime, string senderId, double x, double y, int type, long id, string lastEdgeId, double travelTime, string currentEdgeId) {
+		int senderIdSize = senderId.size();
+		int lastEdgeIdSize = lastEdgeId.size();
+		int currentEdgeIdSize = currentEdgeId.size();
+		int size = sizeof (double) + sizeof (int) + senderIdSize * sizeof (char) + sizeof (double) + sizeof (double) + sizeof (int) + sizeof (long)
+				+ sizeof (int) + lastEdgeIdSize * sizeof (char) + sizeof (double) + sizeof (int) + currentEdgeIdSize * sizeof (char) ;
+		try {
+			uint8_t * t = (uint8_t*) malloc(size);
+			TagBuffer tg(t, t + size);
+			tg.WriteDouble(sendingTime);
+			tg.WriteU32(senderIdSize);
+			tg.Write((uint8_t*) senderId.c_str(), senderIdSize);
+			tg.WriteDouble(x);
+			tg.WriteDouble(y);
+			tg.WriteU32(type);
+			tg.WriteU64(id);
 
-		tg.WriteDouble(currentSpeed);
-		tg.WriteDouble(travelTime);
-		tg.WriteDouble(estimatedTravelTime);
-		tg.WriteDouble(estimationDate);
+			tg.WriteU32(lastEdgeIdSize);
+			tg.Write((uint8_t*) lastEdgeId.c_str(), lastEdgeIdSize);
+			tg.WriteDouble(travelTime);
+			tg.WriteU32(currentEdgeIdSize);
+			tg.Write((uint8_t*) currentEdgeId.c_str(), currentEdgeIdSize);
 
-		Ptr<Packet> p = Create<Packet>(t, size);
-		free(t);
-		return p;
+			Ptr<Packet> p = Create<Packet>(t, size);
+			free(t);
+			return p;
+		}
+		catch (exception & e) {
+			return NULL;
+		}
 	}
-	catch (exception & e) {
-		return NULL;
-	}
-   }
 
     void OvnisPacket::print() const {
     	cout << "[" << sendingDate << "," << senderId << "," << position.x << "," << position.y << "] [" << id << "," << stringValue << "," << doubleValue << "]" << endl;

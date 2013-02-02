@@ -65,6 +65,7 @@
 #include "route.h"
 #include "ovnisPacket.h"
 #include "applications/trafficInformationSystem.h"
+#include "applications/dissemination/dissemination.h"
 
 using namespace std;
 
@@ -112,12 +113,7 @@ namespace ns3
 	 * Periodic sending of traffic information
 	 */
     void SendTrafficInformation();
-
-
-
-    void ReceiveTravelTimePacket(OvnisPacket ovnisPacket);
-    void ReceiveTravelTimeRoutePacket(OvnisPacket ovnisPacket);
-    void ReceiveTravelTimeEdgePacket(OvnisPacket ovnisPacket);
+    EventId m_trafficInformationEvent;
 
     bool m_verbose;
 
@@ -138,25 +134,53 @@ namespace ns3
      */
     Ptr<Socket> m_socket;
 
-
-
-    bool arrived;
-
-
+    bool running;
     bool decisionTaken;
     bool notificationSent;
     string decisionEdgeId;
 
-    EventId m_trafficInformationEvent;
 
+    /**
+     * Physical information about a vehicle, such as position, current speed. It's connected to SUMO with TraCi in both way (reading and writing).
+     * Contains also the current selected route (following edges from SUMO).
+     * Also keeps a track on an itinerary: remembers all travelled edges, times, etc.
+     * Contains it's own scenario (in case vehicles have different scenarios)
+     */
     Vehicle vehicle;
-    Scenario scenario;
-    Knowledge knowledge;
 
+    /**
+     * Abstraction of a single scenario from a GPS advice.
+     * Contains a set of alternative routes between two points, called decision edges and notification edges.
+     * All routes have information about maximum speed, capacity, length.
+     * To initialize a vehicle with the scenario.
+     */
+    Scenario scenario;
+    double flow;
+
+    /**
+     * A local VANET's database containing traffic information ONLY heard from other vehicles
+     */
+    Knowledge vanetsKnowledge;
+
+    /**
+     * Specifies an algorithm for data dissemination.
+     * Criteria for:
+     * - which data to send (e.g. only information about edges ahead, or the one that has changed or is different from expected).
+     * - if/when to forward.
+     *
+     */
+    Dissemination dissemination;
+
+    /**
+     * Abstraction of an external TIS (e.g. a centralised one)
+     * Keeps track on travel times reported by vehicles on fixed points.
+     */
+//    TrafficInformationSystem tis;
 
     const std::vector<std::string> split(std::string sentence);
-    TrafficInformationSystem tis;
     MacAddrMap m_neighborList;
+
+    std::map<long,int> packets; // packets counter
 
   };
 

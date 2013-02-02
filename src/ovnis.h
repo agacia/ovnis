@@ -21,6 +21,7 @@
  * @date Apr 21, 2010
  *
  * @author Yoann Pigné
+ * @author Agata Grzybek
  */
 
 #ifndef OVNIS_H_

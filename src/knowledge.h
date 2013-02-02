@@ -36,28 +36,37 @@ public:
 	Knowledge();
 	virtual ~Knowledge();
 
+	int getNumberOfVehicles(std::string edgeId);
+	int addNumberOfVehicles(std::string edgeId);
+	int substractNumberOfVehicles(std::string edgeId);
+
+	void record(Data data);
+	void record(vector<Data> data);
+
+	map<string,RecordEntry> & getRecords();
+
+	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
+	map<string, double> computeTravelTimesOnRoutes(map<string, Route> routes, string startEdgeId, string endEdgeId);
+
+/*
 	void PrintCosts(std::string fileName, std::string vehicleId, double time, map<std::string, double> costs);
-	void recordDouble(std::string id, long packetId, std::string senderId, double time, double value);
+	void recordDouble(std::string id, long packetId, std::string senderId, double time, double value, int numberOfVehicles);
 	void setRecords(std::map<std::string,RecordEntry> records);
 	void recordPacket(long id);
 	int getPacketCount(long id);
-	void recordEdge(string edgeId, long packetId, string senderId, double time, double travelTime);
+	void recordEdge(string edgeId, long packetId, string senderId, double time, double travelTime, int numberOfVehicles);
 	void printPacketCounts(ostream & out);
-//	void setScenario(Scenario scenario);
 	std::map<std::string,RecordEntry> getRecords() const;
-	map<string,RecordEntry> getlocalKnowledge() const;
-	map<string, double> getGlobalCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
-	map<string, double> getVanetCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
+
 	void InitializeStaticKnowledge(map<string, Route> routes);
 	void InitializeGlobalKnowledge(std::map<std::string,Route> routes);
 	void InitializeLocalKnowledge();
-	map<string, double> computeTravelTimesOnRoutes(map<string, Route> routes, string startEdgeId, string endEdgeId);
 
+*/
 protected:
-	std::map<std::string, EdgeInfo> staticRecords; // info about travel times on routes
-	std::map<std::string, RecordEntry> records; // info about travel times on routes
-	std::map<std::string, RecordEntry> localKnowledge; // info about travel times on edges
-	map<long,int> packets;
+	map<long,int> packets; // counter of packets
+	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
+	std::map<std::string, int> numberOfVehicles;
 };
 
 }

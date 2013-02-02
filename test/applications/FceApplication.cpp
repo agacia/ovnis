@@ -86,12 +86,13 @@ FceApplication::FceApplication() {
 	decisionTaken = false;
 	notificationSent = false;
 
-//	 scenario
+	flow = 1250;
+
 	scenario.setDecisionEdges(CommonHelper::split("main_1b"));
 	scenario.setNotificationEdges(CommonHelper::split("main_2d bypass_2b"));
 	map<string, Route> alternativeRoutes = map<string, Route>();
 	alternativeRoutes["main"] = Route("main", "main_1 main_1b main_2 main_2a main_2b main_2c main_2d");
-	alternativeRoutes["main"].setCapacity(1300);
+	alternativeRoutes["main"].setCapacity(1200);
 	alternativeRoutes["bypass"] = Route("bypass", "main_1 main_1b bypass_1 bypass_2 bypass_2b");
 	alternativeRoutes["bypass"].setCapacity(600);
 	scenario.setAlternativeRoutes(alternativeRoutes);
@@ -109,7 +110,7 @@ FceApplication::FceApplication() {
 }
 
 FceApplication::~FceApplication() {
-	arrived = true;
+	running = false;
 	Simulator::Cancel(m_trafficInformationEvent);
 }
 
@@ -121,9 +122,10 @@ void FceApplication::StartApplication(void) {
 	string vehicleId = Names::FindName(GetNode());
 	vehicle.initialize(vehicleId);
 	vehicle.setScenario(scenario);
-	tis.setScenario(scenario);
+	TIS::getInstance().initializeStaticTravelTimes(scenario.getAlternativeRoutes());
 
 	// ns3
+	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();
 	// Connect the callback for the neighbor discovery service
 	std::ostringstream oss;
 	oss << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NeighborLost";
@@ -131,9 +133,6 @@ void FceApplication::StartApplication(void) {
 	std::ostringstream oss2;
 	oss2 << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NewNeighbor";
 	Config::Connect(oss2.str(), MakeCallback(&FceApplication::NewNeighborFound, this));
-
-	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();
-
 	// set socket
 	Ptr<SocketFactory> socketFactory = GetNode()->GetObject<UdpSocketFactory> ();
 	m_socket = socketFactory->CreateSocket();
@@ -141,21 +140,19 @@ void FceApplication::StartApplication(void) {
 	m_socket->SetAllowBroadcast(true);
 	m_socket->SetRecvCallback(MakeCallback(&FceApplication::ReceivePacket, this));
 	m_socket->Bind(InetSocketAddress(Ipv4Address::GetAny(), m_port));
-
 	// start simualtion
+	running = true;
 	m_simulationEvent = Simulator::Schedule(Seconds(rando.GetValue(0, SIMULATION_STEP_INTERVAL)), &FceApplication::SimulationRun, this);
 	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
-//	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::PseudoBeacon, this);
 
 }
 
 void FceApplication::StopApplication(void) {
-	arrived = true;
-//	vehicle.setArrivalTime(Simulator::Now().GetSeconds());
+	running = false;
 }
 
 void FceApplication::DoDispose(void) {
-	arrived = true;
+	running = false;
 	double now = Simulator::Now().GetSeconds();
 	if (m_socket != NULL) {
 		m_socket->Close();
@@ -167,26 +164,58 @@ void FceApplication::DoDispose(void) {
 
 void FceApplication::SimulationRun(void) {
 	try {
-		if (arrived == false) {
-			vehicle.requestCurrentEdge(Simulator::Now().GetSeconds());
+		if (running == true) {
+			bool edgeChanged = vehicle.requestCurrentEdge(Simulator::Now().GetSeconds());
 			string currentEdge = vehicle.getItinerary().getCurrentEdge().getId();
 
-			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdge) != vehicle.getScenario().getDecisionEdges().end();
-			if (isDecisionPoint && !decisionTaken) {
-				string routeChoice = tis.TakeDecision(knowledge, currentEdge, vehicle.getDestinationEdgeId());
-				vehicle.reroute(routeChoice);
-				decisionEdgeId = currentEdge;
-				Log::getInstance().vehicleEnter(Simulator::Now().GetSeconds(), routeChoice);
-				decisionTaken = true;
-//				cout << Simulator::Now().GetSeconds() << " " << vehicle.getId() << " takes decision on " << currentEdge << " direction to " << vehicle.getDestinationEdgeId() << ": " << routeChoice << endl;
+			// if a vehicle is entering a new edge it has already traced the time on its itinerary
+			// broadcast information about it and about travel time on the last edge
+			if (edgeChanged) {
+				Edge lastEdge = vehicle.getItinerary().getLastEdge();
+				double travelTimeOnLastEdge = lastEdge.getTravelTime();
+				string lastEdgeId = lastEdge.getId();
+				Vector position = mobilityModel->GetPosition();
+				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, Log::getInstance().getPacketId(), lastEdgeId, travelTimeOnLastEdge, currentEdge);
+				SendPacket(p);
 			}
 
+			// if approaching an intersection
+			// take decision which route to takefrom current to destination edge based on the collected knowledge about travel times on edges
+			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdge) != vehicle.getScenario().getDecisionEdges().end();
+			if (isDecisionPoint && !decisionTaken) {
+
+				map<string, double> globalCosts = TIS::getInstance().getCosts(scenario.getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+				string global_minTravelTimeChoice = TIS::getInstance().chooseMinTravelTimeRoute(globalCosts);
+				string global_proportionalProbabilisticChoice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
+				string global_routeChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
+
+				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(scenario.getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinTravelTimeRoute(vanetCosts);
+				string vanet_proportionalProbabilisticChoice =  TIS::getInstance().chooseProbTravelTimeRoute(vanetCosts);
+				string vanet_routeChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
+
+				// select strategy
+				string routeChoice = global_minTravelTimeChoice;
+//				routeChoice = vanet_minTravelTimeChoice;
+//				routeChoice = vehicle.getItinerary().getId();
+
+				double now = Simulator::Now().GetSeconds();
+				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_routeChoice << endl;
+				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_routeChoice << endl;
+
+				vehicle.reroute(routeChoice);
+				decisionEdgeId = currentEdge;
+				TIS::getInstance().reportStartingRoute(routeChoice, currentEdge, vehicle.getDestinationEdgeId());
+				decisionTaken = true;
+			}
+
+			// if approaching the point that we want to evaluate
+			// report to TIS the total travel time on the route between the decision edge and the current edge
 			bool isReportingPoint = find(vehicle.getScenario().getNotificationEdges().begin(), vehicle.getScenario().getNotificationEdges().end(), currentEdge) != vehicle.getScenario().getNotificationEdges().end();
 			if (isReportingPoint && !notificationSent) {
 				string routeId = vehicle.getItinerary().getId();
 				double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
-				Log::getInstance().vehicleLeaveRoute(Simulator::Now().GetSeconds(), routeId, travelTime);
-				tis.ReportRoute(routeId, decisionEdgeId, currentEdge, travelTime, Log::getInstance().getVehiclesOnRoute()[routeId]);
+				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime);
 				notificationSent = true;
 			}
 
@@ -194,86 +223,24 @@ void FceApplication::SimulationRun(void) {
 		}
 	}
 	catch (TraciException & ex) {
-		arrived = true;
+		running = false;
 	}
 }
 
 void FceApplication::SendTrafficInformation(void) {
-	if (arrived == false) {
+	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
-		Data records[1];
-		Data record;
-		record.edgeId = "edgeId";
-		record.travelTime = 1;
-		record.numberOfVehicles = 2;
-		record.date = Simulator::Now().GetSeconds();
-		records[0] = record;
-		Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, Log::getInstance().getPacketId(), 1, records);
-//		Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, Log::getInstance().getPacketId(), 1);
-		SendPacket(p);
+		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
+		if (records.size() > 0) {
+			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, Log::getInstance().getPacketId(), records.size(), records);
+			SendPacket(p);
+		}
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
 	}
-//	if (arrived == false) {
-//			Ptr<Packet> p = OvnisPacket::BuildPacket(1, vehicle.getId(), 1, 1, TRAVELTIME_EDGE_PACKET_ID , 1, 1, vehicle.getId(), vehicle.getItinerary().getCurrentEdge().getId(), 1);
-//			SendPacket(p);
-//			m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
-//		}
-//	int size = vehicle.getRecords().size();
-//	if (size > 0 && arrived == false) {
-//		double now = Simulator::Now().GetSeconds();
-//		Vector position = mobilityModel->GetPosition();
-//		double travelTime = entry.getLatestValue();
-//								double packetDate = entry.getLatestTime();
-//					//			long packetId = entry.getLatestPacketId();
-//								string senderId = entry.getLatestSenderId();
-//					//			double travelTime = entry.getAverageValue();
-//					//			double packetDate = entry.getAverageTime();
-//					//			string senderId = vehicle.getId();
-//								long packetId = Log::getInstance().getPacketId();
-//								Log::getInstance().nextPacketId();
-//								if (packetDate == 0 || (vehicle.getItinerary().containsEdge(it->first)==true && vehicle.getItinerary().getEdge(it->first).getLeftTime() > entry.getLatestTime())) {
-//									travelTime = vehicle.getItinerary().getEdge(it->first).getTravelTime();
-//									packetDate = vehicle.getItinerary().getEdge(it->first).getLeftTime();
-//									senderId = vehicle.getId();
-//					//				packetId = Log::getInstance().getPacketId();
-//					//				Log::getInstance().nextPacketId();
-//								}
-//								if (packetDate != 0) {
-//									if (now - packetDate < PACKET_TTL) {
-//									}
-//									}
-//				}
-//		Ptr<Packet> p = OvnisPacket::BuildPacket(now, vehicle.getId(), position.x, position.y, TRAVELTIME_EDGE_PACKET_ID , packetId, packetDate, senderId, it->first, travelTime);
-//		SendPacket(p);
-//		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::TrafficInformationAction, this);
-//	}
 }
 
-/**
- *	Beaconing current edge and speed, travel time so far (recorded), estimated travel time on the rest of the route.
- */
-//void FceApplication::Beacon(void) {
-//	int size = vehicle.getRecords().size();
-//	if (size > 0 && arrived == false) {
-//		double now = Simulator::Now().GetSeconds();
-//		Vector position = mobilityModel->GetPosition();
-//		string itineraryId = vehicle.getItinerary().getId();
-//		string startEdge = vehicle.getItinerary().getDepartedEdge();
-//		string lastEdge = vehicle.getItinerary().getArrivalEdge();
-//		double travelTime = vehicle.getItinerary().getTravelTime();
-//		string currentEdgeId = vehicle.getItinerary().getCurrentEdge().getId();
-//		double currentSpeed = vehicle.getCurrentSpeed();
-////		Log::getInstance().getStream("beaconing")
-////		cout << vehicle.getId() << " beaconing about " <<  itineraryId << " (" << startEdge << ", " << lastEdge << ") " << " currentEdge: " << currentEdgeId << ", currentSpeed: " << currentSpeed << ", travelTime: " << travelTime << endl;
-//		Ptr<Packet> p = OvnisPacket::BuildTravelTimePacket(now, vehicle.getId(), position.x, position.y, TRAVELTIME_ROUTE_PACKET_ID , Log::getInstance().getPacketId(), itineraryId, currentEdgeId, currentSpeed, travelTime, 0, 0);
-//		SendPacket(p);
-//		m_beaconEvent = Simulator::Schedule(Seconds(BEACONING_INTERVAL), &FceApplication::TrafficInformationAction, this);
-//	}
-//}
-
-
 void FceApplication::SendPacket(Ptr<Packet> packet) {
-	if (packet == NULL || arrived) {
+	if (packet == NULL || !running) {
 		return;
 	}
 	try {
@@ -283,7 +250,8 @@ void FceApplication::SendPacket(Ptr<Packet> packet) {
 			exit(-1);
 		}
 		else {
-//			Log::getInstance().packetSent();
+			Log::getInstance().nextPacketId();
+//			Log::getInstance().packetSent(); // moved to beaconing-adhoc-wifi-mac.cpp
 		}
 	}
 	catch (exception & e) {
@@ -295,105 +263,38 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 
 	Address neighborMacAddress;
     Ptr<Packet> packet = socket->RecvFrom(neighborMacAddress);
-    //    cout << "receive something!" << endl;
+
     try {
     	OvnisPacket ovnisPacket(packet);
+    	Vector position = mobilityModel->GetPosition();
+		double distance = ovnisPacket.computeDistance(position.x, position.y);
+		double packetDate = ovnisPacket.getSendingDate();
+		double packetAge = Simulator::Now().GetSeconds() - packetDate;
+		string senderId = ovnisPacket.getSenderId();
+		long packetId = ovnisPacket.getPacketId();
 
-		if (ovnisPacket.getPacketType() == TRAVELTIME_PACKET_ID) {
-			ReceiveTravelTimePacket(ovnisPacket);
+		if (ovnisPacket.getPacketType() == CHANGED_EDGE_PACKET_ID) {
+			string lastEdge = ovnisPacket.readString();
+			double travelTime = ovnisPacket.readDouble();
+			string currentEdge = ovnisPacket.readString();
+			double numberOfVehiclesOnTheLastEdge = vanetsKnowledge.substractNumberOfVehicles(lastEdge);
+			double numberOfVehiclesOnTheCurrentEdge = vanetsKnowledge.addNumberOfVehicles(currentEdge);
+			Data data;
+			data.date = packetDate;
+			data.edgeId = lastEdge;
+			data.travelTime = travelTime;
+			vanetsKnowledge.record(data);
 		}
-		if (ovnisPacket.getPacketType() == TRAVELTIME_EDGE_PACKET_ID) {
-			ReceiveTravelTimeEdgePacket(ovnisPacket);
+		if (ovnisPacket.getPacketType() == TRAFFICINFO_PACKET_ID) {
+			vector<Data> data = ovnisPacket.ReadTrafficInfoPacket();
+			vanetsKnowledge.record(data);
 		}
-		if (ovnisPacket.getPacketType() == TRAVELTIME_ROUTE_PACKET_ID) {
-			ReceiveTravelTimeRoutePacket(ovnisPacket);
-		}
+
+		Log::getInstance().packetReceived();
+		Log::getInstance().addDistance(distance);
     }
     catch (exception & e) {
 		cerr << "receive packet not recognized by ovnis" << endl;
-	}
-}
-
-
-void FceApplication::ReceiveTravelTimeRoutePacket(OvnisPacket ovnisPacket) {
-	Vector position = mobilityModel->GetPosition();
-	double distance = ovnisPacket.computeDistance(position.x, position.y);
-
-//	string routeId, string currentEdgeId, double currentSpeed, double travelTime, double estimatedTravelTime, double estimationDate
-	string routeId = ovnisPacket.readString();
-	string currentEdgeId = ovnisPacket.readString();
-	double currentSpeed = ovnisPacket.readDouble();
-	double travelTime = ovnisPacket.readDouble();
-	double estimatedTravelTime = ovnisPacket.readDouble();
-	double estimationDate = ovnisPacket.readDouble();
-	double packetAge = Simulator::Now().GetSeconds() - ovnisPacket.getSendingDate();
-//	cout << vehicle.getId() << " heard from " << ovnisPacket.getSenderId() << " about: " << routeId << " currentEdge: " << currentEdgeId << " travelTime: " << travelTime << " (distance: " << distance << ", packetAge: " << packetAge << ")" << endl;
-
-	Log::getInstance().packetReceived();
-	Log::getInstance().addDistance(distance);
-	double now =  Simulator::Now().GetSeconds();
-
-}
-
-
-void FceApplication::ReceiveTravelTimePacket(OvnisPacket ovnisPacket) {
-	Vector position = mobilityModel->GetPosition();
-	double distance = ovnisPacket.computeDistance(position.x, position.y);
-
-	//double date, string vehicleId, string objectId, double objectValue
-	double packetDate = ovnisPacket.readDouble();
-	string vehicleId = ovnisPacket.readString();
-	string objectId = ovnisPacket.readString();
-	double travelTime = ovnisPacket.readDouble();
-
-	knowledge.recordPacket(ovnisPacket.getPacketId());
-	Log::getInstance().packetReceived();
-	Log::getInstance().addDistance(distance);
-
-	double now =  Simulator::Now().GetSeconds();
-
-	// if heard for the first time
-	if (knowledge.getPacketCount(ovnisPacket.getPacketId()) == 1 && vehicle.getId() != vehicleId) {
-		if (!decisionTaken && (now - packetDate) < PACKET_TTL ) {
-			Log::getInstance().getStream("hearing") << ovnisPacket.getPacketType() << ", hearing about " << objectId << " " << ovnisPacket.getSenderId() <<" from " << vehicleId << " " << packetDate << " " << travelTime << " " << now - packetDate << endl;
-		}
-		knowledge.recordDouble(objectId, ovnisPacket.getPacketId(), vehicleId, packetDate, travelTime);
-		if (distance > BROADCASTING_DISTANCE_THRESHOLD) {
-//			double waitingTime = ovnisPacket.computeWaitingTime(position.x, position.y);
-//			double waitingTime = FceApplication::rando.GetValue(0, RESEND_INTERVAL);
-//			Simulator::Schedule(Seconds(waitingTime), &FceApplication::TryRebroadcast, this, ovnisPacket, packetDate, vehicleId);
-		}
-	}
-}
-
-void FceApplication::ReceiveTravelTimeEdgePacket(OvnisPacket ovnisPacket) {
-
-	double now =  Simulator::Now().GetSeconds();
-
-	Vector position = mobilityModel->GetPosition();
-	double distance = ovnisPacket.computeDistance(position.x, position.y);
-
-	//double date, string vehicleId, string objectId, double objectValue
-	double packetDate = ovnisPacket.readDouble();
-	string vehicleId = ovnisPacket.readString();
-	string objectId = ovnisPacket.readString();
-	double travelTime = ovnisPacket.readDouble();
-
-	knowledge.recordPacket(ovnisPacket.getPacketId());
-
-	Log::getInstance().packetReceived();
-	Log::getInstance().addDistance(distance);
-
-	// if heard for the first time
-	if (knowledge.getPacketCount(ovnisPacket.getPacketId()) == 1 && vehicle.getId() != vehicleId) {
-		knowledge.recordEdge(objectId, ovnisPacket.getPacketId(), vehicleId, packetDate, travelTime);
-		// if average:
-//		vehicle.recordEdge(objectId, ovnisPacket.getPacketId(), vehicleId, ovnisPacket.getSendingDate(), travelTime);
-//		if (vehicle.getId() == "0.1") {
-//			cout << "[" << now << "] \t" << vehicle.getId() << " received from " << ovnisPacket.getSenderId() << " age: " << now - ovnisPacket.getSendingDate() <<" distance: " << distance << "\t vehicleId: " << vehicleId << ", edgeId: " << objectId << ", travelTime: " << travelTime << endl;
-//			//<< ", packetDate: " << packetDate << ", packetAge: " << now - packetDate << endl;
-//		}
-
 	}
 }
 

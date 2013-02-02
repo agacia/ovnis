@@ -346,7 +346,9 @@ FceApplication.o: applications/FceApplication.cpp \
  ../src/applications/ovnis-application.h ../src/knowledge.h \
  ../src/ovnisPacket.h ../test/my-constants.h ../src/route.h \
  ../src/ovnisPacket.h ../src/applications/trafficInformationSystem.h \
- ../src/itinerary.h ../src/recordEntry.h /usr/include/c++/4.4/iterator \
+ ../src/itinerary.h ../src/recordEntry.h \
+ ../src/applications/dissemination/dissemination.h \
+ /usr/include/c++/4.4/iterator \
  /usr/include/c++/4.4/bits/stream_iterator.h \
  /home/agata/workspace/ns3/build/ns3/ipv4-interface.h \
  /home/agata/workspace/ns3/build/ns3/ipv4-interface-address.h \
@@ -1183,6 +1185,8 @@ applications/FceApplication.h:
 ../src/itinerary.h:
 
 ../src/recordEntry.h:
+
+../src/applications/dissemination/dissemination.h:
 
 /usr/include/c++/4.4/iterator:
 

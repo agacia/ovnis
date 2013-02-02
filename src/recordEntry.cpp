@@ -39,10 +39,13 @@ void RecordEntry::reset() {
 
 void RecordEntry::add(long packetId, string senderId, double time, double value) {
 	times[count%LOCAL_MEMORY_SIZE] = time;
+	if (value == -1) {
+		value = values[(count-1)%LOCAL_MEMORY_SIZE];
+	}
 	values[count%LOCAL_MEMORY_SIZE] = value;
 	senders[count%LOCAL_MEMORY_SIZE] = senderId;
 	packetIds[count%LOCAL_MEMORY_SIZE] = packetId;
-	if (senderId.size() > 0) {
+	if (time > 0) {
 		++count;
 	}
 }
@@ -82,7 +85,6 @@ double RecordEntry::getAverageTime() {
 	}
 	return sum/count;
 }
-
 
 double RecordEntry::getLatestTime() {
 	return times[(count-1+LOCAL_MEMORY_SIZE)%LOCAL_MEMORY_SIZE];

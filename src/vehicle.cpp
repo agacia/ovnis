@@ -20,7 +20,6 @@ namespace ovnis {
 	void Vehicle::initialize(string id) {
 		this->id = id;
 		this->currentSpeed = 0;
-		this->lastSpeed = 0;
 		if (id!="") {
 			traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 			requestRoute("");
@@ -56,16 +55,6 @@ namespace ovnis {
 		return this->scenario.getAlternativeRoutes();
 	}
 
-    double Vehicle::getLastSpeed() const
-    {
-        return lastSpeed;
-    }
-
-    void Vehicle::setLastSpeed(double lastSpeed)
-    {
-        this->lastSpeed = lastSpeed;
-    }
-
     string Vehicle::getDestinationEdgeId() {
     	int size = currentRoute.getEdgeIds().size() ;
     	if (size > 0) {
@@ -91,17 +80,20 @@ namespace ovnis {
 		}
 	}
 
-    void Vehicle::requestCurrentEdge(double currentTime)
+    bool Vehicle::requestCurrentEdge(double currentTime)
     {
     	try {
     		string newEdge = traci->GetVehicleEdge(id);
+    		bool edgeChanged = false;
 			if (newEdge != itinerary.getCurrentEdge().getId() && currentRoute.containsEdge(newEdge)) {
+				edgeChanged = true;
 				itinerary.getCurrentEdge().setLeftTime(currentTime);
 				itinerary.addEdge(newEdge);
 				itinerary.setCurrentEdge(newEdge);
 				itinerary.getCurrentEdge().setEnteredTime(currentTime);
 				itinerary.getCurrentEdge().setSpeed(currentSpeed);
 			}
+			return edgeChanged;
     	}
     	catch (TraciException &e) {
     		throw e;
@@ -161,6 +153,23 @@ namespace ovnis {
 		}
 	}
 
+	/*
+	 * Including current edge (in case it's very longer than communication range)
+	 */
+	std::vector<std::string> Vehicle::getEdgesAhead() {
+		bool metCurrentEdge = false;
+		vector<string> routeAhead;
+		for (vector<string>::iterator it = currentRoute.getEdgeIds().begin(); it != currentRoute.getEdgeIds().end(); ++it) {
+			if (*it == itinerary.getCurrentEdge().getId()) {
+				metCurrentEdge = true;
+			}
+			if (metCurrentEdge) {
+				routeAhead.push_back(*it);
+			}
+
+		}
+		return routeAhead;
+	}
 
 	//    void Vehicle::tryReroute(string unavailableEdge) {
 	//    	set<string> ignoredEdges; // Edges that are ignored in the changing route process because not avoidable (no alternative route can be taken)
