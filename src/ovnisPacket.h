@@ -31,7 +31,7 @@ public:
 	virtual ~OvnisPacket();
     int getPacketType() const;
     std::string getSenderId() const;
-    double getSendingDate() const;
+    double getTimeStamp() const;
     Position2D getPosition() const;
     double computeDistance(double x, double y);
     double computeWaitingTime(double x, double y);
@@ -42,9 +42,9 @@ public:
 	long getPacketId() const;
 	ns3::Ptr<ns3::Packet> getPacket() const;
 	double getWaitingTime() const;
-	static ns3::Ptr<ns3::Packet> BuildPacket(double sendingTime, std::string senderId, double x, double y, int type, long id, std::string objectId, double objectValue);
-	static ns3::Ptr<ns3::Packet> BuildChangedEdgePacket(double sendingTime, std::string senderId, double x, double y, int type, long id, std::string lastEdgeId, double travelTime, std::string currentEdgeId);
-	static ns3::Ptr<ns3::Packet> BuildTrafficInfoPacket(double sendingTime, std::string senderId, double x, double y, int type, long id, int numberOfRecords, std::vector<Data> records);
+	static ns3::Ptr<ns3::Packet> BuildPacket(double sendingTime, std::string senderId, double x, double y, int type, std::string objectId, double objectValue);
+	static ns3::Ptr<ns3::Packet> BuildChangedEdgePacket(double sendingTime, std::string senderId, double x, double y, int type, std::string lastEdgeId, double travelTime, std::string currentEdgeId);
+	static ns3::Ptr<ns3::Packet> BuildTrafficInfoPacket(double sendingTime, std::string senderId, double x, double y, int type, int numberOfRecords, std::vector<Data> records);
 	void setPosition(double x, double y);
 	std::vector<Data> ReadTrafficInfoPacket();
     void print() const;
@@ -53,11 +53,11 @@ private:
     void ReadHeader(ns3::Ptr<ns3::Packet> packet);
     ns3::Ptr<ns3::Packet> packet;
     ns3::TagBuffer tg;
-    double sendingDate;
+    double timeStamp;
     std::string senderId;
     Position2D position;
     int type;
-    long id;
+    int packetSize;
     std::string stringValue;
     double doubleValue;
     uint8_t *t;

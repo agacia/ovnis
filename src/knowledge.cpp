@@ -178,7 +178,7 @@ map<string, double> Knowledge::computeTravelTimesOnRoutes(map<string, Route> rou
 				costs[itRoutes->first] = costs[itRoutes->first] - staticCost + travelTime;
 				packetAges[itRoutes->first] += (Simulator::Now().GetSeconds() - packetDate);
 				++numberOfUpdatedEdges[itRoutes->first];
-//				cout << "updating " << it->first << ": staticCost:" << staticCost << ", actualTravelTime " << travelTime << ", " << (Simulator::Now().GetSeconds() - packetDate) << "," << vehs << endl;
+//				cout << "updating cost of route " << itRoutes->first << " on edge: " << it->first << ": staticCost:" << staticCost << ", actualTravelTime " << travelTime << ", " << (Simulator::Now().GetSeconds() - packetDate) << "," << vehs << endl;
 			}
 		}
 	}

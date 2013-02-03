@@ -97,14 +97,14 @@ FceApplication::FceApplication() {
 	alternativeRoutes["bypass"].setCapacity(600);
 	scenario.setAlternativeRoutes(alternativeRoutes);
 
-//	scenario.setDecisionEdges(split("56640729#4 56640729#5"));
-//	scenario.setNotificationEdges(split("53349130#1"));
+//	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
+//	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
 //	map<string, Route> alternativeRoutes = map<string, Route>();
 //	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
 //	alternativeRoutes["kennedy"].setCapacity(1300);
 //	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
 //	alternativeRoutes["adenauer"].setCapacity(600);
-//	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+//	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
 //	alternativeRoutes["thuengen"].setCapacity(800);
 //	scenario.setAlternativeRoutes(alternativeRoutes);
 }
@@ -143,7 +143,7 @@ void FceApplication::StartApplication(void) {
 	// start simualtion
 	running = true;
 	m_simulationEvent = Simulator::Schedule(Seconds(rando.GetValue(0, SIMULATION_STEP_INTERVAL)), &FceApplication::SimulationRun, this);
-//	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
+	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
 
 }
 
@@ -175,8 +175,8 @@ void FceApplication::SimulationRun(void) {
 				double travelTimeOnLastEdge = lastEdge.getTravelTime();
 				string lastEdgeId = lastEdge.getId();
 				Vector position = mobilityModel->GetPosition();
-//				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, Log::getInstance().getPacketId(), lastEdgeId, travelTimeOnLastEdge, currentEdge);
-//				SendPacket(p);
+				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
+				SendPacket(p);
 			}
 
 			// if approaching an intersection
@@ -197,7 +197,9 @@ void FceApplication::SimulationRun(void) {
 				// select strategy
 				string routeChoice = global_minTravelTimeChoice;
 //				routeChoice = vanet_minTravelTimeChoice;
-//				routeChoice = vehicle.getItinerary().getId();
+//				routeChoice = vanet_proportionalProbabilisticChoice;
+//				routeChoice = global_proportionalProbabilisticChoice;
+				routeChoice = vehicle.getItinerary().getId();
 
 				double now = Simulator::Now().GetSeconds();
 				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_routeChoice << endl;
@@ -232,7 +234,7 @@ void FceApplication::SendTrafficInformation(void) {
 		Vector position = mobilityModel->GetPosition();
 		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
 		if (records.size() > 0) {
-			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, Log::getInstance().getPacketId(), records.size(), records);
+			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
 			SendPacket(p);
 		}
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
@@ -268,10 +270,10 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
     	OvnisPacket ovnisPacket(packet);
     	Vector position = mobilityModel->GetPosition();
 		double distance = ovnisPacket.computeDistance(position.x, position.y);
-		double packetDate = ovnisPacket.getSendingDate();
+		double packetDate = ovnisPacket.getTimeStamp();
 		double packetAge = Simulator::Now().GetSeconds() - packetDate;
 		string senderId = ovnisPacket.getSenderId();
-		long packetId = ovnisPacket.getPacketId();
+//		long packetId = ovnisPacket.getPacketId();
 
 		if (ovnisPacket.getPacketType() == CHANGED_EDGE_PACKET_ID) {
 			string lastEdge = ovnisPacket.readString();

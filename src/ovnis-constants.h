@@ -33,7 +33,7 @@
 /// interval of time between 2 active decisions about JAMEs
 #define PROACTIVE_INTERVAL  5
 
-#define TRAFFIC_INFORMATION_SENDING_INTERVAL  3
+#define TRAFFIC_INFORMATION_SENDING_INTERVAL  1
 
 /// simulation step interval time
 #define SIMULATION_STEP_INTERVAL  1
@@ -49,8 +49,6 @@
 #define BROADCASTING_DISTANCE_THRESHOLD 60
 
 #define LOCAL_MEMORY_SIZE 10
-
-#define MAX_PACKET_SIZE 300
 
 #define RESEND_INTERVAL 1 // interval between two packet re-sending
 #define PACKET_TTL  20 // Time is seconds a packet is allowed to be forward
