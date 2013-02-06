@@ -208,8 +208,8 @@ void FceApplication::SimulationRun(void) {
 //				routeChoice = global_flowAwareChoice;
 //				routeChoice = global_proportionalProbabilisticChoice;
 //				routeChoice = vanet_flowAwareChoice;
-				routeChoice = vanet_minTravelTimeChoice;
-//				routeChoice = vanet_proportionalProbabilisticChoice;
+//				routeChoice = vanet_minTravelTimeChoice;
+				routeChoice = vanet_proportionalProbabilisticChoice;
 //				routeChoice = vehicle.getItinerary().getId();
 
 //				double now = Simulator::Now().GetSeconds();
