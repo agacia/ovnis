@@ -212,9 +212,9 @@ void FceApplication::SimulationRun(void) {
 //				routeChoice = vanet_proportionalProbabilisticChoice;
 //				routeChoice = vehicle.getItinerary().getId();
 
-				double now = Simulator::Now().GetSeconds();
-				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
-				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_flowAwareChoice << endl;
+//				double now = Simulator::Now().GetSeconds();
+//				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
+//				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_flowAwareChoice << endl;
 
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;

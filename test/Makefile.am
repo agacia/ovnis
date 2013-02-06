@@ -3,7 +3,6 @@ AM_CXXFLAGS = -I$(top_srcdir) -I$(top_srcdir)/src  @AM_CPPFLAGS@
 
 bin_PROGRAMS = ovnisSample ovnisSample_static 
 
-#ovnisSample_SOURCES = ./my-constants.h ./applications/DsrApplication.cpp ./applications/DsrApplication.h  ./simple-traffic-application-main.cc
 ovnisSample_SOURCES = ./my-constants.h ./applications/FceApplication.cpp ./applications/FceApplication.h  ./simple-traffic-application-main.cc
 
 # the additional libraries needed to link helloWorld
