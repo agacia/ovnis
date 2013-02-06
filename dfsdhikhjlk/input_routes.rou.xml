@@ -1,0 +1,22 @@
+<routes >
+ <route id="main" edges="main_1 main_1b main_2 main_2a main_2b main_2c main_2d" />
+   <route id="bypass" edges="main_1 main_1b bypass_1 bypass_2 bypass_2b" />
+
+   <vType id="KRAUSS_DEFAULT" accel="2.6" decel="4.5" sigma="0.5" length="7.5" minGap="2" maxSpeed="70" color="1,1,0"/>
+
+   <flow id="0" type="KRAUSS_DEFAULT" route="main" begin="0" end="30000" vehsPerHour="1250" departPos="base" departSpeed="max" departLane="0" />
+   <flow id="1" type="KRAUSS_DEFAULT" route="main" begin="1" end="30000" vehsPerHour="1250" departPos="base" departSpeed="max" departLane="1" />
+
+<!--
+<flow id="1" type="KRAUSS_DEFAULT" route="bypass" begin="0" end="30000" vehsPerHour="2000" departPos="base" departSpeed="max" departLane="1" />
+-->
+
+<!--
+    <flow id="1" type="KRAUSS_DEFAULT" route="bypass" begin="0" end="30000" vehsPerHour="1500" departPos="base" departSpeed="max" departLane="1" />
+
+    <flow id="0" type="KRAUSS_DEFAULT" route="bypass" begin="1" end="30000" vehsPerHour="1500" departPos="base" departSpeed="max" departLane="0" />
+-->
+<!--
+<flow id="3" type="KRAUSS_DEFAULT" route="main" begin="3" end="3600" vehsPerHour="850" departPos="base" departSpeed="max" departLane="1" />
+-->
+</routes>
