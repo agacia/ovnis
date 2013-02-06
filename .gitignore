@@ -33,31 +33,16 @@ Makefile.in
 memcheck.txt
 missing
 README.md
-src/beaconing-adhoc-wifi-mac.lo
-src/beaconing-adhoc-wifi-mac.o
-src/channel-cell.lo
-src/channel-cell.o
+
+*.lo
+.o
 src/common/.DS_Store
-src/commonHelper.lo
-src/commonHelper.o
-src/dataPacket.lo
-src/dataPacket.o
-src/dataRecord.lo
-src/dataRecord.o
+
 src/devices/wifi my/
 src/devices/wifi patricia/
 src/devices/wifi/ovnis-wifi-phy-original.cc
 src/devices/wifi/ovnis-wifi-phy-original.h
-src/dissemination.lo
-src/dissemination.o
-src/knowledge.lo
-src/knowledge.o
-src/myEnergy-tag.lo
-src/myEnergy-tag.o
-src/myMessageID-header.lo
-src/myMessageID-header.o
-src/myTxEnergy-tag.lo
-src/myTxEnergy-tag.o
+
 test/FCE/input_additional.add (copy).xml
 test/FCE/input_definition0.def.xml
 test/FCE/input_definition20.def.xml

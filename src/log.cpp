@@ -88,6 +88,11 @@ void Log::packetSent() {
 	sent++;
 }
 
+void Log::packetSent(uint32_t size) {
+	sent++;
+	cout << "sent " << packetId << " size: " << size << endl;
+}
+
 void Log::packetForwarded() {
 	forwarded++;
 }
@@ -181,9 +186,9 @@ void Log::printStatistic(VariableType key) {
 void Log::summariseSimulation(string name) {
 	getStream(name) << endl;
 	getStream(name) << "Simulation: " << endl;
-	getStream(name) << "start time [s]:\t\t" << start/1000 <<  endl;
-	getStream(name) << "current time [s]:\t" << currentTime/1000 << endl;
-	getStream(name) << "duration time [s]:\t" << (currentTime - start)/1000 << endl;
+	getStream(name) << "start time [s]:\t\t" << start/SIMULATION_TIME_UNIT <<  endl;
+	getStream(name) << "current time [s]:\t" << currentTime/SIMULATION_TIME_UNIT << endl;
+	getStream(name) << "duration time [s]:\t" << (currentTime - start)/SIMULATION_TIME_UNIT << endl;
 	getStream(name) << "Vehicles: " << endl;
 	statEnumType::iterator departured = statistics.find(VEHICLES_DEPARTURED);
 	statEnumType::iterator arrived = statistics.find(VEHICLES_ARRIVED);

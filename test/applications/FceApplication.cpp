@@ -67,6 +67,8 @@
 #include "traci/structs.h"
 #include "vehicle.h"
 #include "common/commonHelper.h";
+#include <ctime>
+#include <time.h>
 
 using namespace std;
 
@@ -88,13 +90,13 @@ FceApplication::FceApplication() {
 
 	flow = 1250;
 
-	scenario.setDecisionEdges(CommonHelper::split("main_1b"));
-	scenario.setNotificationEdges(CommonHelper::split("main_2d bypass_2b"));
+	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
+	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
 	map<string, Route> alternativeRoutes = map<string, Route>();
-	alternativeRoutes["main"] = Route("main", "main_1 main_1b main_2 main_2a main_2b main_2c main_2d");
-	alternativeRoutes["main"].setCapacity(1200);
-	alternativeRoutes["bypass"] = Route("bypass", "main_1 main_1b bypass_1 bypass_2 bypass_2b");
-	alternativeRoutes["bypass"].setCapacity(600);
+	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
+	alternativeRoutes["main"].setCapacity(900);
+	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
+	alternativeRoutes["bypass"].setCapacity(1500);
 	scenario.setAlternativeRoutes(alternativeRoutes);
 
 //	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
@@ -140,10 +142,17 @@ void FceApplication::StartApplication(void) {
 	m_socket->SetAllowBroadcast(true);
 	m_socket->SetRecvCallback(MakeCallback(&FceApplication::ReceivePacket, this));
 	m_socket->Bind(InetSocketAddress(Ipv4Address::GetAny(), m_port));
+
 	// start simualtion
 	running = true;
-	m_simulationEvent = Simulator::Schedule(Seconds(rando.GetValue(0, SIMULATION_STEP_INTERVAL)), &FceApplication::SimulationRun, this);
-	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL)), &FceApplication::SendTrafficInformation, this);
+
+	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
+//	double r = rando.GetValue(0, SIMULATION_STEP_INTERVAL);
+	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
+//	double r2 = rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL);
+
+	m_simulationEvent = Simulator::Schedule(Seconds(r), &FceApplication::SimulationRun, this);
+	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
 
 }
 
@@ -184,26 +193,28 @@ void FceApplication::SimulationRun(void) {
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdge) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
 
-				map<string, double> globalCosts = TIS::getInstance().getCosts(scenario.getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+				map<string, double> globalCosts = TIS::getInstance().getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
 				string global_minTravelTimeChoice = TIS::getInstance().chooseMinTravelTimeRoute(globalCosts);
 				string global_proportionalProbabilisticChoice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
-				string global_routeChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
-
-				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(scenario.getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+				string global_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
+				//
+				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
 				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinTravelTimeRoute(vanetCosts);
 				string vanet_proportionalProbabilisticChoice =  TIS::getInstance().chooseProbTravelTimeRoute(vanetCosts);
-				string vanet_routeChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
+				string vanet_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
 
 				// select strategy
 				string routeChoice = global_minTravelTimeChoice;
-//				routeChoice = vanet_minTravelTimeChoice;
-//				routeChoice = vanet_proportionalProbabilisticChoice;
+//				routeChoice = global_flowAwareChoice;
 //				routeChoice = global_proportionalProbabilisticChoice;
-				routeChoice = vehicle.getItinerary().getId();
+//				routeChoice = vanet_flowAwareChoice;
+				routeChoice = vanet_minTravelTimeChoice;
+//				routeChoice = vanet_proportionalProbabilisticChoice;
+//				routeChoice = vehicle.getItinerary().getId();
 
 				double now = Simulator::Now().GetSeconds();
-				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_routeChoice << endl;
-				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_routeChoice << endl;
+				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
+				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_flowAwareChoice << endl;
 
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;

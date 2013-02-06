@@ -49,6 +49,8 @@ public:
 
 	void initializeStaticTravelTimes(map<string, Route> routes);
 	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
+	double computeStaticCostExcludingMargins(string routeId, string startEdgeId, string endEdgeId);
+	std::map<std::string, EdgeInfo> & getStaticRecords();
 
 	std::string chooseMinTravelTimeRoute(std::map<std::string,double> costs);
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
@@ -67,7 +69,7 @@ private:
 
 	std::map<std::string, EdgeInfo> staticRecords; // info about expected travel times on routes (whith max speed)
 
-    std::map<std::string,Route> routes;
+    std::map<std::string,Route> staticRoutes;
     std::map<std::string,int> vehiclesOnRoute;
     std::map<std::string,double> travelTimesOnRoute;
     std::map<std::string,double> travelTimeDateOnRoute;

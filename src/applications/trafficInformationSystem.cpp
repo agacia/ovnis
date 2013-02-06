@@ -26,7 +26,6 @@ TIS::~TIS() {
 
 void TIS::reportStartingRoute(string routeId, string startEdgeId, string endEdgeId) {
 	++vehiclesOnRoute[routeId];
-	//travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 }
 
 void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime) {
@@ -39,44 +38,66 @@ void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId
 }
 
 void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
-	if (this->routes.size() != 0) {
-		return;
-	}
-	this->routes = routes;
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		Route route = it->second;
-		vehiclesOnRoute[it->first] = 0;
-		travelTimeDateOnRoute[it->first] = 0;
-		travelTimesOnRoute[it->first] = 0;
-		for (vector<string>::iterator it2 = route.getEdgeIds().begin(); it2 != route.getEdgeIds().end(); ++it2) {
-			if (staticRecords.find(*it2) != staticRecords.end()) {
-				// add info about the edge
-				staticRecords[*it2] = route.getEdgeInfo(*it2);
+		if (this->staticRoutes.find(it->first) == this->staticRoutes.end()) {
+			this->staticRoutes[it->first] = it->second;
+			Route route = it->second;
+			vehiclesOnRoute[it->first] = 0;
+			travelTimeDateOnRoute[it->first] = 0;
+			travelTimesOnRoute[it->first] = 0;
+			for (vector<string>::iterator it2 = route.getEdgeIds().begin(); it2 != route.getEdgeIds().end(); ++it2) {
+				if (staticRecords.find(*it2) == staticRecords.end()) {
+					// add info about the edge
+					staticRecords[*it2] = route.getEdgeInfo(*it2);
+				}
 			}
 		}
 	}
+}
+
+std::map<std::string, EdgeInfo> & TIS::getStaticRecords() {
+	return staticRecords;
+}
+
+double TIS::computeStaticCostExcludingMargins(string routeId, string startEdgeId, string endEdgeId) {
+	double staticCost = 0;
+		if (staticRoutes.find(routeId) != staticRoutes.end()) {
+			bool isMonitored = false;
+			vector<string> edgeIds = staticRoutes[routeId].getEdgeIds();
+			for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+				if (*it == endEdgeId) {
+					isMonitored = false;
+				}
+				if (isMonitored) {
+					staticCost += staticRecords[*it].getStaticCost();
+				}
+				if (*it == startEdgeId) {
+					isMonitored = true;
+				}
+			}
+		}
+		return staticCost;
 }
 
 map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	map<string, double> costs;
 	map<string, double> packetAges;
 	double now = Simulator::Now().GetSeconds();
-
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		costs[it->first] = it->second.computeStaticCostExcludingMargins(startEdgeId, endEdgeId);
+		costs[it->first] = computeStaticCostExcludingMargins(it->first, startEdgeId, endEdgeId);
 	}
 	for (map<string,double>::iterator it = travelTimesOnRoute.begin(); it != travelTimesOnRoute.end(); ++it) {
-		double packetAge = 0;
+		double informationAge = 0;
 		if (it->second != 0) {
-			packetAge = travelTimeDateOnRoute[it->first] == 0 ? 0 : now-travelTimeDateOnRoute[it->first];
-			if (packetAge < PACKET_TTL) {
+			informationAge = travelTimeDateOnRoute[it->first] == 0 ? 0 : now-travelTimeDateOnRoute[it->first];
+			if (informationAge < costs[it->first]) {
 				costs[it->first] = it->second;
 			}
 			else {
-				packetAge = 0;
+				informationAge = 0;
 			}
 		}
-		packetAges[it->first] = packetAge;
+		packetAges[it->first] = informationAge;
 	}
 
 	Log::getInstance().getStream("global_costs") << now << "\t";
@@ -89,7 +110,8 @@ map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId,
 }
 
 string TIS::getEvent(vector<pair<string, double> > probabilities) {
-    double r = rando.GetValue(0, 1);
+//    double r = rando.GetValue(0, 1);
+    double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 //    Log::getInstance().getStream("prob") << r << "\t" << endl;
 //	for (vector<pair<string, double> >::iterator it = probabilities.begin(); it != probabilities.end(); ++it)
 //	{
@@ -124,9 +146,10 @@ string TIS::chooseMinTravelTimeRoute(map<string,double> costs) {
 
 string TIS::chooseRandomRoute() {
 	string chosenRouteId = "";
-	int chosenIndex = rand() % routes.size();
+	int chosenIndex = rand() % staticRoutes.size();
+//	int chosenIndex = 0;
 	int i = 0;
-	for (map<string,Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+	for (map<string,Route>::iterator it = staticRoutes.begin(); it != staticRoutes.end(); ++it) {
 		if (i == chosenIndex) {
 			chosenRouteId = it->second.getId();
 		}
@@ -135,9 +158,12 @@ string TIS::chooseRandomRoute() {
 	return chosenRouteId;
 }
 
+/**
+ * If flow exceeds the capacity of the fastest road, then split the rest of the flow proportionally to other alternative routes
+ */
 string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
 	string chosenRouteId = chooseMinTravelTimeRoute(costs);
-	double capacity = routes[chosenRouteId].getCapacity();
+	double capacity = staticRoutes[chosenRouteId].getCapacity();
 	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
 	if (flowRatioNeededToUseOtherAlternatives <= 0) {
 		flowRatioNeededToUseOtherAlternatives = 0;
@@ -145,8 +171,9 @@ string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
 	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
 		flowRatioNeededToUseOtherAlternatives = 1;
 	}
-	double random = rando.GetValue(0, 1);
-
+//	cout << flowRatioNeededToUseOtherAlternatives << endl;
+	//double random = rando.GetValue(0, 1);
+	double random = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 	if (random < flowRatioNeededToUseOtherAlternatives) {
 		map<string, double>::iterator it = costs.find(chosenRouteId);
 		if (it != costs.end()) {

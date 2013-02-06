@@ -70,58 +70,6 @@ map<string,RecordEntry> & Knowledge::getRecords()
 	return travelTimes;
 }
 
-/*
-void Knowledge::InitializeGlobalKnowledge(std::map<std::string,Route> routes) {
-	for (map<string,Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-			Log::getInstance().vehicleOnRoadsInitialize(it->first);
-		}
-}
-
-void Knowledge::recordDouble(string id, long packetId, string senderId, double time, double value, int numberOfVehicles) {
-	if (records[id].getLatestTime() < time) {
-		records[id].add(packetId, senderId, time, value, numberOfVehicles);
-	}
-}
-
-void Knowledge::recordEdge(string edgeId, long packetId, string senderId, double time, double travelTime, int numberOfVehicles) {
-	// check if the time of hearing the packet is not too long
-	if (time > PACKET_TTL) {
-		return;
-	}
-	if (localKnowledge.find(edgeId) == localKnowledge.end() || localKnowledge[edgeId].getLatestTime() < time) {
-		localKnowledge[edgeId].add(packetId, senderId, time, travelTime, numberOfVehicles);
-	}
-}
-
-void Knowledge::PrintCosts(string fileName, string vehicleId, double time, map<string, double> costs) {
-	Log::getInstance().getStream(fileName) << vehicleId << "\t" << time << "\t";
-	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
-		Log::getInstance().getStream(fileName) << it->first << "," << it->second << "\t" ;
-	}
-	Log::getInstance().getStream(fileName) << endl;
-}
-
-
-void Knowledge::recordPacket(long id) {
-	if (packets.find(id) == packets.end()) {
-		packets[id] = 0;
-	}
-	++packets[id];
-}
-
-int Knowledge::getPacketCount(long id) {
-	return packets[id];
-}
-
-void Knowledge::printPacketCounts(ostream & out) {
-	out << "size: \t" << packets.size() << endl;
-	for (map<long,int>::iterator it = packets.begin(); it != packets.end(); ++it) {
-		out << it->first << "," << it->second << " " ;
-	}
-	out << endl;
-}
-*/
-
 map<string, double> Knowledge::getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	map<string, double> costs;
 	map<string, double> packetAges;
@@ -137,7 +85,6 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 			double packetAge = it->second.getLatestTime() == 0 ? 0 : now - it->second.getLatestTime();
 			if (packetAge > PACKET_TTL) {
 				packetAge = 0;
-//				cerr << " reset " << endl;
 				travelTimes[it->first].reset();
 			}
 		}
@@ -156,7 +103,7 @@ map<string, double> Knowledge::computeTravelTimesOnRoutes(map<string, Route> rou
 
 	// get static costs
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		costs[it->first] = it->second.computeStaticCostExcludingMargins(startEdgeId, endEdgeId);
+		costs[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, startEdgeId, endEdgeId);
 		packetAges[it->first] = 0;
 		vehicles[it->first] = 0;
 		numberOfUpdatedEdges[it->first] = 0;
@@ -173,7 +120,10 @@ map<string, double> Knowledge::computeTravelTimesOnRoutes(map<string, Route> rou
 
 		double staticCost = 0;
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
-			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId) && travelTime > 0) {
+			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)
+					&& travelTime > 0
+					& TIS::getInstance().getStaticRecords().find(edgeId) != TIS::getInstance().getStaticRecords().end()) {
+				staticCost = TIS::getInstance().getStaticRecords()[edgeId].getStaticCost();
 				staticCost = itRoutes->second.getEdgeInfo(edgeId).getStaticCost();
 				costs[itRoutes->first] = costs[itRoutes->first] - staticCost + travelTime;
 				packetAges[itRoutes->first] += (Simulator::Now().GetSeconds() - packetDate);

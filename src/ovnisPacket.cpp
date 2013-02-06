@@ -186,6 +186,7 @@ OvnisPacket::~OvnisPacket() {
 				tg.WriteDouble(records[i].date);
 			}
 			Ptr<Packet> p = Create<Packet>(t, totalSize);
+//			cout << "create tip " << totalSize << " " << senderId << " " << numberOfRecords << endl;
 			free(t);
 				return p;
 			}
@@ -234,6 +235,7 @@ OvnisPacket::~OvnisPacket() {
 			tg.Write((uint8_t*) currentEdgeId.c_str(), currentEdgeIdSize);
 
 			Ptr<Packet> p = Create<Packet>(t, totalSize);
+			//cout << "create cep " << totalSize << endl;
 			free(t);
 			return p;
 		}

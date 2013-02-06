@@ -55,6 +55,7 @@ class Log
 		void print(char const * msg);
 
 		void packetSent();
+		void packetSent(uint32_t size);
 		void packetForwarded();
 		void packetReceived();
 		long getSentPackets();

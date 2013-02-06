@@ -72,7 +72,7 @@ ns3::TypeId Ovnis::GetTypeId(void) {
 			AddAttribute("OutputFolder", "Output folder name", StringValue("outputFolder"), MakeStringAccessor(&Ovnis::outputFolder), MakeStringChecker()).
 			AddAttribute( "StartTime", "Start time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::startTime), MakeIntegerChecker<int>(0)).
 			AddAttribute("StopTime", "Stop time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::stopTime), MakeIntegerChecker<int>(0)).
-			AddAttribute( "CommunicationRange", "Communication range used to subdivide the simulation space (in meters)", DoubleValue(500.0), MakeDoubleAccessor(&Ovnis::communicationRange), MakeDoubleChecker<double>(0.0)).
+			AddAttribute( "CommunicationRange", "Communication range used to subdivide the simulation space (in meters)", DoubleValue(MAX_COMMUNICATION_RANGE), MakeDoubleAccessor(&Ovnis::communicationRange), MakeDoubleChecker<double>(0.0)).
 			AddAttribute("StartSumo", "Does OVNIS have to start SUMO or not?", BooleanValue(), MakeBooleanAccessor(&Ovnis::startSumo), MakeBooleanChecker()).
 			AddAttribute("SumoPath", "The system path where the SUMO executable is located", StringValue(SUMO_PATH), MakeStringAccessor(&Ovnis::sumoPath), MakeStringChecker());
 	return tid;
@@ -93,6 +93,10 @@ Ovnis::~Ovnis() {
 
 void Ovnis::DoDispose() {
 	Log::getInstance().summariseSimulation("simulation");
+	time_t stop = time(0);
+	Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
+	Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
+	cout << "Finished! Simulation time: " << (double)(time(0) - start) << " s. " << endl;
 	Object::DoDispose();
 }
 
@@ -114,13 +118,13 @@ void Ovnis::DoStart(void) {
 	try {
 		traci = CreateObject<SumoTraciConnection> ();
 		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, outputFolder);
-		cout << "stoptime " << stopTime << endl;
-		traci->SubscribeSimulation(startTime*1000, stopTime*1000);
+		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 		vector<double> bounds = traci->GetSimulationBoundaries();
 		if (bounds.size() > 3) {
 			boundaries[0] = bounds[2];
 			boundaries[1] = bounds[3];
+			cout << boundaries[0] << " " << boundaries[1] << endl;
 		}
 
 		Names::Add("SumoTraci", traci);
@@ -135,13 +139,9 @@ void Ovnis::DoStart(void) {
 		UpdateVehiclesPositions();
 		StartApplications();
 		start =  time(0);
-		Log::getInstance().getStream("") << "starting simulation from " << startTime << " to " << stopTime << "..." << endl;
+		Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
 		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
-
-		//string edgeId = "56640728#1";
-		//EventId m_readEvent = Simulator::Schedule(Simulator::Now(), &Ovnis::ReadTravelTime, this, edgeId);
-//		EventId m_closeEvent = Simulator::Schedule(Seconds(100c), &Ovnis::CloseRoad, this, edgeId);
 
 		Log::getInstance().getStream("simulation") << "time \t running \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
@@ -154,40 +154,6 @@ void Ovnis::DoStart(void) {
 		cerr << "#Error while connecting: " << e.what();
 	}
 }
-
-void Ovnis::CreateNetworkDevices(ns3::NodeContainer & node_container) {
-	NetDeviceContainer devices;
-	if (isOvnisChannel) {
-		devices = wifi.Install(ovnisPhyHelper, mac, node_container);
-	}
-	else {
-		devices = wifi.Install(phyHelper, mac, node_container);
-	}
-	InternetStackHelper stack;
-	stack.Install(node_container);
-	Ipv4InterfaceContainer wifiInterfaces;
-	wifiInterfaces = address.Assign(devices);
-}
-
-// transmission power: 40 mW = 16.0206 dBm
-double txPowerStart = 21.0206;
-double txPowerEnd = 21.0206;
-int txPowerLevels = 1;
-double txGain = 0;
-double rxGain = 0;
-double energyDetectionThreshold = -96.0;
-double ccaMode1Threshold = -99;
-
-//string propagationLossModel = "ns3::LogDistancePropagationLossModel";
-string propagationLossModel = "ns3::NakagamiPropagationLossModel";
-string propagationDelayModel = "ns3::ConstantSpeedPropagationDelayModel";
-WifiPhyStandard wifiPhyStandard = WIFI_PHY_STANDARD_80211_10MHZ;
-string phyMode ("OfdmRate6MbpsBW10MHz");
-string remoteStationManager = "ns3::ConstantRateWifiManager";
-string macType = "ns3::BeaconingAdhocWifiMac";
-//macType = "BeaconingAdhocWifiMacOriginal";
-//string macType = "ns3::AdhocWifiMac";
-
 
 void Ovnis::InitializeNetwork() {
 	isOvnisChannel = true;
@@ -202,88 +168,59 @@ void Ovnis::InitializeNetwork() {
 }
 
 void Ovnis::InitializeDefaultNetwork() {
-
 	// phy layer
 	phyHelper =  YansWifiPhyHelper::Default ();
-	phyHelper.Set("TxPowerStart",DoubleValue(txPowerStart));	// 250-300 meter transmission range
-	phyHelper.Set("TxPowerEnd",DoubleValue(txPowerEnd));      // 250-300 meter transmission range
-	phyHelper.Set("TxPowerLevels",UintegerValue(txPowerLevels));
-	phyHelper.Set("TxGain",DoubleValue(txGain));
-	phyHelper.Set("RxGain",DoubleValue(rxGain));
-	phyHelper.Set("EnergyDetectionThreshold", DoubleValue(energyDetectionThreshold));
-	phyHelper.Set("CcaMode1Threshold", DoubleValue(ccaMode1Threshold));
-
+	phyHelper.Set("TxPowerStart",DoubleValue(TX_POWER_START));
+	phyHelper.Set("TxPowerEnd",DoubleValue(TX_POWER_END));
+	phyHelper.Set("TxPowerLevels",UintegerValue(TX_POWER_LEVELS));
+	phyHelper.Set("TxGain",DoubleValue(TX_GAIN));
+	phyHelper.Set("RxGain",DoubleValue(RX_GAIN));
+	phyHelper.Set("EnergyDetectionThreshold", DoubleValue((double)ENERGY_DETECTION_THRESHOLD));
+	phyHelper.Set("CcaMode1Threshold", DoubleValue(CCA_MODEL_THRESHOLD));
 	// channel
 	channelHelper = YansWifiChannelHelper::Default ();
-	channelHelper.AddPropagationLoss(propagationLossModel);
-	channelHelper.SetPropagationDelay(propagationDelayModel);
+	channelHelper.AddPropagationLoss(PROPAGATION_LOSS_MODEL);
+	channelHelper.SetPropagationDelay(PROPAGATION_DELAY_MODEL);
 	phyHelper.SetChannel(channelHelper.Create ());
-
 	wifi = WifiHelper::Default();
-	wifi.SetStandard(wifiPhyStandard);
-	wifi.SetRemoteStationManager (remoteStationManager, "DataMode", StringValue(phyMode), "ControlMode",StringValue(phyMode));
-	address.SetBase("10.0.0.0", "255.0.0.0");
+	wifi.SetStandard(WIFI_PHY_STANDARD);
+	wifi.SetRemoteStationManager (REMOTE_STATION_MANAGER, "DataMode", StringValue(PHY_MODE), "ControlMode", StringValue(PHY_MODE));
+	address.SetBase(BASE_NETWORK_ADDRESS, NETWORK_MASK); // initial address it defaults to "0.0.0.1"
 	mac = NqosWifiMacHelper::Default();
-	mac.SetType(macType);
-	BeaconingAdhocWifiMac * mm = new BeaconingAdhocWifiMac();
-//	BeaconingAdhocWifiMacOriginal * mm = new BeaconingAdhocWifiMacOriginal();
-//	mac = NqosWifiMacHelper::Default();
-//	mac.SetType("ns3::BeaconingAdhocWifiMac");
-
+	mac.SetType(MAC_TYPE);
+//	BeaconingAdhocWifiMac * bm = new BeaconingAdhocWifiMac();
 }
-
-//	string propagationLossModel = "ns3::NakagamiPropagationLossModel";
-//	string propagationDelayModel = "ns3::ConstantSpeedPropagationDelayModel";
-//	WifiPhyStandard wifiPhyStandard = WIFI_PHY_STANDARD_80211_10MHZ;
-//	string phyMode ("OfdmRate6MbpsBW10MHz");
-//	string remoteStationManager = "ns3::ConstantRateWifiManager";
-//	string macType = "ns3::AdhocWifiMac";
 
 void Ovnis::InitializeOvnisNetwork() {
 
 	if (is80211p) {
 		ovnisPhyHelper = OvnisWifiPhyHelper::Default();
-		ovnisPhyHelper.Set("TxPowerStart",DoubleValue(txPowerStart));	// 250-300 meter transmission range
-		ovnisPhyHelper.Set("TxPowerEnd",DoubleValue(txPowerEnd));      // 250-300 meter transmission range
-		ovnisPhyHelper.Set("TxPowerLevels",UintegerValue(txPowerLevels));
-		ovnisPhyHelper.Set("TxGain",DoubleValue(txGain));
-		ovnisPhyHelper.Set("RxGain",DoubleValue(rxGain));
-		ovnisPhyHelper.Set("EnergyDetectionThreshold", DoubleValue(energyDetectionThreshold));
-		ovnisPhyHelper.Set("CcaMode1Threshold", DoubleValue(ccaMode1Threshold));
-
-//		ovnisChannel = CreateObject<OvnisWifiChannel>();
-//		ObjectFactory factory1;
-//		factory1.SetTypeId(propagationLossModel);
-//		ovnisChannel->SetPropagationLossModel(factory1.Create<PropagationLossModel>());
-//		ObjectFactory factory2;
-//		factory2.SetTypeId(propagationDelayModel);
-//		ovnisChannel->SetPropagationDelayModel(factory2.Create<PropagationDelayModel>());
-//		ovnisChannel->updateArea(boundaries[0], boundaries[1], communicationRange);
-//		ovnisPhyHelper.SetChannel(ovnisChannel);
+		ovnisPhyHelper.Set("TxPowerStart",DoubleValue(TX_POWER_START));
+		ovnisPhyHelper.Set("TxPowerEnd",DoubleValue(TX_POWER_END));
+		ovnisPhyHelper.Set("TxPowerLevels",UintegerValue(TX_POWER_LEVELS));
+		ovnisPhyHelper.Set("TxGain",DoubleValue(TX_GAIN));
+		ovnisPhyHelper.Set("RxGain",DoubleValue(RX_GAIN));
+		ovnisPhyHelper.Set("EnergyDetectionThreshold", DoubleValue(ENERGY_DETECTION_THRESHOLD));
+		ovnisPhyHelper.Set("CcaMode1Threshold", DoubleValue(CCA_MODEL_THRESHOLD));
 
 		OvnisWifiChannelHelper ovnisChannelHelper = OvnisWifiChannelHelper::Default ();
-		ovnisChannelHelper.AddPropagationLoss(propagationLossModel);
-		ovnisChannelHelper.SetPropagationDelay(propagationDelayModel);
+		ovnisChannelHelper.AddPropagationLoss(PROPAGATION_LOSS_MODEL);
+		ovnisChannelHelper.SetPropagationDelay(PROPAGATION_DELAY_MODEL);
 		ovnisChannel = ovnisChannelHelper.Create();
 		ovnisChannel->updateArea(boundaries[0], boundaries[1], communicationRange);
 		ovnisPhyHelper.SetChannel(ovnisChannel);
 
 		wifi = WifiHelper::Default();
-		wifi.SetStandard(wifiPhyStandard);
-		wifi.SetRemoteStationManager (remoteStationManager, "DataMode", StringValue(phyMode), "ControlMode",StringValue(phyMode));
-		address.SetBase("10.0.0.0", "255.0.0.0");
+		wifi.SetStandard(WIFI_PHY_STANDARD);
+		wifi.SetRemoteStationManager (REMOTE_STATION_MANAGER, "DataMode", StringValue(PHY_MODE), "ControlMode", StringValue(PHY_MODE));
+		address.SetBase(BASE_NETWORK_ADDRESS, NETWORK_MASK); // initial address it defaults to "0.0.0.1"
 		mac = NqosWifiMacHelper::Default();
-		mac.SetType(macType);
+		mac.SetType(MAC_TYPE);
 	}
-	else if (isLTE) {
+//	else if (isLTE) {
 //		phy = OvnisWifiPhyHelper::Default();
 //		ObjectFactory factory1;
 //		channel = CreateObject<OvnisWifiChannel>();
-////		factory1.SetTypeId("ns3::NakagamiPropagationLossModel");
-////		channel->SetPropagationLossModel(factory1.Create<PropagationLossModel>());
-////		ObjectFactory factory2;
-////		factory2.SetTypeId("ns3::ConstantSpeedPropagationDelayModel");
-////		channel->SetPropagationDelayModel(factory2.Create<PropagationDelayModel>());
 //		channel->updateArea(boundaries[0], boundaries[1], communicationRange);
 //		phy.SetChannel(channel);
 //		phy.Set("TxPowerStart",DoubleValue(26.5));	// 250-300 meter transmission range
@@ -298,7 +235,21 @@ void Ovnis::InitializeOvnisNetwork() {
 //		address.SetBase("10.0.0.0", "255.0.0.0");
 //		mac = NqosWifiMacHelper::Default();
 //		mac.SetType("ns3::AdhocWifiMac");
+//	}
+}
+
+void Ovnis::CreateNetworkDevices(ns3::NodeContainer & node_container) {
+	NetDeviceContainer devices;
+	if (isOvnisChannel) {
+		devices = wifi.Install(ovnisPhyHelper, mac, node_container);
 	}
+	else {
+		devices = wifi.Install(phyHelper, mac, node_container);
+	}
+	InternetStackHelper stack;
+	stack.Install(node_container);
+	Ipv4InterfaceContainer wifiInterfaces;
+	wifiInterfaces = address.Assign(devices);
 }
 
 void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
@@ -410,7 +361,6 @@ void Ovnis::UpdateVehiclesPositions() {
 			{
 				double newSpeed = traci->GetVehicleSpeed((*i));
 				double newAngle = traci->GetVehicleAngle(*i);
-				double PI = 3.14159265;
 				Vector velocity(newSpeed * cos((newAngle + 90) * PI / 180.0), newSpeed * sin((newAngle - 90) * PI / 180.0), 0.0);
 				Vector position(newPos.x, newPos.y, 0.0);
 				model->SetPosition(position);
@@ -434,7 +384,6 @@ void Ovnis::TrafficSimulationStep() {
 		ovnis::Log::getInstance().logInTime(currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_DEPARTURED, departedVehicles.size(), currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_ARRIVED, arrivedVehicles.size(), currentTime);
-
 		Log::getInstance().getStream("simulation") << currentTime/1000 << " \t " << runningVehicles.size() << " \t " << departedVehicles.size() << " \t " << arrivedVehicles.size() << " \t " << ns3::NodeList::GetNNodes() << " \t "
 				<< Log::getInstance().getSentPackets() << " \t " << Log::getInstance().getReceivedPackets() << " \t"
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::SWITCHING) << ", "
@@ -447,24 +396,16 @@ void Ovnis::TrafficSimulationStep() {
 		UpdateVehiclesPositions();
 		StartApplications();
 
-		// 56640728#2
-//		double travelTime = traci->GetEdgeTravelTime("56640728#2");
-//		cout << travelTime << endl;
-
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
 		// in the first step, departed and arrived vehicles are aggregated from the beginning of running
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 
-		if (currentTime < stopTime*1000) {
+		if (currentTime < stopTime*SIMULATION_TIME_UNIT) {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
-			cout << "stopping simulation at currentTime " << currentTime << " (stopTime: " << stopTime << ")" << endl;
 			DestroyNetworkDevices(runningVehicles);
-			time_t stop = time(0);
-			Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
-			Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
 		}
 	}
 	catch (TraciException &e) {
@@ -487,9 +428,28 @@ void Ovnis::CloseRoad(string edgeId) {
 void Ovnis::ReadTravelTime(string edgeId) {
 	double travelTime = traci->GetEdgeTravelTime(edgeId);
 	cout << "edge " << edgeId << ", currentTravelTime = " << travelTime << endl;
-
 //	double travelTime2 = traci->GetEdgeGlobalTravelTime(edgeId);
 //	cout << "edge " << edgeId << ", globalTravelTime= " << travelTime2 << endl;
 
 }
+
+//void Ovnis::CreateStaticNodes () {
+//	NS_LOG_FUNCTION (this);
+//	nodes.Create (staticNodes);
+//	// Create two sta'c nodes, with fixed coordinates.
+//	MobilityHelper mobility;
+//	Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
+//	positionAlloc-­>Add (Vector (2010.0, 1500.0, 0.0)); // Static Node 1 (x:2010, y:1500)
+//	positionAlloc-­>Add (Vector (10.0, 500.0, 0.0)); // Static Node 2 (x:10, y:500)
+//	mobility.SetPositionAllocator (positionAlloc);
+//	mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+//	// Name static nodes
+//	for (uint32_t i = size; i < size + staticNodes; ++i) {
+//		std::ostringstream os;
+//		os << "node-­‐" << i;
+//		Names::Add (os.str (), nodes.Get (i));
+//		mobility.Install (nodes.Get (i));
+//	}
+//}
+
 }

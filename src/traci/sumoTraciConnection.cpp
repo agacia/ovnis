@@ -32,7 +32,6 @@ SumoTraciConnection::~SumoTraciConnection() {
 
 void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "", string sumoPath = "", int port = 0, string outputFolder="") {
 	currentTime = 0;
-	Log::getInstance().getStream("") << "starting SUMO with config " << sumoConfig << " on host " << this->host << ", " << this->port << endl;
 
 	if (!host.empty()) {
 		this->host = host;
@@ -45,7 +44,7 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "", st
 	sleep(2);
 	try {
 		socket.connect();
-		Log::getInstance().getStream("") << "starting SUMO with config " << sumoConfig << " on host " << this->host << ", " << this->port << endl;
+		Log::getInstance().getStream("") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
 	}
 	catch (SocketException & e) {
 		cerr << e.what();

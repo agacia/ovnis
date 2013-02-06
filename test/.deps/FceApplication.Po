@@ -344,9 +344,10 @@ FceApplication.o: applications/FceApplication.cpp \
  ../src/itinerary.h ../src/recordEntry.h ../src/traci/structs.h \
  ../src/vehicle.h ../src/scenario.h ../src/knowledge.h \
  ../src/applications/ovnis-application.h ../src/knowledge.h \
- ../src/ovnisPacket.h ../test/my-constants.h ../src/route.h \
- ../src/ovnisPacket.h ../src/applications/trafficInformationSystem.h \
- ../src/itinerary.h ../src/recordEntry.h \
+ ../src/ovnisPacket.h ../test/my-constants.h \
+ ../src/applications/trafficInformationSystem.h ../src/route.h \
+ ../src/ovnisPacket.h ../src/itinerary.h ../src/recordEntry.h \
+ ../src/applications/trafficInformationSystem.h \
  ../src/applications/dissemination/dissemination.h \
  /usr/include/c++/4.4/iterator \
  /usr/include/c++/4.4/bits/stream_iterator.h \
@@ -1176,15 +1177,17 @@ applications/FceApplication.h:
 
 ../test/my-constants.h:
 
+../src/applications/trafficInformationSystem.h:
+
 ../src/route.h:
 
 ../src/ovnisPacket.h:
 
-../src/applications/trafficInformationSystem.h:
-
 ../src/itinerary.h:
 
 ../src/recordEntry.h:
+
+../src/applications/trafficInformationSystem.h:
 
 ../src/applications/dissemination/dissemination.h:
 

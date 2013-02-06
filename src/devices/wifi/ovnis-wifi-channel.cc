@@ -235,6 +235,7 @@ OvnisWifiChannel::updateArea(double x, double y, double r)
     double nb_y_cells = ceil(area_y / range);
     double new_nb_y_cells = ceil(y / r);
     NS_LOG_DEBUG ("area = "<<x<<"x"<<y<<" range = "<<r<<"new nb cells x = "<<new_nb_x_cells<<" new nb cells x="<<new_nb_y_cells);
+//    cout << "area = "<<x<<"x"<<y<<" range = "<<r<<"new nb cells x = "<<new_nb_x_cells<<" new nb cells x="<<new_nb_y_cells;
     int i, j;
     for (i = 0; i < nb_x_cells; i++)
     {

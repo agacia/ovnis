@@ -152,6 +152,8 @@ namespace ns3
     std::map<std::string,double> edgeTravelTime;
     std::map<std::string,long> edgeLogCount;
 
+
+
   };
 }
 

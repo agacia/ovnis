@@ -25,6 +25,7 @@
 #include "ovnisPacket.h"
 #include "itinerary.h"
 #include "recordEntry.h"
+#include "applications/trafficInformationSystem.h"
 
 using namespace std;
 
@@ -48,7 +49,7 @@ public:
 	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
 	map<string, double> computeTravelTimesOnRoutes(map<string, Route> routes, string startEdgeId, string endEdgeId);
 
-/*
+	/*
 	void PrintCosts(std::string fileName, std::string vehicleId, double time, map<std::string, double> costs);
 	void recordDouble(std::string id, long packetId, std::string senderId, double time, double value, int numberOfVehicles);
 	void setRecords(std::map<std::string,RecordEntry> records);

@@ -1,24 +1,17 @@
 <edges xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/edges_file.xsd">
 
-   <edge id="main_1" from="1" to="m1" priority="2" numLanes="2" speed="115" />
-   <edge id="main_1b" from="m1" to="0" priority="3" numLanes="3" speed="115" />
+   <edge id="pre_1" from="p1" to="p2" priority="2" numLanes="2" speed="115" />
+   <edge id="pre_2" from="p2" to="0" priority="3" numLanes="3" speed="115" />
 
-   <edge id="main_2" from="0" to="2" priority="1" numLanes="2" speed="115" />
-   <edge id="main_2a" from="2" to="2a" priority="1" numLanes="2" speed="115" />
-   <edge id="main_2b" from="2a" to="2b" priority="1" numLanes="2" speed="115" />
-   <edge id="main_2c" from="2b" to="2c" priority="1" numLanes="2" speed="115" />
-   <edge id="main_2d" from="2c" to="2d" priority="1" numLanes="2" speed="115" />
+   <edge id="main_1" from="0" to="m1" priority="1" numLanes="2" speed="115" />
+   <edge id="main_2" from="m1" to="m2" priority="1" numLanes="2" speed="115" />
+   <edge id="main_3" from="m2" to="m3" priority="1" numLanes="2" speed="115" />
+   <edge id="main_4" from="m3" to="m4" priority="1" numLanes="2" speed="115" />
+   <edge id="main_5" from="m4" to="m5" priority="1" numLanes="2" speed="115" />
+   <edge id="main_6" from="m5" to="m6" priority="1" numLanes="2" speed="115" />
 
-<!--
-   <edge id="1fi" from="1" to="m1" priority="2" numLanes="2" speed="72" />
-   <edge id="1si" from="m1" to="0" priority="3" numLanes="3" speed="72" />
-
-   <edge id="2o" from="0" to="2" priority="1" numLanes="2" speed="72" />
-   <edge id="2ob" from="2" to="2b" priority="1" numLanes="2" speed="72" />
--->
-
-   <edge id="bypass_1" from="0" to="3" priority="1" numLanes="1" speed="90" />
-   <edge id="bypass_2" from="3" to="4" priority="1" numLanes="1" speed="90" />
-   <edge id="bypass_2b" from="4" to="4b" priority="1" numLanes="1" speed="90" />
+   <edge id="bypass_1" from="0" to="b1" priority="1" numLanes="1" speed="90" />
+   <edge id="bypass_2" from="b1" to="b2" priority="1" numLanes="1" speed="90" />
+   <edge id="bypass_3" from="b2" to="b3" priority="1" numLanes="1" speed="90" />
 
 </edges>

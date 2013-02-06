@@ -1,8 +1,7 @@
 <connections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/connections_file.xsd">
 
-	<connection from="main_1b" to="main_2" fromLane="2" toLane="1"/>
-	<connection from="main_1b" to="main_2" fromLane="1" toLane="0"/>
-	<connection from="main_1b" to="bypass_1" fromLane="0" toLane="0"/>
-
+	<connection from="pre_2" to="main_1" fromLane="2" toLane="1"/>
+	<connection from="pre_2" to="main_1" fromLane="1" toLane="0"/>
+	<connection from="pre_2" to="bypass_1" fromLane="0" toLane="0"/>
 
 </connections>

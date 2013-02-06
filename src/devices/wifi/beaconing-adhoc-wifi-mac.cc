@@ -190,6 +190,7 @@ BeaconingAdhocWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
 	  // here when I send a packet with application layer
 //      cout << "b" << endl;
 	  ovnis::Log::getInstance().packetSent();
+//	  ovnis::Log::getInstance().packetSent(packet->GetSize());
       m_dca->Queue (packet, hdr);
     }
 }
@@ -351,7 +352,7 @@ void BeaconingAdhocWifiMac::ProcessBeacon( Ptr<Packet> packet, Mac48Address addr
 	//Call back every beacon to be able to update the rxEg otherwise inside the if!!
 //	m_newNeighborTraceSource (packet, addrFrom,rxPowerDbm);
 
-	m_rxPwDbm = 16.02;
+	m_rxPwDbm = TX_POWER_START;
 	m_newNeighborTraceSource (packet, addrFrom,m_rxPwDbm);
 
 	//std::cout<<Simulator::Now()<<GetAddress()<<" Incremento contador de  "<<addrFrom<<" a "<<m_neighborList[addrFrom]<<" con potencia "<<rxPowerDbm<<std::endl;

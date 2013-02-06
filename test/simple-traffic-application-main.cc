@@ -65,8 +65,9 @@ int main(int argc, char ** argv) {
 //	sumoPath="/usr/local/bin/sumo-gui";
 	string sumoHost = "localhost";
 	int startTime = 0;
-	int stopTime = 3700;
-	stopTime = 100;
+	int stopTime = 3600;
+	stopTime = 1800;
+//	stopTime = 100;
 //	stopTime = 14400;
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	bool startSumo = true;
@@ -96,6 +97,9 @@ int main(int argc, char ** argv) {
 				"Output folder name.",
 				outputFolder);
 	cmd.Parse(argc, argv);
+
+	// reset seed to generate different numbers every time
+//	srand(time(0));
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
