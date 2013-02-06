@@ -120,11 +120,10 @@ map<string, double> Knowledge::computeTravelTimesOnRoutes(map<string, Route> rou
 
 		double staticCost = 0;
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
-			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)
-					&& travelTime > 0
-					& TIS::getInstance().getStaticRecords().find(edgeId) != TIS::getInstance().getStaticRecords().end()) {
+			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId) &&
+					travelTime > 0 &&
+					TIS::getInstance().getStaticRecords().find(edgeId) != TIS::getInstance().getStaticRecords().end()) {
 				staticCost = TIS::getInstance().getStaticRecords()[edgeId].getStaticCost();
-				staticCost = itRoutes->second.getEdgeInfo(edgeId).getStaticCost();
 				costs[itRoutes->first] = costs[itRoutes->first] - staticCost + travelTime;
 				packetAges[itRoutes->first] += (Simulator::Now().GetSeconds() - packetDate);
 				++numberOfUpdatedEdges[itRoutes->first];
