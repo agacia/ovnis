@@ -47,7 +47,7 @@ public:
 	map<string,RecordEntry> & getRecords();
 
 	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
-	map<string, double> computeTravelTimesOnRoutes(map<string, Route> routes, string startEdgeId, string endEdgeId);
+	bool isCapacityDrop(map<string, Route> routes, string startEdgeId, string endEdgeId) ;
 
 	/*
 	void PrintCosts(std::string fileName, std::string vehicleId, double time, map<std::string, double> costs);
@@ -68,6 +68,8 @@ protected:
 	map<long,int> packets; // counter of packets
 	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
 	std::map<std::string, int> numberOfVehicles;
+
+	double maxInformationAge;
 };
 
 }

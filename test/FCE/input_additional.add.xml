@@ -1,9 +1,0 @@
-<additionals xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/additional_file.xsd">
-    
-    <variableSpeedSign id="vss" lanes="main_2a_0 main_2a_1" file="input_definition20.def.xml"/>  <!-- 72 -->  
-    
-
-
-    <!--<inductionLoop id="start" lane="1si_1" pos="0" freq="1" file="start.xml" friendlyPos="true" splitByType="false" /> -->
-
-</additionals>

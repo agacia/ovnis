@@ -62,6 +62,20 @@ double RecordEntry::getLatestValue() {
 	return values[(count-1+LOCAL_MEMORY_SIZE)%LOCAL_MEMORY_SIZE];
 }
 
+double RecordEntry::getExpectedValue() {
+	return expectedValue;
+}
+
+double RecordEntry::getActualCapacity() {
+	return actualCapacity;
+}
+
+double RecordEntry::setCapacity(double expectedValue) {
+	this->expectedValue = expectedValue;
+	actualCapacity = expectedValue / getLatestValue(); // expected value < latestValue
+	return actualCapacity;
+}
+
 double RecordEntry::getAverageValue() {
 	double sum = 0;
 	int count = 0;

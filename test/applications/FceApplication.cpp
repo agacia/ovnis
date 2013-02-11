@@ -87,13 +87,23 @@ FceApplication::FceApplication() {
 	m_socket = 0;
 	decisionTaken = false;
 	notificationSent = false;
-
+	isCheater = false;
 	flow = 1250;
+
+//	scenario.setDecisionEdges(CommonHelper::split("main_1b"));
+//	scenario.setNotificationEdges(CommonHelper::split("main_2d bypass_2b"));
+//	map<string, Route> alternativeRoutes = map<string, Route>();
+//	alternativeRoutes["main"] = Route("main", "main_1 main_1b main_2 main_2a main_2b main_2c main_2d");
+//	alternativeRoutes["main"].setCapacity(900);
+//	alternativeRoutes["bypass"] = Route("bypass", "main_1 main_1b bypass_1 bypass_2 bypass_2b");
+//	alternativeRoutes["bypass"].setCapacity(1500);
+//	scenario.setAlternativeRoutes(alternativeRoutes);
 
 	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
 	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
 	map<string, Route> alternativeRoutes = map<string, Route>();
-	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
+//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
+	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
 	alternativeRoutes["main"].setCapacity(900);
 	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
 	alternativeRoutes["bypass"].setCapacity(1500);
@@ -176,6 +186,7 @@ void FceApplication::SimulationRun(void) {
 		if (running == true) {
 			bool edgeChanged = vehicle.requestCurrentEdge(Simulator::Now().GetSeconds());
 			string currentEdge = vehicle.getItinerary().getCurrentEdge().getId();
+			double now = Simulator::Now().GetSeconds();
 
 			// if a vehicle is entering a new edge it has already traced the time on its itinerary
 			// broadcast information about it and about travel time on the last edge
@@ -184,7 +195,9 @@ void FceApplication::SimulationRun(void) {
 				double travelTimeOnLastEdge = lastEdge.getTravelTime();
 				string lastEdgeId = lastEdge.getId();
 				Vector position = mobilityModel->GetPosition();
-				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
+//				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
+//				Log::getInstance().getStream("") << now << "\t" <<lastEdgeId << "\t" << position.x << "," << position.y << "\n" ;
+				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
 			}
 
@@ -198,23 +211,45 @@ void FceApplication::SimulationRun(void) {
 				string global_proportionalProbabilisticChoice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
 				string global_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
 				//
+				Vector position = mobilityModel->GetPosition();
+				Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
 				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
 				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinTravelTimeRoute(vanetCosts);
 				string vanet_proportionalProbabilisticChoice =  TIS::getInstance().chooseProbTravelTimeRoute(vanetCosts);
 				string vanet_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
 
 				// select strategy
-				string routeChoice = global_minTravelTimeChoice;
-//				routeChoice = global_flowAwareChoice;
-//				routeChoice = global_proportionalProbabilisticChoice;
-//				routeChoice = vanet_flowAwareChoice;
-//				routeChoice = vanet_minTravelTimeChoice;
-				routeChoice = vanet_proportionalProbabilisticChoice;
-//				routeChoice = vehicle.getItinerary().getId();
+
+				// centralized
+				string selfishRouteChoice = global_minTravelTimeChoice;
+				string systemRouteChoice = global_proportionalProbabilisticChoice;
+
+				// vanets
+//				string selfishRouteChoice = vanet_minTravelTimeChoice;
+//				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
+
+				// oryginal
+//				string orygChoice = vehicle.getItinerary().getId();
+
+				// hybrid
+//				string routeChoice = selfishRouteChoice;
+//				double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+//				TIS::getInstance().setCongestion(capacityDrop);
+//				if (capacityDrop) {
+//					routeChoice = systemRouteChoice;
+//				}
 
 //				double now = Simulator::Now().GetSeconds();
 //				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
 //				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_flowAwareChoice << endl;
+
+				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+
+				string routeChoice = selfishRouteChoice;
+				if (r < CHEATER_RATIO) {
+					routeChoice = selfishRouteChoice;
+					isCheater = true;
+				}
 
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;
@@ -228,7 +263,8 @@ void FceApplication::SimulationRun(void) {
 			if (isReportingPoint && !notificationSent) {
 				string routeId = vehicle.getItinerary().getId();
 				double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
-				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime);
+				cout << Simulator::Now().GetSeconds() << " " ;
+				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime, isCheater);
 				notificationSent = true;
 			}
 
@@ -280,7 +316,9 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
     try {
     	OvnisPacket ovnisPacket(packet);
     	Vector position = mobilityModel->GetPosition();
+
 		double distance = ovnisPacket.computeDistance(position.x, position.y);
+
 		double packetDate = ovnisPacket.getTimeStamp();
 		double packetAge = Simulator::Now().GetSeconds() - packetDate;
 		string senderId = ovnisPacket.getSenderId();

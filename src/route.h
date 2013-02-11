@@ -40,6 +40,7 @@ public:
 	std::vector<EdgeInfo> & getEdgeInfos();
 	bool containsEdge(string edgeId);
 	bool containsEdgeExcludedMargins(string edgeId, string startEdgeId, string endEdgeId);
+	int countEdgesExcludedMargins(string startEdgeId, string endEdgeId);
 	double getEdgeMaxSpeed(std::string edgeId);
 	double getCapacity();
 	void setCapacity(double capacity);
@@ -52,7 +53,7 @@ public:
 	double computeStaticCostExcludingMargins(std::string startEdgeId, std::string endEdgeId);
 	double getStaticCost();
 	double getLength();
-	EdgeInfo getEdgeInfo(std::string edgeId);
+	EdgeInfo & getEdgeInfo(std::string edgeId);
 
 protected:
 	std::string id;

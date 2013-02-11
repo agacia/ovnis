@@ -112,13 +112,15 @@ double Itinerary::computeTravelTime(string startEdgeId, string endEdgeId) {
 		Edge & startEdge = edges.find(startEdgeId)->second;
 		Edge & endEdge = edges.find(endEdgeId)->second;
 		if (startEdge.getLeftTime() == 0) {
+			cout << "ups " << endl;
 			fixTravelTime(startEdgeId);
 		}
 		if (endEdge.getEnteredTime() == 0) {
 			fixTravelTime(endEdgeId);
+			cout << "ups2" << endl;
 		}
 		travelTime = edges.find(endEdgeId)->second.getEnteredTime() - edges.find(startEdgeId)->second.getLeftTime();
-//		cout << "travel time on " << id << " " <<  travelTime << " [" << startEdgeId << " " << "," << endEdgeId << "]" << endl;
+		cout << "travel time on " << id << " " <<  travelTime << " [" << startEdgeId << ":" << startEdge.getLeftTime() << ", " << endEdgeId << ":" << endEdge.getEnteredTime() << "]" << endl;
 	}
 	return travelTime;
 }

@@ -124,6 +124,26 @@ bool Route::containsEdgeExcludedMargins(string edgeId, string startEdgeId, strin
 	return false;
 }
 
+/**
+ * Checks how many edges does the route contain after startEdge and before endEdge (margin edges excluded)
+ */
+int Route::countEdgesExcludedMargins(string startEdgeId, string endEdgeId) {
+	bool isMonitored = false;
+	int numberOdEdges = 0;
+	for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+		if (*it == endEdgeId) {
+			isMonitored = false;
+		}
+		if (isMonitored) {
+			numberOdEdges++;
+		}
+		if (*it == startEdgeId) {
+			isMonitored = true;
+		}
+	}
+	return numberOdEdges;
+}
+
 bool Route::containsEdge(string edgeId) {
 	for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
 		if (*it == edgeId) {
@@ -185,13 +205,12 @@ double Route::computeLength(string startEdgeId, string endEdgeId) {
 	return length;
 }
 
-EdgeInfo Route::getEdgeInfo(std::string edgeId) {
+EdgeInfo & Route::getEdgeInfo(std::string edgeId) {
 	for (vector<EdgeInfo>::iterator it = edgeInfos.begin(); it != edgeInfos.end(); ++it) {
 		if (it->getId() == edgeId) {
 			return *it;
 		}
 	}
-	return EdgeInfo();
 }
 
 double Route::getEdgeMaxSpeed(std::string edgeId) {

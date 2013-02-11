@@ -1,4 +1,0 @@
-<a>
-    <edgeData id="dump_3600" freq="3600" file="dump.xml" excludeEmpty="true" minSamples="1"/>
-    <tripinfo id="dump_3600" freq="3600" file="tripinfo.xml" excludeEmpty="true" minSamples="1"/>
-</a>

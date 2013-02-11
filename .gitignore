@@ -34,6 +34,12 @@ memcheck.txt
 missing
 README.md
 
+test/.libs/ovnisSample
+test/Makefile
+test/Makefile.in
+test/ovnisSample_static
+
+
 *.lo
 .o
 src/common/.DS_Store

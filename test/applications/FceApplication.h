@@ -182,6 +182,8 @@ namespace ns3
 
     std::map<long,int> packets; // packets counter
 
+    bool isCheater;
+
   };
 
 }

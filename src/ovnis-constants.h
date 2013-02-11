@@ -57,7 +57,8 @@
 #define SIMULATION_TIME_UNIT 1000
 #define TRAFFIC_INFORMATION_SENDING_INTERVAL  1
 
-#define PACKET_TTL  20
+#define PACKET_TTL  60
+#define CENTRALISED_INFORMATION_TTL  60
 
 #define STATE_PACKET_ID 1
 #define TRAFFICINFO_PACKET_ID 2
@@ -72,6 +73,8 @@
 #define BROADCASTING_DISTANCE_THRESHOLD 60
 #define RESEND_INTERVAL 1
 
+#define CHEATER_RATIO 0 // % of drivers choosing selfish route
+#define CAPACITY_THRESHOLD 0.6 // the maximum change in travel speed in relate to the one expected with maximum speed, after which the traffic problem is considered
 #define PENETRATION_RATE 0.9
 
 // TRAFFIC CONDITION EVALUATION

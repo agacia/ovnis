@@ -124,7 +124,6 @@ void Ovnis::DoStart(void) {
 		if (bounds.size() > 3) {
 			boundaries[0] = bounds[2];
 			boundaries[1] = bounds[3];
-			cout << boundaries[0] << " " << boundaries[1] << endl;
 		}
 
 		Names::Add("SumoTraci", traci);

@@ -18,6 +18,7 @@ TIS & TIS::getInstance() {
 }
 
 TIS::TIS() {
+	congestion = false;
 }
 
 TIS::~TIS() {
@@ -28,12 +29,12 @@ void TIS::reportStartingRoute(string routeId, string startEdgeId, string endEdge
 	++vehiclesOnRoute[routeId];
 }
 
-void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime) {
+void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime, bool isCheater) {
 	--vehiclesOnRoute[routeId];
 	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 	travelTimesOnRoute[routeId] = travelTime;
 //	travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId]; // smooth
-	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId];
+	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater;
 	Log::getInstance().getStream("fixedTIS") << endl;
 }
 
@@ -51,9 +52,18 @@ void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
 					staticRecords[*it2] = route.getEdgeInfo(*it2);
 				}
 			}
+
+			// print route to file
+			Log::getInstance().getStream("routes_info") << it->first << "\t";
+			for (vector<EdgeInfo>::iterator edges_it = it->second.getEdgeInfos().begin(); edges_it != it->second.getEdgeInfos().end(); ++edges_it) {
+				Log::getInstance().getStream("routes_info") << edges_it->getId() << "," << edges_it->getLength() << "," << edges_it->getMaxSpeed() << "\t";
+			}
+			Log::getInstance().getStream("routes_info") << endl;
 		}
 	}
 }
+
+
 
 std::map<std::string, EdgeInfo> & TIS::getStaticRecords() {
 	return staticRecords;
@@ -89,8 +99,10 @@ map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId,
 	for (map<string,double>::iterator it = travelTimesOnRoute.begin(); it != travelTimesOnRoute.end(); ++it) {
 		double informationAge = 0;
 		if (it->second != 0) {
+//			double maxInformationAge = costs[it->first];
+			double maxInformationAge = CENTRALISED_INFORMATION_TTL;
 			informationAge = travelTimeDateOnRoute[it->first] == 0 ? 0 : now-travelTimeDateOnRoute[it->first];
-			if (informationAge < costs[it->first]) {
+			if (informationAge < maxInformationAge) {
 				costs[it->first] = it->second;
 			}
 			else {
@@ -210,12 +222,53 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 		double probability = (sumCost-it->second)/((costsSize-1)*sumCost);
 		sortedProbabilities.push_back(pair<string,double>(it->first, probability));
 	}
+
+//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
+//		cout << it->first << " " << it->second << "\t";
+//	}
+//	cout << endl;
+
 //	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 
 	chosenRouteId = getEvent(sortedProbabilities);
 	return chosenRouteId;
 }
 
+void TIS::reportEdgePosition(string edgeId, double x, double y) {
+	map<string, Vector2D>::iterator it = edgePositions.find(edgeId);
+	if (it == edgePositions.end()) {
+		edgePositions[edgeId] = Vector2D(x, y);
+		Log::getInstance().getStream("edges_positions") << edgeId << "\t" << x << "\t" << y << endl;
+	}
+}
+
+double TIS::getEdgeLength(std::string edgeId) {
+	if (this->staticRecords.find(edgeId) != this->staticRecords.end()) {
+		return this->staticRecords[edgeId].getLength();
+	}
+	return 0;
+}
+
+double TIS::getEdgeStaticCost(std::string edgeId) {
+	if (this->staticRecords.find(edgeId) != this->staticRecords.end()) {
+			return this->staticRecords[edgeId].getStaticCost();
+		}
+	return 0;
+}
+
+bool TIS::isCongestion()
+{
+	return congestion;
+}
+
+void TIS::setCongestion(bool congestion)
+{
+	if (this->congestion != congestion) {
+		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion << endl;
+		this->congestion = congestion;
+	}
+
+}
 
 //void TIS::DetectJam(double currentSpeed, double maxSpeed, string currentEdge) {
 //

@@ -36,6 +36,9 @@ public:
 	double getLatestTime();
 	double getAverageValue();
 	double getAverageTime();
+	double setCapacity(double expectedValue);
+	double getActualCapacity();
+	double getExpectedValue();
 	std::string getLatestSenderId();
 	long getLatestPacketId();
 	void reset();
@@ -47,7 +50,8 @@ private:
 	double values[LOCAL_MEMORY_SIZE];
 	std::string senders[LOCAL_MEMORY_SIZE];
 	long packetIds[LOCAL_MEMORY_SIZE];
-
+	double expectedValue;
+	double actualCapacity;
 };
 
 } /* namespace ovnis */
