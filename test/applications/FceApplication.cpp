@@ -195,7 +195,7 @@ void FceApplication::SimulationRun(void) {
 				double travelTimeOnLastEdge = lastEdge.getTravelTime();
 				string lastEdgeId = lastEdge.getId();
 				Vector position = mobilityModel->GetPosition();
-//				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
+				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 //				Log::getInstance().getStream("") << now << "\t" <<lastEdgeId << "\t" << position.x << "," << position.y << "\n" ;
 				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
@@ -221,23 +221,23 @@ void FceApplication::SimulationRun(void) {
 				// select strategy
 
 				// centralized
-				string selfishRouteChoice = global_minTravelTimeChoice;
-				string systemRouteChoice = global_proportionalProbabilisticChoice;
+//				string selfishRouteChoice = global_minTravelTimeChoice;
+//				string systemRouteChoice = global_proportionalProbabilisticChoice;
 
 				// vanets
-//				string selfishRouteChoice = vanet_minTravelTimeChoice;
-//				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
+				string selfishRouteChoice = vanet_minTravelTimeChoice;
+				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
 
 				// oryginal
 //				string orygChoice = vehicle.getItinerary().getId();
 
 				// hybrid
-//				string routeChoice = selfishRouteChoice;
-//				double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-//				TIS::getInstance().setCongestion(capacityDrop);
-//				if (capacityDrop) {
-//					routeChoice = systemRouteChoice;
-//				}
+				string routeChoice = selfishRouteChoice;
+				double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+				TIS::getInstance().setCongestion(capacityDrop);
+				if (capacityDrop) {
+					routeChoice = systemRouteChoice;
+				}
 
 //				double now = Simulator::Now().GetSeconds();
 //				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
@@ -245,10 +245,12 @@ void FceApplication::SimulationRun(void) {
 
 				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 
-				string routeChoice = selfishRouteChoice;
+//				string routeChoice = selfishRouteChoice;
 				if (r < CHEATER_RATIO) {
-					routeChoice = selfishRouteChoice;
-					isCheater = true;
+					if (routeChoice != selfishRouteChoice) {
+						routeChoice = selfishRouteChoice;
+						isCheater = true;
+					}
 				}
 
 				vehicle.reroute(routeChoice);

@@ -62,13 +62,13 @@ int main(int argc, char ** argv) {
 	string sumoConfig = "Kirchberg.sumocfg";
 	sumoConfig = "fce.sumocfg";
 	string sumoPath="/usr/local/bin/sumo";
-//	sumoPath="/usr/local/bin/sumo-gui";
+	sumoPath="/usr/local/bin/sumo-gui";
 	string sumoHost = "localhost";
 	int startTime = 0;
 	int stopTime = 3600;
 	stopTime = 1800;
-//	stopTime = 100;
-//	stopTime = 14400;
+//	startTime = 21600; // 6h
+//	stopTime = 25200; // 7h
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	bool startSumo = true;
 
