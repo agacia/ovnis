@@ -224,7 +224,7 @@ BeaconingAdhocWifiMacOriginal::Receive (Ptr<Packet> packet, const WifiMacHeader 
     }
   else if (hdr->IsBeacon ())
     {
-      std::cout<<"Beacon received"<<std::endl;
+//      std::cout<<"Beacon received"<<std::endl;
 	  MgtBeaconHeader beacon;
 	  packet->RemoveHeader (beacon);
 	  ProcessBeacon(packet,hdr->GetAddr2 ());
@@ -307,7 +307,6 @@ BeaconingAdhocWifiMacOriginal::SendOneBeacon (void)
 
 
 //  Mac48Address aaa= GetAddress();
-//  std::cout<<Simulator::Now()<<" envio beacon "<<aaa<<std::endl;
 
 //  Enqueue(packet,Mac48Address::GetBroadcast () );
   m_dca->Queue (packet, hdr);

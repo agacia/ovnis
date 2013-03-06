@@ -27,7 +27,8 @@
 #include "ns3/error-rate-model.h"
 #include "ns3/simulator.h"
 #include "ns3/packet.h"
-#include "ns3/random-variable.h"
+//#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/assert.h"
 #include "ns3/log.h"
 #include "ns3/double.h"
@@ -133,10 +134,10 @@ OvnisWifiPhy::GetTypeId (void)
 OvnisWifiPhy::OvnisWifiPhy ()
   :  m_channelNumber (1),
      m_endRxEvent (),
-     m_random (0.0, 1.0),
-     m_channelStartingFrequency (0)
+	m_channelStartingFrequency (0)
 {
   NS_LOG_FUNCTION (this);
+  m_random = CreateObject<UniformRandomVariable> ();
   m_state = CreateObject<WifiPhyStateHelper> ();
 }
 
@@ -857,7 +858,7 @@ OvnisWifiPhy::EndReceive (Ptr<Packet> packet, Ptr<InterferenceHelper::Event> eve
 
   NS_LOG_DEBUG ("mode="<<(event->GetPayloadMode ().GetDataRate ())<<
                 ", snr="<<snrPer.snr<<", per="<<snrPer.per<<", size="<<packet->GetSize ());
-  if (m_random.GetValue () > snrPer.per) 
+  if (m_random->GetValue () > snrPer.per)
     {
       NotifyRxEnd (packet); 
       uint32_t dataRate500KbpsUnits = event->GetPayloadMode ().GetDataRate () / 500000;   
@@ -887,5 +888,12 @@ OvnisWifiPhy::GetRxPowerDBm (){
 	return m_rxPowerDbm;
 }
 
+//aadded AgataGrzybek (ns3 3.16)
+int64_t OvnisWifiPhy::AssignStreams (int64_t stream)
+{
+  NS_LOG_FUNCTION (this << stream);
+  m_random->SetStream (stream);
+  return 1;
+}
 
 } // namespace ns3

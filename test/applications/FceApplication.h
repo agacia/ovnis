@@ -184,6 +184,9 @@ namespace ns3
 
     bool isCheater;
 
+    double expectedTravelTime;
+    double selfishExpectedTravelTime;
+
   };
 
 }

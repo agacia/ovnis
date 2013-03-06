@@ -116,9 +116,6 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		packetAges[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAges[it->first] / numberOfUpdatedEdges[it->first];
 		if (totalNumberOfUpdatedEdges > 0) {
-			if (it->first == "bypass") {
-				cout << startEdgeId << " " << endEdgeId << endl;
-			}
 			Log::getInstance().getStream("vanets_knowledge") << it->first << "," << numberOfUpdatedEdges[it->first] << "," << it->second.countEdgesExcludedMargins(startEdgeId, endEdgeId) << "\t";
 		}
 	}
@@ -128,6 +125,7 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 	Log::getInstance().getStream("vanet_costs") <<  now << "\t";
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		Log::getInstance().getStream("vanet_costs") << it->first << "," << costs[it->first] << "," << packetAges[it->first] << "," << TIS::getInstance().getVehiclesOnRoute(it->first) << "\t";
+
 	}
 	Log::getInstance().getStream("vanet_costs") << endl;
 

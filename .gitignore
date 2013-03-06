@@ -2,6 +2,7 @@
 outputFolder*/
 # Ignore all files ending with ~
 *~
+
 # Ignore all eclipse files
 .metadata/
 .settings/
@@ -38,10 +39,10 @@ test/.libs/ovnisSample
 test/Makefile
 test/Makefile.in
 test/ovnisSample_static
-
+test/.deps/
 
 *.lo
-.o
+*.o
 src/common/.DS_Store
 
 src/devices/wifi my/

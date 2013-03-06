@@ -29,13 +29,21 @@ void TIS::reportStartingRoute(string routeId, string startEdgeId, string endEdge
 	++vehiclesOnRoute[routeId];
 }
 
-void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime, bool isCheater) {
+void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime) {
 	--vehiclesOnRoute[routeId];
 	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 	travelTimesOnRoute[routeId] = travelTime;
 //	travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId]; // smooth
-	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater;
+	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t" << selfishExpectedTravelTime << "\t" << expectedTravelTime;
 	Log::getInstance().getStream("fixedTIS") << endl;
+}
+
+int TIS::getVehiclesOnRoute(string routeId) {
+	map<string,int>::iterator it = vehiclesOnRoute.find(routeId);
+	if (it != vehiclesOnRoute.end()) {
+		return vehiclesOnRoute[routeId];
+	}
+	return 0;
 }
 
 void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
@@ -132,10 +140,8 @@ string TIS::getEvent(vector<pair<string, double> > probabilities) {
 //	Log::getInstance().getStream("prob") << endl;
 
     vector<pair<string, double> >::iterator it;
-    //cout << r << endl;
     for (it = probabilities.begin(); it != probabilities.end(); ++it) {
     	r -= it->second;
-//    	cout << "r: " << r << " " << it->first << "," << it->second << endl;
     	if (r < eps) {
 			return it->first;
 		}
@@ -183,7 +189,6 @@ string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
 	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
 		flowRatioNeededToUseOtherAlternatives = 1;
 	}
-//	cout << flowRatioNeededToUseOtherAlternatives << endl;
 	//double random = rando.GetValue(0, 1);
 	double random = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 	if (random < flowRatioNeededToUseOtherAlternatives) {
@@ -222,11 +227,6 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 		double probability = (sumCost-it->second)/((costsSize-1)*sumCost);
 		sortedProbabilities.push_back(pair<string,double>(it->first, probability));
 	}
-
-//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-//		cout << it->first << " " << it->second << "\t";
-//	}
-//	cout << endl;
 
 //	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 

@@ -81,7 +81,6 @@ vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, v
 //		// if average:
 ////		vehicle.recordEdge(objectId, ovnisPacket.getPacketId(), vehicleId, ovnisPacket.getSendingDate(), travelTime);
 ////		if (vehicle.getId() == "0.1") {
-////			cout << "[" << now << "] \t" << vehicle.getId() << " received from " << ovnisPacket.getSenderId() << " age: " << now - ovnisPacket.getSendingDate() <<" distance: " << distance << "\t vehicleId: " << vehicleId << ", edgeId: " << objectId << ", travelTime: " << travelTime << endl;
 ////			//<< ", packetDate: " << packetDate << ", packetAge: " << now - packetDate << endl;
 ////		}
 //

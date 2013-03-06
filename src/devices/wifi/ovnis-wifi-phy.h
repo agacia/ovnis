@@ -39,7 +39,8 @@
 #include "ns3/traced-callback.h"
 #include "ns3/nstime.h"
 #include "ns3/ptr.h"
-#include "ns3/random-variable.h"
+//#include "ns3/random-variable.h"
+#include "ns3/random-variable-stream.h"
 //#include "devices/wifi/wifi-phy.h"
 //#include "devices/wifi/wifi-mode.h"
 //#include "devices/wifi/wifi-preamble.h"
@@ -160,6 +161,8 @@ public:
   virtual double CalculateSnr (WifiMode txMode, double ber) const;
   virtual Ptr<WifiChannel> GetChannel (void) const;
   virtual void ConfigureStandard (enum WifiPhyStandard standard);
+  virtual int64_t AssignStreams (int64_t stream);
+
 
 private:
   typedef std::vector<WifiMode> Modes;
@@ -239,7 +242,7 @@ private:
   WifiModeList m_deviceRateSet;
 
   EventId m_endRxEvent;
-  UniformVariable m_random;
+  Ptr<UniformRandomVariable> m_random;
   /// Standard-dependent center frequency of 0-th channel, MHz 
   double m_channelStartingFrequency;
   Ptr<WifiPhyStateHelper> m_state;

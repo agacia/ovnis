@@ -23,8 +23,10 @@ using namespace tcpip;
 
 namespace ovnis {
 
-SumoTraciConnection::SumoTraciConnection() :
-		host("localhost"), port(0), config(""), boundaries( { 0, 0 }), socket(host, port), currentTime(0), stepQuery(&socket, currentTime) {
+SumoTraciConnection::SumoTraciConnection()
+ :host("localhost"), port(0), config(""), socket(host, port), currentTime(0), stepQuery(&socket, currentTime) {
+	boundaries[0] = 0;
+	boundaries[1] = 0;
 }
 
 SumoTraciConnection::~SumoTraciConnection() {

@@ -61,8 +61,8 @@ int main(int argc, char ** argv) {
 	outputFolder = "outputFolder_FCE";
 	string sumoConfig = "Kirchberg.sumocfg";
 	sumoConfig = "fce.sumocfg";
-	string sumoPath="/usr/local/bin/sumo";
-	sumoPath="/usr/local/bin/sumo-gui";
+	string sumoPath="/opt/sumo/bin/sumo";
+	sumoPath="/opt/sumo/bin/sumo-gui";
 	string sumoHost = "localhost";
 	int startTime = 0;
 	int stopTime = 3600;

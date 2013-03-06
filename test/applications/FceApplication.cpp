@@ -223,20 +223,25 @@ void FceApplication::SimulationRun(void) {
 				// centralized
 //				string selfishRouteChoice = global_minTravelTimeChoice;
 //				string systemRouteChoice = global_proportionalProbabilisticChoice;
+//				double selfishTravelTime = globalCosts[selfishRouteChoice];
+//				double systemTravelTIme = globalCosts[systemRouteChoice];
 
 				// vanets
 				string selfishRouteChoice = vanet_minTravelTimeChoice;
 				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
+				double selfishTravelTime = vanetCosts[selfishRouteChoice];
+				double systemTravelTIme = vanetCosts[systemRouteChoice];
 
-				// oryginal
-//				string orygChoice = vehicle.getItinerary().getId();
+				string routeChoice = selfishRouteChoice;
+				selfishExpectedTravelTime = selfishTravelTime;
+				expectedTravelTime = selfishTravelTime;
 
 				// hybrid
-				string routeChoice = selfishRouteChoice;
 				double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
 				TIS::getInstance().setCongestion(capacityDrop);
 				if (capacityDrop) {
 					routeChoice = systemRouteChoice;
+					expectedTravelTime = systemTravelTIme;
 				}
 
 //				double now = Simulator::Now().GetSeconds();
@@ -265,8 +270,8 @@ void FceApplication::SimulationRun(void) {
 			if (isReportingPoint && !notificationSent) {
 				string routeId = vehicle.getItinerary().getId();
 				double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
-				cout << Simulator::Now().GetSeconds() << " " ;
-				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime, isCheater);
+				//cout << Simulator::Now().GetSeconds() << " " ;
+				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime);
 				notificationSent = true;
 			}
 

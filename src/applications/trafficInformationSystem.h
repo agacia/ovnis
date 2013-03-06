@@ -39,9 +39,9 @@ public:
 	static TIS & getInstance(); // Guaranteed to be destroyed. Instantiated on first use.
 
 	void reportStartingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId);
-    void reportEndingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId, double travelTime, bool isCheater = false);
+	void reportEndingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime);
 
-    std::map<std::string,int> & getVehiclesOnRoute();
+    int getVehiclesOnRoute(std::string routeId);
 	std::map<std::string,double> & getTravelTimesOnRoute();
 	std::map<std::string,double> & getTravelTimeDateOnRoute();
 
