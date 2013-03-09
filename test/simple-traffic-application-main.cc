@@ -21,6 +21,7 @@
  * @date Mar 31, 2010
  *
  * @author Yoann Pigné
+ * @author Agata Grzybek
  *
  */
 
@@ -57,16 +58,18 @@ int main(int argc, char ** argv) {
 //  LogComponentEnable("TraciClient", LOG_LEVEL_ALL);
 //  LogComponentEnable("Ovnis", LOG_LEVEL_ALL);
 
-	string outputFolder = "outputFolder";
-	outputFolder = "outputFolder_FCE";
-	string sumoConfig = "Kirchberg.sumocfg";
-	sumoConfig = "fce.sumocfg";
-	string sumoPath="/opt/sumo/bin/sumo";
+	string outputFolder = "scenarios/";
+	string scenario = "Highway";
+//	scenario = "Kirchberg";
+	string scenarioFolder = outputFolder + scenario;
+	string sumoConfig = "scenario.sumocfg";
+	string sumoPath="/opt/sumo/bin/sumo"; // mac
 	sumoPath="/opt/sumo/bin/sumo-gui";
 	string sumoHost = "localhost";
-	int startTime = 0;
+	int startTime = 110;
 	int stopTime = 3600;
 	stopTime = 1800;
+	stopTime = 610;
 //	startTime = 21600; // 6h
 //	stopTime = 25200; // 7h
 	double communicationRange = MAX_COMMUNICATION_RANGE;
@@ -93,9 +96,9 @@ int main(int argc, char ** argv) {
 			"Path to binary file SUMO.",
 			sumoPath);
 	cmd.AddValue(
-				"outputFolder",
-				"Output folder name.",
-				outputFolder);
+				"scenarioFolder",
+				"Scenario folder path",
+				scenarioFolder);
 	cmd.Parse(argc, argv);
 
 	// reset seed to generate different numbers every time
@@ -106,7 +109,7 @@ int main(int argc, char ** argv) {
 			"SumoPath", StringValue(sumoPath),
 			"SumoHost", StringValue(sumoHost),
 			"StartTime", IntegerValue(startTime),
-			"OutputFolder", StringValue(outputFolder),
+			"ScenarioFolder", StringValue(scenarioFolder),
 			"StopTime", IntegerValue(stopTime),
 			"CommunicationRange", DoubleValue(communicationRange),
 			"StartSumo", BooleanValue(startSumo),

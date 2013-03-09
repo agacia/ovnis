@@ -69,7 +69,8 @@ ns3::TypeId Ovnis::GetTypeId(void) {
 			AddAttribute("OvnisApplication", "Application used in devices", StringValue("ns3::OvnisApplication"), MakeStringAccessor(&Ovnis::m_ovnis_application), MakeStringChecker()).
 			AddAttribute("SumoConfig","The configuration file for running SUMO", StringValue("/Users/pigne/Documents/Projects/TrafficSimulation/SimpleTrafficApplication/kirchberg.sumo.cfg"),MakeStringAccessor(&Ovnis::sumoConfig), MakeStringChecker()).
 			AddAttribute("SumoHost", "The host machine on which SUMO will run",StringValue(SUMO_HOST),MakeStringAccessor(&Ovnis::sumoHost), MakeStringChecker()).
-			AddAttribute("OutputFolder", "Output folder name", StringValue("outputFolder"), MakeStringAccessor(&Ovnis::outputFolder), MakeStringChecker()).
+//			AddAttribute("OutputFolder", "Output folder name", StringValue("outputFolder"), MakeStringAccessor(&Ovnis::outputFolder), MakeStringChecker()).
+			AddAttribute("ScenarioFolder", "Scenario folder path", StringValue("scenarioFolder"), MakeStringAccessor(&Ovnis::scenarioFolder), MakeStringChecker()).
 			AddAttribute( "StartTime", "Start time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::startTime), MakeIntegerChecker<int>(0)).
 			AddAttribute("StopTime", "Stop time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::stopTime), MakeIntegerChecker<int>(0)).
 			AddAttribute( "CommunicationRange", "Communication range used to subdivide the simulation space (in meters)", DoubleValue(MAX_COMMUNICATION_RANGE), MakeDoubleAccessor(&Ovnis::communicationRange), MakeDoubleChecker<double>(0.0)).
@@ -110,14 +111,14 @@ void Ovnis::DoStart(void) {
     isLTE = false;
     isOvnisChannel = false;
 
-    Log::getInstance().setOutputFolder(outputFolder);
+    Log::getInstance().setOutputFolder(scenarioFolder);
 
 	currentTime = 0;
     Names::Add("Ovnis", this);
 
 	try {
 		traci = CreateObject<SumoTraciConnection> ();
-		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, outputFolder);
+		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder);
 		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 		vector<double> bounds = traci->GetSimulationBoundaries();

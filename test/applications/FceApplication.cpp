@@ -270,7 +270,7 @@ void FceApplication::SimulationRun(void) {
 			if (isReportingPoint && !notificationSent) {
 				string routeId = vehicle.getItinerary().getId();
 				double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
-				//cout << Simulator::Now().GetSeconds() << " " ;
+				cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << vehicle.getItinerary().computeStaticCost(decisionEdgeId, currentEdge) << "\t" << vehicle.getItinerary().computeStaticCost() << "\t" << vehicle.getItinerary().computeLength(decisionEdgeId, currentEdge) << "\t" << vehicle.getItinerary().computeLength() << endl;
 				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime);
 				notificationSent = true;
 			}

@@ -6,10 +6,12 @@ outputFolder*/
 # Ignore all eclipse files
 .metadata/
 .settings/
+scenarios/*/sumo_output.log
+scenarios/*/ovnisOutput
+scenarios/*/sumoOutput
 autom4te.cache
 .cproject
 .project
-/m4
 ltmain.sh
 install-sh
 sumo_output.log

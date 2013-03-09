@@ -116,7 +116,9 @@ namespace ns3
      */
     std::string sumoPath;
 
-    std::string outputFolder;
+//    std::string outputFolder;
+
+    std::string scenarioFolder;
     /**
      * The port number (network) on the host machine SUMO will run on
      */

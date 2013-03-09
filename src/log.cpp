@@ -56,7 +56,7 @@ Log::~Log() {
 }
 
 void Log::setOutputFolder(string folderName) {
-	outputFolder = folderName;
+	outputFolder = folderName + "/ovnisOutput";
 }
 
 ostream & Log::getStream(string name) {
