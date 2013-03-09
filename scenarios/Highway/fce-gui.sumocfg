@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <input>
+	<!-- Kirchberg 3 routes
+	<net-file value="Kirchberg.net.xml"/>
+        <route-files value="Kirchberg.rou.xml"/>
+        <additional-files value="Kirchberg_input_additional.add.xml tlLogic.xml"/>
+	-->
+	<!-- Kirchberg VehiLux 
+	<net-file value="Kirchberg.net.xml"/>
+        <route-files value="Kirchberg_vehilux.rou.xml"/>
+        <additional-files value="Kirchberg.shapes.xml tlLogic.xml"/>
+	-->
+	<!--
+        <net-file value="net.net.xml"/>
+        <route-files value="input_routes.rou.xml"/>
+        <additional-files value="input_additional.add.xml"/>
+	-->	
+	<!-- various
+        <net-file value="net.various.net.xml"/>
+        <route-files value="input_routes.various.rou.xml"/>
+        <additional-files value="input_additional.various.add.xml"/>
+	-->
+	<!-- equal  -->
+	<net-file value="net.equal.net.xml"/>
+        <route-files value="input_routes.equal.rou.xml"/>
+        <additional-files value="input_additional.equal.add.xml"/>
+	
+    </input>
+
+    <output>
+        <summary-output value="summary.xml"/>
+        <tripinfo-output value="tripinfo.xml"/>
+        <!--<vehroute-output value="vehroute.xml"/>-->
+    </output>
+   
+   <time-to-teleport value="0" />
+   <route-steps value="60" />
+   <lanechange.allow-swap value="true" />
+
+    <time>
+        <begin value="0"/>
+        <end value="25200"/>
+    </time>
+
+    <report>
+	<verbose value="true" />
+        <no-duration-log value="false" />
+        <no-step-log value="false" />
+    </report>
+
+</configuration>
