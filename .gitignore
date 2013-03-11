@@ -1,15 +1,6 @@
-# Ignore all outputFolder directories
-outputFolder*/
-# Ignore all files ending with ~
 *~
-
-# Ignore all eclipse files
 .metadata/
 .settings/
-.DS_Store
-scenarios/*/sumo_output.log
-scenarios/*/ovnisOutput/*.xml
-scenarios/*/sumoOutput/*.xml
 autom4te.cache
 .cproject
 .project
@@ -23,7 +14,6 @@ src/.libs
 src/Makefile
 test/ovnisSample
 tests/Makefile
-aclocal.m4
 CHANGES.html
 config.guess
 config.log
@@ -49,18 +39,12 @@ test/.deps/
 
 *.lo
 *.o
-src/common/.DS_Store
+.DS_Store
 
 src/devices/wifi my/
 src/devices/wifi patricia/
 src/devices/wifi/ovnis-wifi-phy-original.cc
 src/devices/wifi/ovnis-wifi-phy-original.h
 
-test/FCE/input_additional.add (copy).xml
-test/FCE/input_definition0.def.xml
-test/FCE/input_definition20.def.xml
-test/FCE/input_definition32.def.xml
-test/Luxembourg15/.DS_Store
-test/Luxembourg15/Kirchberg.rou copy.xml
 test/Simple of simple-traffic-application-main.cc
 
