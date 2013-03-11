@@ -6,9 +6,10 @@ outputFolder*/
 # Ignore all eclipse files
 .metadata/
 .settings/
+.DS_Store
 scenarios/*/sumo_output.log
-scenarios/*/ovnisOutput/*
-scenarios/*/sumoOutput/*
+scenarios/*/ovnisOutput/*.xml
+scenarios/*/sumoOutput/*.xml
 autom4te.cache
 .cproject
 .project
