@@ -7,8 +7,8 @@ outputFolder*/
 .metadata/
 .settings/
 scenarios/*/sumo_output.log
-scenarios/*/ovnisOutput
-scenarios/*/sumoOutput
+scenarios/*/ovnisOutput/*
+scenarios/*/sumoOutput/*
 autom4te.cache
 .cproject
 .project

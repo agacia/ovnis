@@ -19,6 +19,7 @@
  * @file FceApplication.cpp
  * 
  * @author Yoann Pigné <yoann@pigne.org>
+ * @author Agata Grzybek
  *
  */
 
@@ -99,26 +100,26 @@ FceApplication::FceApplication() {
 //	alternativeRoutes["bypass"].setCapacity(1500);
 //	scenario.setAlternativeRoutes(alternativeRoutes);
 
-	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
-	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
-	map<string, Route> alternativeRoutes = map<string, Route>();
-//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
-	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
-	alternativeRoutes["main"].setCapacity(900);
-	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
-	alternativeRoutes["bypass"].setCapacity(1500);
-	scenario.setAlternativeRoutes(alternativeRoutes);
-
-//	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
-//	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
+//	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
+//	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
 //	map<string, Route> alternativeRoutes = map<string, Route>();
-//	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-//	alternativeRoutes["kennedy"].setCapacity(1300);
-//	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
-//	alternativeRoutes["adenauer"].setCapacity(600);
-//	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-//	alternativeRoutes["thuengen"].setCapacity(800);
+////	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
+//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
+//	alternativeRoutes["main"].setCapacity(900);
+//	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
+//	alternativeRoutes["bypass"].setCapacity(1500);
 //	scenario.setAlternativeRoutes(alternativeRoutes);
+
+	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
+	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
+	map<string, Route> alternativeRoutes = map<string, Route>();
+	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+	alternativeRoutes["kennedy"].setCapacity(1300);
+	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
+	alternativeRoutes["adenauer"].setCapacity(600);
+	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+	alternativeRoutes["thuengen"].setCapacity(800);
+	scenario.setAlternativeRoutes(alternativeRoutes);
 }
 
 FceApplication::~FceApplication() {
@@ -162,7 +163,7 @@ void FceApplication::StartApplication(void) {
 //	double r2 = rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL);
 
 	m_simulationEvent = Simulator::Schedule(Seconds(r), &FceApplication::SimulationRun, this);
-	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
+//	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
 
 }
 
@@ -197,8 +198,8 @@ void FceApplication::SimulationRun(void) {
 				Vector position = mobilityModel->GetPosition();
 				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 //				Log::getInstance().getStream("") << now << "\t" <<lastEdgeId << "\t" << position.x << "," << position.y << "\n" ;
-				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
-				SendPacket(p);
+//				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
+//				SendPacket(p);
 			}
 
 			// if approaching an intersection

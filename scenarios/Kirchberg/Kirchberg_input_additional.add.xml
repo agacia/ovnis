@@ -1,5 +1,5 @@
 <additionals xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/additional_file.xsd">
 
-    <variableSpeedSign id="vss" lanes="56640728#3_0 56640728#3_1" file="input_definition7.def.xml"/>
+    <!--<variableSpeedSign id="vss" lanes="56640728#3_0 56640728#3_1" file="input_definition7.def.xml"/>-->
 
 </additionals>

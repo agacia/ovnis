@@ -82,28 +82,28 @@ AM_LDFLAGS="$LDFLAGS"
 ##########################################################################
 # check for NS3 
 ##########################################################################
-LIB_NS3="ns3.14.1-antenna-debug"
-#libns3.14.1-antenna-debug.so            libns3.14.1-flow-monitor-debug.so           libns3.14.1-propagation-debug.so
-#libns3.14.1-antenna-test-debug.so       libns3.14.1-flow-monitor-test-debug.so      libns3.14.1-propagation-test-debug.so
-#libns3.14.1-aodv-debug.so               libns3.14.1-internet-debug.so               libns3.14.1-spectrum-debug.so
-#libns3.14.1-aodv-test-debug.so          libns3.14.1-internet-test-debug.so          libns3.14.1-spectrum-test-debug.so
-#libns3.14.1-applications-debug.so       libns3.14.1-lte-debug.so                    libns3.14.1-stats-debug.so
-#libns3.14.1-applications-test-debug.so  libns3.14.1-lte-test-debug.so               libns3.14.1-stats-test-debug.so
-#libns3.14.1-bridge-debug.so             libns3.14.1-mesh-debug.so                   libns3.14.1-tap-bridge-debug.so
-#libns3.14.1-buildings-debug.so          libns3.14.1-mesh-test-debug.so              libns3.14.1-test-debug.so
-#libns3.14.1-buildings-test-debug.so     libns3.14.1-mobility-debug.so               libns3.14.1-test-test-debug.so
-#libns3.14.1-config-store-debug.so       libns3.14.1-mobility-test-debug.so          libns3.14.1-tools-debug.so
-#libns3.14.1-core-debug.so               libns3.14.1-mpi-debug.so                    libns3.14.1-tools-test-debug.so
-#libns3.14.1-core-test-debug.so          libns3.14.1-netanim-debug.so                libns3.14.1-topology-read-debug.so
-#libns3.14.1-csma-debug.so               libns3.14.1-netanim-test-debug.so           libns3.14.1-topology-read-test-debug.so
-#libns3.14.1-csma-layout-debug.so        libns3.14.1-network-debug.so                libns3.14.1-uan-debug.so
-#libns3.14.1-dsdv-debug.so               libns3.14.1-network-test-debug.so           libns3.14.1-uan-test-debug.so
-#libns3.14.1-dsdv-test-debug.so          libns3.14.1-nix-vector-routing-debug.so     libns3.14.1-virtual-net-device-debug.so
-#libns3.14.1-dsr-debug.so                libns3.14.1-olsr-debug.so                   libns3.14.1-wifi-debug.so
-#libns3.14.1-dsr-test-debug.so           libns3.14.1-olsr-test-debug.so              libns3.14.1-wifi-test-debug.so
-#libns3.14.1-emu-debug.so                libns3.14.1-point-to-point-debug.so         libns3.14.1-wimax-debug.so
-#libns3.14.1-energy-debug.so             libns3.14.1-point-to-point-layout-debug.so  libns3.14.1-wimax-test-debug.so
-#libns3.14.1-energy-test-debug.so        libns3.14.1-point-to-point-test-debug.so
+LIB_NS3="ns3.16-antenna-debug"
+#libns3.16-antenna-debug.so            libns3.16-flow-monitor-debug.so           libns3.16-propagation-debug.so
+#libns3.16-antenna-test-debug.so       libns3.16-flow-monitor-test-debug.so      libns3.16-propagation-test-debug.so
+#libns3.16-aodv-debug.so               libns3.16-internet-debug.so               libns3.16-spectrum-debug.so
+#libns3.16-aodv-test-debug.so          libns3.16-internet-test-debug.so          libns3.16-spectrum-test-debug.so
+#libns3.16-applications-debug.so       libns3.16-lte-debug.so                    libns3.16-stats-debug.so
+#libns3.16-applications-test-debug.so  libns3.16-lte-test-debug.so               libns3.16-stats-test-debug.so
+#libns3.16-bridge-debug.so             libns3.16-mesh-debug.so                   #libns3.16-tap-bridge-debug.so
+#libns3.16-buildings-debug.so          libns3.16-mesh-test-debug.so              libns3.16-test-debug.so
+#libns3.16-buildings-test-debug.so     libns3.16-mobility-debug.so               libns3.16-test-test-debug.so
+#libns3.16-config-store-debug.so       libns3.16-mobility-test-debug.so          libns3.16-tools-debug.so
+#libns3.16-core-debug.so               libns3.16-mpi-debug.so                    libns3.16-tools-test-debug.so
+#libns3.16-core-test-debug.so          libns3.16-netanim-debug.so                libns3.16-topology-read-debug.so
+#libns3.16-csma-debug.so               libns3.16-netanim-test-debug.so           libns3.16-topology-read-test-debug.so
+#libns3.16-csma-layout-debug.so        libns3.16-network-debug.so                libns3.16-uan-debug.so
+#libns3.16-dsdv-debug.so               libns3.16-network-test-debug.so           libns3.16-uan-test-debug.so
+#libns3.16-dsdv-test-debug.so          libns3.16-nix-vector-routing-debug.so     libns3.16-virtual-net-device-debug.so
+#libns3.16-dsr-debug.so                libns3.16-olsr-debug.so                   libns3.16-wifi-debug.so
+#libns3.16-dsr-test-debug.so           libns3.16-olsr-test-debug.so              libns3.16-wifi-test-debug.so
+#libns3.16-emu-debug.so                libns3.16-point-to-point-debug.so         libns3.16-wimax-debug.so
+#libns3.16-energy-debug.so             libns3.16-point-to-point-layout-debug.so  libns3.16-wimax-test-debug.so
+#libns3.16-energy-test-debug.so        libns3.16-point-to-point-test-debug.so
 
 
 # store current *FLAGS and merge with AM_*FLAGS for compilation and linker check   
@@ -112,7 +112,7 @@ LDFLAGS="$AM_LDFLAGS $LDFLAGS"
 
 # ensure the library to check for is covered by the LIBS variable
 OLD_LIBS=$LIBS
-LIBS="-lns3.14.1-antenna-debug            -lns3.14.1-flow-monitor-debug           -lns3.14.1-propagation-debug -lns3.14.1-antenna-test-debug       -lns3.14.1-flow-monitor-test-debug      -lns3.14.1-propagation-test-debug -lns3.14.1-aodv-debug               -lns3.14.1-internet-debug               -lns3.14.1-spectrum-debug -lns3.14.1-aodv-test-debug          -lns3.14.1-internet-test-debug          -lns3.14.1-spectrum-test-debug -lns3.14.1-applications-debug       -lns3.14.1-lte-debug                    -lns3.14.1-stats-debug -lns3.14.1-applications-test-debug  -lns3.14.1-lte-test-debug               -lns3.14.1-stats-test-debug -lns3.14.1-bridge-debug             -lns3.14.1-mesh-debug                   -lns3.14.1-tap-bridge-debug -lns3.14.1-buildings-debug          -lns3.14.1-mesh-test-debug              -lns3.14.1-test-debug -lns3.14.1-buildings-test-debug     -lns3.14.1-mobility-debug               -lns3.14.1-test-test-debug -lns3.14.1-config-store-debug       -lns3.14.1-mobility-test-debug          -lns3.14.1-tools-debug -lns3.14.1-core-debug               -lns3.14.1-mpi-debug                    -lns3.14.1-tools-test-debug -lns3.14.1-core-test-debug          -lns3.14.1-netanim-debug                -lns3.14.1-topology-read-debug -lns3.14.1-csma-debug               -lns3.14.1-netanim-test-debug           -lns3.14.1-topology-read-test-debug -lns3.14.1-csma-layout-debug        -lns3.14.1-network-debug                -lns3.14.1-uan-debug -lns3.14.1-dsdv-debug               -lns3.14.1-network-test-debug           -lns3.14.1-uan-test-debug -lns3.14.1-dsdv-test-debug          -lns3.14.1-nix-vector-routing-debug     -lns3.14.1-virtual-net-device-debug -lns3.14.1-dsr-debug                -lns3.14.1-olsr-debug                   -lns3.14.1-wifi-debug -lns3.14.1-dsr-test-debug           -lns3.14.1-olsr-test-debug              -lns3.14.1-wifi-test-debug -lns3.14.1-emu-debug                -lns3.14.1-point-to-point-debug         -lns3.14.1-wimax-debug -lns3.14.1-energy-debug             -lns3.14.1-point-to-point-layout-debug  -lns3.14.1-wimax-test-debug -lns3.14.1-energy-test-debug        -lns3.14.1-point-to-point-test-debug "
+LIBS="-lns3.16-antenna-debug            -lns3.16-flow-monitor-debug           -lns3.16-propagation-debug -lns3.16-antenna-test-debug       -lns3.16-flow-monitor-test-debug      -lns3.16-propagation-test-debug -lns3.16-aodv-debug               -lns3.16-internet-debug               -lns3.16-spectrum-debug -lns3.16-aodv-test-debug          -lns3.16-internet-test-debug          -lns3.16-spectrum-test-debug -lns3.16-applications-debug       -lns3.16-lte-debug                    -lns3.16-stats-debug -lns3.16-applications-test-debug  -lns3.16-lte-test-debug               -lns3.16-stats-test-debug -lns3.16-bridge-debug             -lns3.16-mesh-debug                 -lns3.16-buildings-debug          -lns3.16-mesh-test-debug              -lns3.16-test-debug -lns3.16-buildings-test-debug     -lns3.16-mobility-debug               -lns3.16-test-test-debug -lns3.16-config-store-debug       -lns3.16-mobility-test-debug          -lns3.16-tools-debug -lns3.16-core-debug               -lns3.16-mpi-debug                    -lns3.16-tools-test-debug -lns3.16-core-test-debug          -lns3.16-netanim-debug                -lns3.16-topology-read-debug -lns3.16-csma-debug               -lns3.16-netanim-test-debug           -lns3.16-topology-read-test-debug -lns3.16-csma-layout-debug        -lns3.16-network-debug                -lns3.16-uan-debug -lns3.16-dsdv-debug               -lns3.16-network-test-debug           -lns3.16-uan-test-debug -lns3.16-dsdv-test-debug          -lns3.16-nix-vector-routing-debug     -lns3.16-virtual-net-device-debug -lns3.16-dsr-debug                -lns3.16-olsr-debug                   -lns3.16-wifi-debug -lns3.16-dsr-test-debug           -lns3.16-olsr-test-debug              -lns3.16-wifi-test-debug                -lns3.16-point-to-point-debug         -lns3.16-wimax-debug -lns3.16-energy-debug             -lns3.16-point-to-point-layout-debug  -lns3.16-wimax-test-debug -lns3.16-energy-test-debug        -lns3.16-point-to-point-test-debug "
 
 AM_LIBS="$LIBS $AM_LIBS"
 

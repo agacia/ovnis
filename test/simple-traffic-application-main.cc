@@ -60,13 +60,13 @@ int main(int argc, char ** argv) {
 
 	string outputFolder = "scenarios/";
 	string scenario = "Highway";
-//	scenario = "Kirchberg";
+	scenario = "Kirchberg";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
 	string sumoPath="/opt/sumo/bin/sumo"; // mac
 	sumoPath="/opt/sumo/bin/sumo-gui";
 	string sumoHost = "localhost";
-	int startTime = 110;
+	int startTime = 0;
 	int stopTime = 3600;
 	stopTime = 1800;
 	stopTime = 610;
