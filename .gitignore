@@ -19,6 +19,9 @@ gcc
 g++
 src/.deps
 src/.libs
+src/Makefile
+test/ovnisSample
+tests/Makefile
 aclocal.m4
 CHANGES.html
 config.guess

@@ -39,6 +39,7 @@
 #include "ns3/propagation-loss-model.h"
 #include "ns3/propagation-delay-model.h"
 #include "devices/wifi/channel-cell.h"
+#include <algorithm>
 
 NS_LOG_COMPONENT_DEFINE ("OvnisWifiChannel");
 
