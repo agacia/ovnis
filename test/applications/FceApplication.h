@@ -117,6 +117,8 @@ namespace ns3
 
     bool m_verbose;
 
+    void CalculateError(std::string currentEdge);
+
     /**
      * Port used to communicate.
      */
@@ -139,6 +141,9 @@ namespace ns3
     bool notificationSent;
     string decisionEdgeId;
 
+    bool isVanet;
+    string strategy;
+    double cheatersRatio;
 
     /**
      * Physical information about a vehicle, such as position, current speed. It's connected to SUMO with TraCi in both way (reading and writing).

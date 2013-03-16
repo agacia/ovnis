@@ -43,15 +43,20 @@ int Knowledge::substractNumberOfVehicles(std::string edgeId) {
 	return numberOfVehicles[edgeId];
 }
 
-void Knowledge::record(Data data) {
+bool Knowledge::record(Data data) {
 	// record only information that is fresher than the last heard
 	if (travelTimes.find(data.edgeId) == travelTimes.end() ||
 			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getLatestTime() < data.date)) {
-		if (data.date == 0) {
-			cerr << "date == 0 !" << endl;
-		}
+//		if (data.edgeId == "main_3b") {
+//			Log::getInstance().getStream("main_3b_recording") << data.travelTime << "\tfrom date\t" << data.date;
+//		}
 		travelTimes[data.edgeId].add(0, "", data.date, data.travelTime);
+		return true;
 	}
+//	if (data.edgeId == "main_3b") {
+//		Log::getInstance().getStream("main_3b_recording") << data.travelTime << "\tfrom date\t" << data.date << "\t there is fresher:\t" << travelTimes[data.edgeId].getLatestTime() << "\t" << travelTimes[data.edgeId].getLatestValue();
+//	}
+	return false;
 }
 
 void Knowledge::record(vector<Data> data) {
@@ -70,7 +75,6 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 	map<string, double> packetAges;
 	map<string,int> numberOfUpdatedEdges;
 	double now = Simulator::Now().GetSeconds();
-
 	map<string,int> vehicles;
 
 	// get static costs
@@ -94,20 +98,18 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 
 		double staticCost = 0;
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
-			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId) && // if the edge belongs to the part of the future route
-					travelTime > 0 && // information was recorded about this edge
-					packetAge < maxInformationAge // if the information is fresh enough
-					) {
-				staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
-				if (staticCost != 0) {
-					it->second.setCapacity(staticCost);
+			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)) { // if the edge belongs to the part of the future route
+				if (travelTime > 0 && packetAge < maxInformationAge) {// information was recorded about this edge and is fresh enough
+					staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
+					if (staticCost != 0) {
+						it->second.setCapacity(staticCost);
+					}
+					costs[itRoutes->first] = costs[itRoutes->first] - staticCost + travelTime;
+					packetAges[itRoutes->first] += packetAge;
+					++numberOfUpdatedEdges[itRoutes->first];
+					++totalNumberOfUpdatedEdges;
+					Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime << "\t";
 				}
-				costs[itRoutes->first] = costs[itRoutes->first] - staticCost + travelTime;
-				packetAges[itRoutes->first] += packetAge;
-				++numberOfUpdatedEdges[itRoutes->first];
-				++totalNumberOfUpdatedEdges;
-				Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime << "\t";
-//				cout << "updating cost of route " << itRoutes->first << " on edge: " << it->first << ": staticCost:" << staticCost << ", actualTravelTime " << travelTime << ", " << (Simulator::Now().GetSeconds() - packetDate) << "," << vehs << endl;
 			}
 		}
 	}
@@ -132,6 +134,10 @@ map<string, double> Knowledge::getCosts(map<string, Route> routes, string startE
 	return costs;
 }
 
+map<string,double> Knowledge::getCongestedLengthOnRoutes() {
+	return congestedLengthOnRoutes;
+}
+
 /**
  * Tries to assess the severity of congestion.
  * Look up in recorded database and compute the actual capacity of each edge (the lower capacity (0-1) the more congested edge
@@ -141,7 +147,7 @@ bool Knowledge::isCapacityDrop(map<string, Route> routes, string startEdgeId, st
 	double now = Simulator::Now().GetSeconds();
 	double sumLength = 0;
 	double congestedLength = 0;
-	map<string,double> congestedLengthOnRoutes;
+	congestedLengthOnRoutes = map<string,double>();
 	for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 		congestedLengthOnRoutes[itRoutes->first] = 0;
 	}
@@ -177,6 +183,26 @@ bool Knowledge::isCapacityDrop(map<string, Route> routes, string startEdgeId, st
 }
 
 
-
+map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId)
+{
+	map<std::string, double> edgesCosts;//edgesCosts = map<string, double> ();
+	for (map<string, EdgeInfo>::iterator it = TIS::getInstance().getStaticRecords().begin(); it != TIS::getInstance().getStaticRecords().end(); ++it) {
+		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
+			if (itRoutes->second.containsEdgeExcludedMargins(it->first, startEdgeId, endEdgeId)) {
+				if (edgesCosts.find(it->first) == edgesCosts.end()) {
+					double travelTime = travelTimes[it->first].getLatestValue();
+					double packetAge = travelTimes[it->first].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - travelTimes[it->first].getLatestTime();
+					if (travelTime > 0 && packetAge < maxInformationAge) { // if the information is fresh enough
+						edgesCosts[it->first] = travelTime;
+					}
+					else {
+						edgesCosts[it->first] = it->second.getStaticCost();
+					}
+				}
+			}
+		}
+	}
+    return edgesCosts;
+}
 
 }

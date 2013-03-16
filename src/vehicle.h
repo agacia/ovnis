@@ -70,15 +70,8 @@ public:
 
     void reroute(std::string routeId);
 
-//    void printPacketCounts(ostream & out);
-//    std::map<std::string,RecordEntry> getRecords() const;
-//    void recordEdge(std::string edgeId, long packetId, std::string senderId, double time, double travelTime);
-//    std::map<std::string,RecordEntry> getlocalKnowledge() const;
-//    map<std::string, double> computeTravelTimesOnRoutes(map<std::string,RecordEntry> edges, map<std::string, Route> routes, string startEdgeId, string endEdgeId);
-//    map<string, double> getVanetCosts(std::string startEdgeId, std::string endEdgeId);
-//    map<string, double> getGlobalCosts(std::string startEdgeId, std::string endEdgeId);
-
-//    std::string getLastEdgeId();
+	double getEdgeTravelTime(std::string edgeId);
+	map<std::string, double> getSumoCosts(std::string startEdgeId);
 
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;

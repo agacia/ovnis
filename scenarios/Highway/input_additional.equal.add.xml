@@ -11,9 +11,9 @@
     <!-- +1000m 
     <variableSpeedSign id="vss" lanes="main_3_0 main_3_1" file="input_definition7.def.xml"/>
 	-->
-    <!-- +1500m
+    <!-- +1500m -->
     <variableSpeedSign id="vss" lanes="main_4a_0 main_4a_1" file="input_definition7.def.xml"/>
--->
+
     <!-- +2000m
     <variableSpeedSign id="vss" lanes="main_5_0 main_5_1" file="input_definition7.def.xml"/>
 -->

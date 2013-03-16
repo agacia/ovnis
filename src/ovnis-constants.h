@@ -77,6 +77,13 @@
 #define CAPACITY_THRESHOLD 0.6 // the maximum change in travel speed in relate to the one expected with maximum speed, after which the traffic problem is considered
 #define PENETRATION_RATE 0.9
 
+// ROUTING STRATEGIES
+#define IS_VANET true
+#define SELFISH_ROUTING "selfish"
+#define FASTER_SELFISH_ROUTING "faster_selfish"
+#define PROBABILISTIC_ROUTING "probabilistic"
+#define HYBRID_ROUTING "hybrid"
+
 // TRAFFIC CONDITION EVALUATION
 #define SPEED_THRESHOLD  0.2 // ratio of max speed under which I consider it's a JAM
 #define JAMMED_TIME_THRESHOLD 5 // number of seconds after which a vehicle that has speed less than SPEED_THRESHOLD*maxLaneSpeed i sconsidered to be jammed

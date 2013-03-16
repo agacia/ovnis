@@ -56,7 +56,7 @@ public:
 	bool isCongestion();
 	void setCongestion(bool congestion);
 
-	std::string chooseMinTravelTimeRoute(std::map<std::string,double> costs);
+	std::string chooseMinCostRoute(std::map<std::string,double> costs);
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();

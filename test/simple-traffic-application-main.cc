@@ -60,16 +60,17 @@ int main(int argc, char ** argv) {
 
 	string outputFolder = "scenarios/";
 	string scenario = "Highway";
-	scenario = "Kirchberg";
+//	scenario = "Kirchberg";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
 	string sumoPath="/opt/sumo/bin/sumo"; // mac
-	sumoPath="/opt/sumo/bin/sumo-gui";
+//	sumoPath="/opt/sumo/bin/sumo-gui";
+//	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
 	string sumoHost = "localhost";
 	int startTime = 0;
 	int stopTime = 3600;
 	stopTime = 1800;
-	stopTime = 610;
+//	stopTime = 600;
 //	startTime = 21600; // 6h
 //	stopTime = 25200; // 7h
 	double communicationRange = MAX_COMMUNICATION_RANGE;

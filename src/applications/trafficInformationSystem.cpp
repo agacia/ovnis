@@ -149,12 +149,12 @@ string TIS::getEvent(vector<pair<string, double> > probabilities) {
     return "";
 }
 
-string TIS::chooseMinTravelTimeRoute(map<string,double> costs) {
+string TIS::chooseMinCostRoute(map<string,double> costs) {
 	double minCost = numeric_limits<double>::max();
 	string chosenRouteId = "";
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
 		double value = it->second;
-		if (value > 0 && value < minCost) {
+		if (value >= 0 && value < minCost) {
 			minCost = value;
 			chosenRouteId = it->first;
 		}
@@ -180,7 +180,7 @@ string TIS::chooseRandomRoute() {
  * If flow exceeds the capacity of the fastest road, then split the rest of the flow proportionally to other alternative routes
  */
 string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
-	string chosenRouteId = chooseMinTravelTimeRoute(costs);
+	string chosenRouteId = chooseMinCostRoute(costs);
 	double capacity = staticRoutes[chosenRouteId].getCapacity();
 	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
 	if (flowRatioNeededToUseOtherAlternatives <= 0) {

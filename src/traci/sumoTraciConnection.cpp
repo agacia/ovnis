@@ -34,7 +34,6 @@ SumoTraciConnection::~SumoTraciConnection() {
 
 void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "", string sumoPath = "", int port = 0, string outputFolder="") {
 	currentTime = 0;
-
 	if (!host.empty()) {
 		this->host = host;
 	}
@@ -80,7 +79,7 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 		FILE * fp;
 		string args = "--tripinfo-output=" + outputFolder + "/sumoOutput/tripinfo.xml --summary-output=" + outputFolder+"/sumoOutput/summary.xml "
 				+ " --netstate="   + outputFolder + "/sumoOutput/netsate.xml";
-				//"--full-output=" + outputFolder + "/sumoOutput/full.xml";
+		//--full-output=" + outputFolder + "/sumoOutput/full.xml";
 		if ((fp = popen((sumoPath + " -c " + outputFolder+"/"+config + " " + args + " 2>&1").c_str(), "r")) == NULL) {
 			cerr <<  "#Error: Sumo processes cannot be created" << endl;
 			throw;

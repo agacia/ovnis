@@ -23,6 +23,7 @@ namespace ovnis {
 		if (id!="") {
 			traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 			requestRoute("");
+
 		}
 	}
 
@@ -78,6 +79,11 @@ namespace ovnis {
 				itinerary.getCurrentEdge().setEnteredTime(routeDepartureTime);
 			}
 		}
+	}
+
+	double Vehicle::getEdgeTravelTime(string edgeId) {
+		double edgeTravelTime = traci->GetEdgeTravelTime(edgeId);
+		cout << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << edgeTravelTime << endl;
 	}
 
     bool Vehicle::requestCurrentEdge(double currentTime)
@@ -169,6 +175,22 @@ namespace ovnis {
 
 		}
 		return routeAhead;
+	}
+
+	map<string, double> Vehicle::getSumoCosts(string startEdgeId) {
+		map<string, double> sumoCosts;
+		string endEdgeId = getDestinationEdgeId();
+		for (map<string, Route>::iterator itRoutes = scenario.getAlternativeRoutes().begin(); itRoutes != scenario.getAlternativeRoutes().end(); ++itRoutes) {
+			for (vector<string>::iterator itEdges = itRoutes->second.getEdgeIds().begin(); itEdges != itRoutes->second.getEdgeIds().end(); ++itEdges) {
+				if (itRoutes->second.containsEdgeExcludedMargins(*itEdges, startEdgeId, endEdgeId)) {
+					if (sumoCosts.find(*itEdges) == sumoCosts.end()) {
+						// add info about the edge
+						sumoCosts[*itEdges] = traci->GetEdgeTravelTime(*itEdges);
+					}
+				}
+			}
+		}
+		return sumoCosts;
 	}
 
 	//    void Vehicle::tryReroute(string unavailableEdge) {

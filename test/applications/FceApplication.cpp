@@ -90,6 +90,9 @@ FceApplication::FceApplication() {
 	notificationSent = false;
 	isCheater = false;
 	flow = 1250;
+	isVanet = IS_VANET;
+	strategy = HYBRID_ROUTING;
+	cheatersRatio = 0.05;
 
 //	scenario.setDecisionEdges(CommonHelper::split("main_1b"));
 //	scenario.setNotificationEdges(CommonHelper::split("main_2d bypass_2b"));
@@ -100,26 +103,26 @@ FceApplication::FceApplication() {
 //	alternativeRoutes["bypass"].setCapacity(1500);
 //	scenario.setAlternativeRoutes(alternativeRoutes);
 
-//	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
-//	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
-//	map<string, Route> alternativeRoutes = map<string, Route>();
-////	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
-//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
-//	alternativeRoutes["main"].setCapacity(900);
-//	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
-//	alternativeRoutes["bypass"].setCapacity(1500);
-//	scenario.setAlternativeRoutes(alternativeRoutes);
-
-	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
-	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
+	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
+	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
 	map<string, Route> alternativeRoutes = map<string, Route>();
-	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-	alternativeRoutes["kennedy"].setCapacity(1300);
-	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
-	alternativeRoutes["adenauer"].setCapacity(600);
-	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-	alternativeRoutes["thuengen"].setCapacity(800);
+//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
+	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
+	alternativeRoutes["main"].setCapacity(900);
+	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
+	alternativeRoutes["bypass"].setCapacity(1500);
 	scenario.setAlternativeRoutes(alternativeRoutes);
+
+//	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
+//	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
+//	map<string, Route> alternativeRoutes = map<string, Route>();
+//	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+//	alternativeRoutes["kennedy"].setCapacity(1300);
+//	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
+//	alternativeRoutes["adenauer"].setCapacity(600);
+//	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+//	alternativeRoutes["thuengen"].setCapacity(800);
+//	scenario.setAlternativeRoutes(alternativeRoutes);
 }
 
 FceApplication::~FceApplication() {
@@ -157,13 +160,15 @@ void FceApplication::StartApplication(void) {
 	// start simualtion
 	running = true;
 
+	Log::getInstance().getStream("strategy") << strategy << endl;
+
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
 //	double r = rando.GetValue(0, SIMULATION_STEP_INTERVAL);
 	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
 //	double r2 = rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL);
 
 	m_simulationEvent = Simulator::Schedule(Seconds(r), &FceApplication::SimulationRun, this);
-//	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
+	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
 
 }
 
@@ -198,8 +203,8 @@ void FceApplication::SimulationRun(void) {
 				Vector position = mobilityModel->GetPosition();
 				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 //				Log::getInstance().getStream("") << now << "\t" <<lastEdgeId << "\t" << position.x << "," << position.y << "\n" ;
-//				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
-//				SendPacket(p);
+				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
+				SendPacket(p);
 			}
 
 			// if approaching an intersection
@@ -207,57 +212,81 @@ void FceApplication::SimulationRun(void) {
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdge) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
 
+				// centralised TIS
 				map<string, double> globalCosts = TIS::getInstance().getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-				string global_minTravelTimeChoice = TIS::getInstance().chooseMinTravelTimeRoute(globalCosts);
+				string global_minTravelTimeChoice = TIS::getInstance().chooseMinCostRoute(globalCosts);
 				string global_proportionalProbabilisticChoice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
 				string global_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
-				//
+
+				// VANETs
 				Vector position = mobilityModel->GetPosition();
 				Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
 				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinTravelTimeRoute(vanetCosts);
+				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinCostRoute(vanetCosts);
 				string vanet_proportionalProbabilisticChoice =  TIS::getInstance().chooseProbTravelTimeRoute(vanetCosts);
 				string vanet_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
 
-				// select strategy
+				CalculateError(currentEdge);
 
 				// centralized
-//				string selfishRouteChoice = global_minTravelTimeChoice;
-//				string systemRouteChoice = global_proportionalProbabilisticChoice;
-//				double selfishTravelTime = globalCosts[selfishRouteChoice];
-//				double systemTravelTIme = globalCosts[systemRouteChoice];
+				string centralizedSelfishRouteChoice = global_minTravelTimeChoice;
+				string centralizedSystemRouteChoice = global_proportionalProbabilisticChoice;
+				double centralizedSelfishTravelTime = globalCosts[centralizedSelfishRouteChoice];
+				double centralizedSystemTravelTIme = globalCosts[centralizedSystemRouteChoice];
 
-				// vanets
+//				// vanets
 				string selfishRouteChoice = vanet_minTravelTimeChoice;
 				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
 				double selfishTravelTime = vanetCosts[selfishRouteChoice];
 				double systemTravelTIme = vanetCosts[systemRouteChoice];
 
-				string routeChoice = selfishRouteChoice;
-				selfishExpectedTravelTime = selfishTravelTime;
-				expectedTravelTime = selfishTravelTime;
+				// default is centralised
+				string routeChoice = centralizedSelfishRouteChoice;
+				selfishExpectedTravelTime = centralizedSelfishTravelTime;
+				expectedTravelTime = centralizedSelfishTravelTime;
 
-				// hybrid
-				double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-				TIS::getInstance().setCongestion(capacityDrop);
-				if (capacityDrop) {
-					routeChoice = systemRouteChoice;
-					expectedTravelTime = systemTravelTIme;
+				if (isVanet) {
+					routeChoice = selfishRouteChoice;
+					selfishExpectedTravelTime = selfishTravelTime;
+					expectedTravelTime = selfishTravelTime;
+
+					double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+					TIS::getInstance().setCongestion(capacityDrop);
+
+					if (strategy == PROBABILISTIC_ROUTING) {
+						routeChoice = systemRouteChoice;
+						expectedTravelTime = systemTravelTIme;
+					}
+
+					// faster selfish
+					else if (strategy == FASTER_SELFISH_ROUTING && capacityDrop) {
+						string fasterSelfishRouteChoice = TIS::getInstance().chooseMinCostRoute(vanetsKnowledge.getCongestedLengthOnRoutes());
+						routeChoice = fasterSelfishRouteChoice;
+						expectedTravelTime = vanetCosts[fasterSelfishRouteChoice];
+					}
+
+					// hybrid
+					else if (strategy == HYBRID_ROUTING && capacityDrop) {
+						routeChoice = systemRouteChoice;
+						expectedTravelTime = systemTravelTIme;
+					}
 				}
 
-//				double now = Simulator::Now().GetSeconds();
-//				Log::getInstance().getStream("global_routing_strategies") << now << "\t" << global_minTravelTimeChoice << "\t" << global_proportionalProbabilisticChoice << "\t" << global_flowAwareChoice << endl;
-//				Log::getInstance().getStream("vanet_routing_strategies") << now << "\t" << vanet_minTravelTimeChoice << "\t" << vanet_proportionalProbabilisticChoice << "\t" << vanet_flowAwareChoice << endl;
-
+				// Cheaters
 				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
-
-//				string routeChoice = selfishRouteChoice;
-				if (r < CHEATER_RATIO) {
+				if (cheatersRatio > 0 && r < cheatersRatio) {
 					if (routeChoice != selfishRouteChoice) {
 						routeChoice = selfishRouteChoice;
 						isCheater = true;
 					}
 				}
+				if (cheatersRatio < 0 && -r > cheatersRatio) {
+					if (routeChoice != systemRouteChoice) {
+						routeChoice = systemRouteChoice;
+						isCheater = true;
+					}
+				}
+//				string routeChoice = vehicle.getItinerary().getId();
 
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;
@@ -282,6 +311,37 @@ void FceApplication::SimulationRun(void) {
 	catch (TraciException & ex) {
 		running = false;
 	}
+}
+
+void FceApplication::CalculateError(string currentEdge) {
+	map<string, double> sumoEdgesCosts = vehicle.getSumoCosts(currentEdge);
+	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId()); // refer to the last call of vanetsKnowledge.getCosts !
+
+	double now = Simulator::Now().GetSeconds();
+
+	Log::getInstance().getStream("edges_sumo") << now << "\t";
+	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
+		Log::getInstance().getStream("edges_sumo") << "\t"  << it->first << "," << it->second << "\t";
+	}
+	Log::getInstance().getStream("edges_sumo") << endl;
+	Log::getInstance().getStream("edges_vanet") << now << "\t";
+	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
+		Log::getInstance().getStream("edges_vanet") << it->first << "," << it->second << "\t";
+	}
+	Log::getInstance().getStream("edges_vanet") << endl;
+
+	// error
+	double error = 0;
+	double sumSumo = 0;
+	double sumVanet = 0;
+	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
+		error += abs(it->second - vanetEdgesCosts[it->first]);
+		sumSumo += it->second;
+		sumVanet += vanetEdgesCosts[it->first];
+	}
+	double percent = error / (sumSumo + sumVanet);
+	Log::getInstance().getStream("edges_error") << now << "\t" << error << "\t" << percent << "\t" << sumVanet << "\t" << sumSumo << "\t" << sumVanet-sumSumo << endl;
+
 }
 
 void FceApplication::SendTrafficInformation(void) {
@@ -343,10 +403,21 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 			data.edgeId = lastEdge;
 			data.travelTime = travelTime;
 			vanetsKnowledge.record(data);
+
 		}
 		if (ovnisPacket.getPacketType() == TRAFFICINFO_PACKET_ID) {
 			vector<Data> data = ovnisPacket.ReadTrafficInfoPacket();
 			vanetsKnowledge.record(data);
+//			for (vector<Data>::iterator it = data.begin(); it != data.end(); ++it) {
+//				if (it->edgeId == "main_3b") {
+//					Log::getInstance().getStream("main_3b_recording") << Simulator::Now().GetSeconds() << "\t" << decisionTaken << "\t";
+//					vanetsKnowledge.record(*it);
+//					Log::getInstance().getStream("main_3b_recording") << endl;
+//				}
+//				else {
+//					vanetsKnowledge.record(*it);
+//				}
+//			}
 		}
 
 		Log::getInstance().packetReceived();
@@ -426,9 +497,7 @@ void FceApplication::NewNeighborFound (std::string context, Ptr<const Packet> pa
 //	else{
 //		i->second= rxPwDbm;
 //	}
-//	if (vehicle.getId() == "0.5") {
-//		std::cout << vehicle.getId() << " has a new neighbor: " << addr << ", power: " << rxPwDbm << " number of neighbors: " << m_neighborList.size() << ", context: " << context << std::endl;
-//	}
+
 }
 
 }

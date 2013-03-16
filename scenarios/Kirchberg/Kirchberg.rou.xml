@@ -5,7 +5,7 @@
 
    <vType id="KRAUSS_DEFAULT" accel="2.6" decel="4.5" sigma="0.5" length="7.5" minGap="2" maxSpeed="70" color="1,1,0"/>
 
-   <flow id="0" type="KRAUSS_DEFAULT" route="kennedy" begin="0" end="30000" vehsPerHour="1250" departPos="base" departSpeed="max" departLane="0" />
-   <flow id="1" type="KRAUSS_DEFAULT" route="kennedy" begin="1" end="30000" vehsPerHour="1250" departPos="base" departSpeed="max" departLane="1" />
+   <flow id="0" type="KRAUSS_DEFAULT" route="kennedy" begin="0" end="30000" vehsPerHour="1000" departPos="base" departSpeed="max" departLane="0" />
+   <flow id="1" type="KRAUSS_DEFAULT" route="kennedy" begin="1" end="30000" vehsPerHour="1000" departPos="base" departSpeed="max" departLane="1" />
 
 </routes>

@@ -41,33 +41,22 @@ public:
 	int addNumberOfVehicles(std::string edgeId);
 	int substractNumberOfVehicles(std::string edgeId);
 
-	void record(Data data);
+	bool record(Data data);
 	void record(vector<Data> data);
 
 	map<string,RecordEntry> & getRecords();
 
 	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
 	bool isCapacityDrop(map<string, Route> routes, string startEdgeId, string endEdgeId) ;
+	map<std::string,double> getCongestedLengthOnRoutes();
+    map<std::string,double> getEdgesCosts(map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId);
 
-	/*
-	void PrintCosts(std::string fileName, std::string vehicleId, double time, map<std::string, double> costs);
-	void recordDouble(std::string id, long packetId, std::string senderId, double time, double value, int numberOfVehicles);
-	void setRecords(std::map<std::string,RecordEntry> records);
-	void recordPacket(long id);
-	int getPacketCount(long id);
-	void recordEdge(string edgeId, long packetId, string senderId, double time, double travelTime, int numberOfVehicles);
-	void printPacketCounts(ostream & out);
-	std::map<std::string,RecordEntry> getRecords() const;
-
-	void InitializeStaticKnowledge(map<string, Route> routes);
-	void InitializeGlobalKnowledge(std::map<std::string,Route> routes);
-	void InitializeLocalKnowledge();
-
-*/
 protected:
 	map<long,int> packets; // counter of packets
 	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
 	std::map<std::string, int> numberOfVehicles;
+	map<std::string,double> congestedLengthOnRoutes;
+//	map<std::string, double> edgesCosts;
 
 	double maxInformationAge;
 };
