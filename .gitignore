@@ -7,6 +7,12 @@ autom4te.cache
 ltmain.sh
 install-sh
 sumo_output.log
+ovnis2.0.config
+*.creator*
+ovnis2.0.files
+ovnis2.0.includes
+scenarios/Highway/*
+scenarios/Kirchberg/*
 gcc
 g++
 src/.deps

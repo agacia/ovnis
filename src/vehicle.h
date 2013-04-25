@@ -45,12 +45,13 @@ public:
 
     std::string getId();
 
-    Scenario & getScenario();
-    void setScenario(Scenario scenario);
+    Network & getScenario();
+    void setScenario(Network scenario);
 
     ovnis::Itinerary & getItinerary();
 	std::map<std::string, Route> & getAlternativeRoutes();
 	string getDestinationEdgeId();
+	string getOriginEdgeId();
 
 	double getLastSpeed() const;
 	void setLastSpeed(double lastSpeed);
@@ -80,7 +81,7 @@ protected:
     Position2D currentPosition;
     double currentSpeed;
 
-    Scenario scenario;
+    Network scenario;
     Route currentRoute ;
     Itinerary itinerary;
     void requestRoute(std::string routeId);

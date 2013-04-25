@@ -34,12 +34,13 @@ namespace ovnis
 
 class TIS {
 public:
-
 	virtual ~TIS();
 	static TIS & getInstance(); // Guaranteed to be destroyed. Instantiated on first use.
 
-	void reportStartingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId);
-	void reportEndingRoute(std::string routeId, std::string startEdgeId, std::string endEdgeId, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime);
+	void reportStartingRoute(string vehicleId, string currentEdgeId, string currentRouteId, string newEdgeId, string newRouteId,
+			string originEdgeId, string destinationEdgeId, bool isCheater, bool isCongested,
+			double expectedTravelTime, double shortestExpectedTravelTime);
+	void reportEndingRoute(string vehicleId, std::string routeId, std::string startEdgeId, std::string endEdgeId, double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested);
 
     int getVehiclesOnRoute(std::string routeId);
 	std::map<std::string,double> & getTravelTimesOnRoute();
@@ -54,7 +55,7 @@ public:
 	double getEdgeLength(std::string edgeId);
 	double getEdgeStaticCost(std::string edgeId);
 	bool isCongestion();
-	void setCongestion(bool congestion);
+	void setCongestion(bool congestion, bool ifDense, bool ifCongested);
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
@@ -62,7 +63,6 @@ public:
 	std::string chooseRandomRoute();
 	string getEvent(vector<pair<string, double> > probabilities);
 
-	void reportEdgePosition(std::string edgeId, double x, double y);
 
     //	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
 private:
@@ -71,7 +71,7 @@ private:
     void operator =(const TIS& ); // Don't implement
     static TIS *instance;
     std::map<std::string,EdgeInfo> staticRecords; // info about expected travel times on routes (whith max speed)
-    std::map<std::string,Vector2D> edgePositions;
+
     std::map<std::string,Route> staticRoutes;
     std::map<std::string,int> vehiclesOnRoute;
     std::map<std::string,double> travelTimesOnRoute;

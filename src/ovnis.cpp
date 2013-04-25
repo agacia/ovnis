@@ -98,6 +98,7 @@ void Ovnis::DoDispose() {
 	Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
 	Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
 	cout << "Finished! Simulation time: " << (double)(time(0) - start) << " s. " << endl;
+	cout << "congested trips:  " << Log::getInstance().congestedTrips << " cheaters:" << Log::getInstance().cheaters << endl;
 	Object::DoDispose();
 }
 
@@ -405,6 +406,7 @@ void Ovnis::TrafficSimulationStep() {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
+			cout << "end at " << currentTime << endl;
 			DestroyNetworkDevices(runningVehicles);
 		}
 	}

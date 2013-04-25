@@ -79,6 +79,14 @@ void Itinerary::initializeEdges(vector<string> routeVector) {
 	}
 }
 
+double Itinerary::getStartTime() {
+	double startTime = 0;
+	if (edgeIds.size() > 0) {
+		Edge & startEdge = edges.find(edgeIds[0])->second;
+		return startEdge.getEnteredTime();
+	}
+}
+
 Edge & Itinerary::getCurrentEdge() {
 	return *currentEdge;
 }

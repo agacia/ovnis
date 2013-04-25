@@ -68,7 +68,7 @@ int main(int argc, char ** argv) {
 //	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
 	string sumoHost = "localhost";
 	int startTime = 0;
-	int stopTime = 3600;
+	int stopTime = 60;
 	stopTime = 1800;
 //	stopTime = 600;
 //	startTime = 21600; // 6h

@@ -19,10 +19,10 @@
 
 namespace ovnis {
 
-class Scenario {
+class Network {
 public:
-	Scenario();
-	virtual ~Scenario();
+	Network();
+	virtual ~Network();
     std::map<std::string,Route>  & getAlternativeRoutes();
     std::vector<std::string>  & getDecisionEdges();
     std::vector<std::string>  & getNotificationEdges();

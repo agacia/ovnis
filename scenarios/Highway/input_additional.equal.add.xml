@@ -3,19 +3,19 @@
 <inductionLoop id="main_2b" lane="main_2b_0" pos="10" freq="60" file="sumoOutput/main_2b_0.xml" friendlyPos="true" splitByType="true" />
 
 <!--
-    <variableSpeedSign id="vss" lanes="main_2b_0 main_2b_1" file="input_definition7.def.xml"/> 
+    <variableSpeedSign id="vss" lanes="main_2b_0 main_2b_1" file="input_definition5.def.xml"/> 
     -->    
     <!-- +500m 
-    <variableSpeedSign id="vss" lanes="main_2_0 main_2_1" file="input_definition7.def.xml"/> 
+    <variableSpeedSign id="vss" lanes="main_2_0 main_2_1" file="input_definition5.def.xml"/> 
    -->
     <!-- +1000m 
-    <variableSpeedSign id="vss" lanes="main_3_0 main_3_1" file="input_definition7.def.xml"/>
+    <variableSpeedSign id="vss" lanes="main_3_0 main_3_1" file="input_definition5.def.xml"/>
 	-->
     <!-- +1500m -->
-    <variableSpeedSign id="vss" lanes="main_4a_0 main_4a_1" file="input_definition7.def.xml"/>
+    <variableSpeedSign id="vss" lanes="main_4a_0 main_4a_1" file="input_definition5.def.xml"/>
 
     <!-- +2000m
-    <variableSpeedSign id="vss" lanes="main_5_0 main_5_1" file="input_definition7.def.xml"/>
+    <variableSpeedSign id="vss" lanes="main_5_0 main_5_1" file="input_definition5.def.xml"/>
 -->
 
 </additionals>

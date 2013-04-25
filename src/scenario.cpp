@@ -11,45 +11,45 @@ using namespace std;
 
 namespace ovnis {
 
-Scenario::Scenario() {
+Network::Network() {
 
 }
 
-Scenario::~Scenario() {
+Network::~Network() {
 	// TODO Auto-generated destructor stub
 }
 
-std::map<std::string,Route>  & Scenario::getAlternativeRoutes()
+std::map<std::string,Route>  & Network::getAlternativeRoutes()
 {
 	return alternativeRoutes;
 }
 
-std::vector<std::string>  & Scenario::getDecisionEdges()
+std::vector<std::string>  & Network::getDecisionEdges()
 {
 	return decisionEdges;
 }
 
-std::vector<std::string>  & Scenario::getNotificationEdges()
+std::vector<std::string>  & Network::getNotificationEdges()
 {
 	return notificationEdges;
 }
 
-void Scenario::setAlternativeRoutes(std::map<std::string,Route> alternativeRoutes)
+void Network::setAlternativeRoutes(std::map<std::string,Route> alternativeRoutes)
 {
 	this->alternativeRoutes = alternativeRoutes;
 }
 
-void Scenario::setDecisionEdges(std::vector<std::string> decisionEdges)
+void Network::setDecisionEdges(std::vector<std::string> decisionEdges)
 {
 	this->decisionEdges = decisionEdges;
 }
 
-void Scenario::setNotificationEdges(std::vector<std::string> notificationEdges)
+void Network::setNotificationEdges(std::vector<std::string> notificationEdges)
 {
 	this->notificationEdges = notificationEdges;
 }
 
-void Scenario::print() {
+void Network::print() {
 
 	cout << "\nDecision: ";
 	for (vector<string>::iterator it = decisionEdges.begin(); it != decisionEdges.end(); ++it) {

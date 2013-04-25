@@ -87,7 +87,6 @@ namespace ns3
     typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
     typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
 
-
   protected:
 
     virtual void DoDispose(void);
@@ -117,8 +116,6 @@ namespace ns3
 
     bool m_verbose;
 
-    void CalculateError(std::string currentEdge);
-
     /**
      * Port used to communicate.
      */
@@ -140,10 +137,15 @@ namespace ns3
     bool decisionTaken;
     bool notificationSent;
     string decisionEdgeId;
-
+    bool wasCongested;
+    double startReroute;
     bool isVanet;
-    string strategy;
+    string routingStrategy;
+    string costFunction;
     double cheatersRatio;
+    double penetrationRate;
+    int accidentStartTime;
+    int accidentStopTime;
 
     /**
      * Physical information about a vehicle, such as position, current speed. It's connected to SUMO with TraCi in both way (reading and writing).
@@ -154,13 +156,20 @@ namespace ns3
     Vehicle vehicle;
 
     /**
-     * Abstraction of a single scenario from a GPS advice.
+	 * Connects the callback for the neighbor discovery service
+	 */
+	void ToggleNeighborDiscovery(bool on);
+
+    void InitializeScenario();
+    /**
+     * Abstraction of a single network from a GPS advice.
      * Contains a set of alternative routes between two points, called decision edges and notification edges.
      * All routes have information about maximum speed, capacity, length.
      * To initialize a vehicle with the scenario.
      */
-    Scenario scenario;
-    double flow;
+    string networkId;
+    Network network;
+    void SetNetwork(std::string networkId);
 
     /**
      * A local VANET's database containing traffic information ONLY heard from other vehicles
@@ -191,6 +200,7 @@ namespace ns3
 
     double expectedTravelTime;
     double selfishExpectedTravelTime;
+    void CalculateError(std::string currentEdge);
 
   };
 

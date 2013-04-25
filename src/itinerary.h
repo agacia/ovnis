@@ -31,7 +31,7 @@ public:
 	void addEdge(std::string edgeId);
 	double computeTravelTime(std::string startEdge, std::string endEdge);
 	void fixTravelTime(std::string edgeId);
-
+	double getStartTime();
 private:
 
 	std::map<std::string, Edge> edges;

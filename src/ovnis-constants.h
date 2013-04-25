@@ -74,15 +74,15 @@
 #define RESEND_INTERVAL 1
 
 #define CHEATER_RATIO 0 // % of drivers choosing selfish route
-#define CAPACITY_THRESHOLD 0.6 // the maximum change in travel speed in relate to the one expected with maximum speed, after which the traffic problem is considered
-#define PENETRATION_RATE 0.9
-
-// ROUTING STRATEGIES
+#define CONGESTION_THRESHOLD 0.56 // Ratio of expected_travel_time/actual_travel time. For highways when speed limit = 115 kmph , traffic is considered congested when speed < 64 kmph
+#define DENSITY_THRESHOLD 0.77 // For highways when speed limit = 115 kmph , traffic is considered dense when speed < 88 kmph
+#define PENETRATION_RATE 1
 #define IS_VANET true
-#define SELFISH_ROUTING "selfish"
-#define FASTER_SELFISH_ROUTING "faster_selfish"
-#define PROBABILISTIC_ROUTING "probabilistic"
-#define HYBRID_ROUTING "hybrid"
+#define ACCIDENT_START_TIME 300
+#define ACCIDENT_END_TIME 1300
+#define NETWORK_ID "Highway" // "Kirchberg"
+#define ROUTING_STRATEGY "UE" // "noRouting" "SO" "hybrid"
+#define COST_FUNCTION "travelTime" // "congestionLength" "delayTime"
 
 // TRAFFIC CONDITION EVALUATION
 #define SPEED_THRESHOLD  0.2 // ratio of max speed under which I consider it's a JAM

@@ -22,7 +22,8 @@
     </tlLogic>
 
 	<tlLogic id="joinedS_2" type="static" programID="1" offset="0">
-                <phase duration="61" state="GGGG"/>
+                <phase duration="41" state="GGGG"/>
+                <phase duration="31" state="rrrr"/>
     </tlLogic>
 
 

@@ -64,6 +64,7 @@
 #include "ns3/callback.h"
 
 #include "applications/ovnis-application.h"
+#include "ovnis-constants.h"
 #include "ovnisPacket.h"
 #include "traci/structs.h"
 #include "vehicle.h"
@@ -89,40 +90,86 @@ FceApplication::FceApplication() {
 	decisionTaken = false;
 	notificationSent = false;
 	isCheater = false;
-	flow = 1250;
+	wasCongested = false;
+	startReroute = 0;
+	InitializeScenario();
+}
+
+void FceApplication::InitializeScenario() {
+	// scenario settings
 	isVanet = IS_VANET;
-	strategy = HYBRID_ROUTING;
-	cheatersRatio = 0.05;
+	penetrationRate = PENETRATION_RATE;
+	cheatersRatio = CHEATER_RATIO;
+	accidentStartTime = ACCIDENT_START_TIME;
+	accidentStopTime = ACCIDENT_END_TIME;
+//	accidentStopTime = NETWORK_ID;
+//	routingStrategy = ROUTING_STRATEGY;
+//	costFunction = COST_FUNCTION;
+	networkId = "Highway";
+//	networkId = "Kirchberg";
+	routingStrategy = "noRouting";
+	routingStrategy = "UE";
+//	routingStrategy = "SO";
+//	routingStrategy = "hybrid";
+	costFunction = "travelTime";
+//	costFunction = "congestionLength";
+//	costFunction = "delayTime";
+	SetNetwork(networkId);
 
-//	scenario.setDecisionEdges(CommonHelper::split("main_1b"));
-//	scenario.setNotificationEdges(CommonHelper::split("main_2d bypass_2b"));
-//	map<string, Route> alternativeRoutes = map<string, Route>();
-//	alternativeRoutes["main"] = Route("main", "main_1 main_1b main_2 main_2a main_2b main_2c main_2d");
-//	alternativeRoutes["main"].setCapacity(900);
-//	alternativeRoutes["bypass"] = Route("bypass", "main_1 main_1b bypass_1 bypass_2 bypass_2b");
-//	alternativeRoutes["bypass"].setCapacity(1500);
-//	scenario.setAlternativeRoutes(alternativeRoutes);
+	Log::getInstance().getStream("scenarioSettings") << "vehicleId\t" << vehicle.getId() << endl;
+	Log::getInstance().getStream("scenarioSettings") << "isVanet\t" << isVanet << endl;
+	Log::getInstance().getStream("scenarioSettings") << "penetrationRate\t" << penetrationRate << endl;
+	Log::getInstance().getStream("scenarioSettings") << "cheatersRatio\t" << cheatersRatio << endl;;
+	Log::getInstance().getStream("scenarioSettings") << "accidentStartTime\t" << accidentStartTime << endl;
+	Log::getInstance().getStream("scenarioSettings") << "accidentStopTime\t" << accidentStopTime << endl;
+	Log::getInstance().getStream("scenarioSettings") << "networkId\t" << networkId << endl;
+	Log::getInstance().getStream("scenarioSettings") << "routingStrategy\t" << routingStrategy << endl;
+	Log::getInstance().getStream("scenarioSettings") << "costFunction\t" << costFunction << endl;
+}
 
-	scenario.setDecisionEdges(CommonHelper::split("pre_2"));
-	scenario.setNotificationEdges(CommonHelper::split("main_6 bypass_3"));
+void FceApplication::SetNetwork(string networkId) {
+	string decisionEdge = "";
+	string notificationEdge = "";
 	map<string, Route> alternativeRoutes = map<string, Route>();
-//	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2 main_3 main_4 main_5 main_6");
-	alternativeRoutes["main"] = Route("main", "pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
-	alternativeRoutes["main"].setCapacity(900);
-	alternativeRoutes["bypass"] = Route("bypass", "pre_1 pre_2 bypass_1 bypass_2 bypass_3");
-	alternativeRoutes["bypass"].setCapacity(1500);
-	scenario.setAlternativeRoutes(alternativeRoutes);
-
-//	scenario.setDecisionEdges(CommonHelper::split("56640729#5"));
-//	scenario.setNotificationEdges(CommonHelper::split("53349130#1"));
-//	map<string, Route> alternativeRoutes = map<string, Route>();
-//	alternativeRoutes["kennedy"] = Route("kennedy", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-//	alternativeRoutes["kennedy"].setCapacity(1300);
-//	alternativeRoutes["adenauer"] = Route("adenauer", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
-//	alternativeRoutes["adenauer"].setCapacity(600);
-//	alternativeRoutes["thuengen"] = Route("thuengen", "56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
-//	alternativeRoutes["thuengen"].setCapacity(800);
-//	scenario.setAlternativeRoutes(alternativeRoutes);
+	vector<string> route_ids = vector<string>();
+	vector<double> route_capacities = vector<double>();
+	vector<string> route_strategies = vector<string>();
+	if (networkId == "Highway") {
+		alternativeRoutes["bypass"] = Route("bypass", "");
+		decisionEdge = "pre_2";
+		notificationEdge = "main_6 bypass_3";
+		route_ids.push_back("main");
+		route_ids.push_back("bypass");
+		route_capacities.push_back(900);
+		route_capacities.push_back(1500);
+		route_strategies.push_back("pre_1 pre_2 main_1 main_2a main_2b main_3a main_3b main_4a main_4b main_5a main_5b main_6");
+		route_strategies.push_back("pre_1 pre_2 bypass_1 bypass_2 bypass_3");
+	}
+	else if (networkId == "Kirchberg") {
+		decisionEdge = "56640729#5";
+		notificationEdge = "53349130#1";
+		route_ids.push_back("routedist#0");
+		route_ids.push_back("routedist#1");
+		route_ids.push_back("routedist#2");
+	//	route_ids.push_back("kennedy");
+	//	route_ids.push_back("adenauer");
+	//	route_ids.push_back("thuengen");
+		route_capacities.push_back(1000);
+		route_capacities.push_back(600);
+		route_capacities.push_back(800);
+		vector<string> route_strategies = vector<string>();
+		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
+		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+	}
+	int i = 0;
+	for (vector<string>::iterator it = route_ids.begin(); it < route_ids.end(); ++it, ++i) {
+		alternativeRoutes[*it] = Route(*it, route_strategies[i]);
+		alternativeRoutes[*it].setCapacity(route_capacities[i]);
+	}
+	network.setDecisionEdges(CommonHelper::split(decisionEdge));
+	network.setNotificationEdges(CommonHelper::split(notificationEdge));
+	network.setAlternativeRoutes(alternativeRoutes);
 }
 
 FceApplication::~FceApplication() {
@@ -131,45 +178,39 @@ FceApplication::~FceApplication() {
 }
 
 void FceApplication::StartApplication(void) {
-
 	NS_LOG_FUNCTION ("");
-
 	// initialize vehicle
 	string vehicleId = Names::FindName(GetNode());
 	vehicle.initialize(vehicleId);
-	vehicle.setScenario(scenario);
-	TIS::getInstance().initializeStaticTravelTimes(scenario.getAlternativeRoutes());
-
+	vehicle.setScenario(network);
+	// add to the centralised Traffic Information System vehicle's routes (edges) of interest
+	TIS::getInstance().initializeStaticTravelTimes(vehicle.getScenario().getAlternativeRoutes());
 	// ns3
 	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();
-	// Connect the callback for the neighbor discovery service
-	std::ostringstream oss;
-	oss << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NeighborLost";
-	Config::Connect(oss.str(), MakeCallback(&FceApplication::NeighborLost, this));
-	std::ostringstream oss2;
-	oss2 << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NewNeighbor";
-	Config::Connect(oss2.str(), MakeCallback(&FceApplication::NewNeighborFound, this));
-	// set socket
+	ToggleNeighborDiscovery(true);
 	Ptr<SocketFactory> socketFactory = GetNode()->GetObject<UdpSocketFactory> ();
 	m_socket = socketFactory->CreateSocket();
-	m_socket->Connect (InetSocketAddress (Ipv4Address::GetBroadcast(), m_port));
+	m_socket->Connect(InetSocketAddress (Ipv4Address::GetBroadcast(), m_port));
 	m_socket->SetAllowBroadcast(true);
 	m_socket->SetRecvCallback(MakeCallback(&FceApplication::ReceivePacket, this));
 	m_socket->Bind(InetSocketAddress(Ipv4Address::GetAny(), m_port));
-
 	// start simualtion
 	running = true;
-
-	Log::getInstance().getStream("strategy") << strategy << endl;
-
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
-//	double r = rando.GetValue(0, SIMULATION_STEP_INTERVAL);
 	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
-//	double r2 = rando.GetValue(0, TRAFFIC_INFORMATION_SENDING_INTERVAL);
-
 	m_simulationEvent = Simulator::Schedule(Seconds(r), &FceApplication::SimulationRun, this);
 	m_trafficInformationEvent = Simulator::Schedule(Seconds(1+r2), &FceApplication::SendTrafficInformation, this);
+}
 
+void FceApplication::ToggleNeighborDiscovery(bool on) {
+	if (on) {
+		std::ostringstream oss;
+		oss << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NeighborLost";
+		Config::Connect(oss.str(), MakeCallback(&FceApplication::NeighborLost, this));
+		std::ostringstream oss2;
+		oss2 << "/NodeList/" << GetNode()->GetId() << "/DeviceList/*/$ns3::WifiNetDevice/Mac/$ns3::BeaconingAdhocWifiMac/NewNeighbor";
+		Config::Connect(oss2.str(), MakeCallback(&FceApplication::NewNeighborFound, this));
+	}
 }
 
 void FceApplication::StopApplication(void) {
@@ -193,7 +234,6 @@ void FceApplication::SimulationRun(void) {
 			bool edgeChanged = vehicle.requestCurrentEdge(Simulator::Now().GetSeconds());
 			string currentEdge = vehicle.getItinerary().getCurrentEdge().getId();
 			double now = Simulator::Now().GetSeconds();
-
 			// if a vehicle is entering a new edge it has already traced the time on its itinerary
 			// broadcast information about it and about travel time on the last edge
 			if (edgeChanged) {
@@ -201,96 +241,96 @@ void FceApplication::SimulationRun(void) {
 				double travelTimeOnLastEdge = lastEdge.getTravelTime();
 				string lastEdgeId = lastEdge.getId();
 				Vector position = mobilityModel->GetPosition();
-				TIS::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
-//				Log::getInstance().getStream("") << now << "\t" <<lastEdgeId << "\t" << position.x << "," << position.y << "\n" ;
+				Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
 			}
 
 			// if approaching an intersection
-			// take decision which route to takefrom current to destination edge based on the collected knowledge about travel times on edges
+			// take decision which route to take from current to destination edge based on the collected knowledge about travel times on edges
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdge) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
-
 				// centralised TIS
 				map<string, double> globalCosts = TIS::getInstance().getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-				string global_minTravelTimeChoice = TIS::getInstance().chooseMinCostRoute(globalCosts);
-				string global_proportionalProbabilisticChoice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
-				string global_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, globalCosts);
-
-				// VANETs
-				Vector position = mobilityModel->GetPosition();
-				Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
-				map<string, double> vanetCosts =  vanetsKnowledge.getCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-				string vanet_minTravelTimeChoice =  TIS::getInstance().chooseMinCostRoute(vanetCosts);
-				string vanet_proportionalProbabilisticChoice =  TIS::getInstance().chooseProbTravelTimeRoute(vanetCosts);
-				string vanet_flowAwareChoice =  TIS::getInstance().chooseFlowAwareRoute(flow, vanetCosts);
-
-				CalculateError(currentEdge);
-
-				// centralized
-				string centralizedSelfishRouteChoice = global_minTravelTimeChoice;
-				string centralizedSystemRouteChoice = global_proportionalProbabilisticChoice;
-				double centralizedSelfishTravelTime = globalCosts[centralizedSelfishRouteChoice];
-				double centralizedSystemTravelTIme = globalCosts[centralizedSystemRouteChoice];
-
-//				// vanets
-				string selfishRouteChoice = vanet_minTravelTimeChoice;
-				string systemRouteChoice = vanet_proportionalProbabilisticChoice;
-				double selfishTravelTime = vanetCosts[selfishRouteChoice];
-				double systemTravelTIme = vanetCosts[systemRouteChoice];
-
-				// default is centralised
-				string routeChoice = centralizedSelfishRouteChoice;
-				selfishExpectedTravelTime = centralizedSelfishTravelTime;
-				expectedTravelTime = centralizedSelfishTravelTime;
-
+				string UE_choice = TIS::getInstance().chooseMinCostRoute(globalCosts);
+				string SO_choice = TIS::getInstance().chooseProbTravelTimeRoute(globalCosts);
+				double selfishTravelTime = globalCosts[UE_choice];
+				double systemTravelTIme = globalCosts[SO_choice];
+				string routeChoice = UE_choice;
+				expectedTravelTime = globalCosts[routeChoice];
+				bool isAccident = now > accidentStartTime && now < accidentStopTime;
+				bool isCongested = false;
+				isCheater = false;
+				// vanets
 				if (isVanet) {
-					routeChoice = selfishRouteChoice;
-					selfishExpectedTravelTime = selfishTravelTime;
-					expectedTravelTime = selfishTravelTime;
-
-					double capacityDrop = vanetsKnowledge.isCapacityDrop(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-					TIS::getInstance().setCongestion(capacityDrop);
-
-					if (strategy == PROBABILISTIC_ROUTING) {
-						routeChoice = systemRouteChoice;
-						expectedTravelTime = systemTravelTIme;
+					Vector position = mobilityModel->GetPosition();
+					Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
+					vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+					CalculateError(currentEdge);
+					isCongested = vanetsKnowledge.isCongestedFlow();
+					wasCongested = isCongested;
+					TIS::getInstance().setCongestion(isCongested, vanetsKnowledge.isDenseFlow(), vanetsKnowledge.isCongestedFlow());
+					map<string, double> travelTime = vanetsKnowledge.getTravelTimesOnRoutes();
+					map<string, double> delayTime = vanetsKnowledge.getDelayOnRoutes();
+					map<string, double> congestionLength = vanetsKnowledge.getCongestedLengthOnRoutes();
+					Log::getInstance().logMap("delay_scale", now, delayTime, 0);
+					Log::getInstance().logMap("congestion_scale", now, congestionLength, 0);
+					Log::getInstance().logMap("travelTime_scale", now, travelTime, 0);
+					map<string, double> cost = travelTime;
+					if (costFunction == "congestionLength") {
+						cost = congestionLength;
+					}
+					if (costFunction == "delayTime") {
+						cost = delayTime;
 					}
 
-					// faster selfish
-					else if (strategy == FASTER_SELFISH_ROUTING && capacityDrop) {
-						string fasterSelfishRouteChoice = TIS::getInstance().chooseMinCostRoute(vanetsKnowledge.getCongestedLengthOnRoutes());
-						routeChoice = fasterSelfishRouteChoice;
-						expectedTravelTime = vanetCosts[fasterSelfishRouteChoice];
-					}
+					UE_choice = TIS::getInstance().chooseMinCostRoute(cost);
+					SO_choice =  TIS::getInstance().chooseProbTravelTimeRoute(cost);
 
-					// hybrid
-					else if (strategy == HYBRID_ROUTING && capacityDrop) {
-						routeChoice = systemRouteChoice;
-						expectedTravelTime = systemTravelTIme;
+					if (UE_choice != "") {
+						routeChoice = UE_choice;
 					}
+					if (routingStrategy == "SO" && SO_choice != "") {
+						routeChoice = SO_choice;
+					}
+					// congestion detected when 'significant' delayTime, so later than in probabilistic
+					if (routingStrategy == "hybrid" && isCongested && SO_choice != "") {
+						routeChoice = SO_choice;
+					}
+					selfishTravelTime = travelTime[UE_choice];
+					expectedTravelTime = travelTime[routeChoice];
+				}
+				// no routing
+				if (routingStrategy == "noRouting") {
+					routeChoice = vehicle.getItinerary().getId();
 				}
 
-				// Cheaters
+				// cheaters
 				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 				if (cheatersRatio > 0 && r < cheatersRatio) {
-					if (routeChoice != selfishRouteChoice) {
-						routeChoice = selfishRouteChoice;
+					if (routeChoice != UE_choice) {
+						routeChoice = UE_choice;
 						isCheater = true;
 					}
 				}
 				if (cheatersRatio < 0 && -r > cheatersRatio) {
-					if (routeChoice != systemRouteChoice) {
-						routeChoice = systemRouteChoice;
+					if (routeChoice != SO_choice) {
+						routeChoice = SO_choice;
 						isCheater = true;
 					}
 				}
-//				string routeChoice = vehicle.getItinerary().getId();
+				if (isCheater) {
+					Log::getInstance().cheaters ++;
+				}
 
+				startReroute = now;
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;
-				TIS::getInstance().reportStartingRoute(routeChoice, currentEdge, vehicle.getDestinationEdgeId());
+				selfishExpectedTravelTime = selfishTravelTime;
+				// todo get newEdgeId (pointer to the next edge)
+				TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdge, vehicle.getItinerary().getId(), currentEdge,
+						routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
+						isCongested, expectedTravelTime, selfishExpectedTravelTime);
 				decisionTaken = true;
 			}
 
@@ -298,11 +338,20 @@ void FceApplication::SimulationRun(void) {
 			// report to TIS the total travel time on the route between the decision edge and the current edge
 			bool isReportingPoint = find(vehicle.getScenario().getNotificationEdges().begin(), vehicle.getScenario().getNotificationEdges().end(), currentEdge) != vehicle.getScenario().getNotificationEdges().end();
 			if (isReportingPoint && !notificationSent) {
-				string routeId = vehicle.getItinerary().getId();
-				double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
-				cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << vehicle.getItinerary().computeStaticCost(decisionEdgeId, currentEdge) << "\t" << vehicle.getItinerary().computeStaticCost() << "\t" << vehicle.getItinerary().computeLength(decisionEdgeId, currentEdge) << "\t" << vehicle.getItinerary().computeLength() << endl;
-				TIS::getInstance().reportEndingRoute(routeId, decisionEdgeId, currentEdge, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime);
-				notificationSent = true;
+				// to fix a bug if a vehicle didn't visited the decision edge because of teleportation
+				if (startReroute > vehicle.getItinerary().getStartTime()) {
+					string routeId = vehicle.getItinerary().getId();
+					double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdge);
+					double travelTime2 = vehicle.getItinerary().computeTravelTime(vehicle.getItinerary().getEdgeIds()[0], currentEdge);
+					cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t"
+							<< decisionEdgeId << "-" << currentEdge << "\t" << travelTime << "\t"
+							<< vehicle.getItinerary().computeStaticCostExcludingMargins(decisionEdgeId, currentEdge) << "\t" << vehicle.getItinerary().computeLength(decisionEdgeId, currentEdge) << "[m]\t"
+							<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
+							<< travelTime2 << "\t"
+							<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdge) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
+					TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdge, startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasCongested);
+					notificationSent = true;
+				}
 			}
 
 			m_simulationEvent = Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &FceApplication::SimulationRun, this);
@@ -335,11 +384,13 @@ void FceApplication::CalculateError(string currentEdge) {
 	double sumSumo = 0;
 	double sumVanet = 0;
 	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
-		error += abs(it->second - vanetEdgesCosts[it->first]);
-		sumSumo += it->second;
-		sumVanet += vanetEdgesCosts[it->first];
+		if (it->second < 1000) {
+			error += abs(it->second - vanetEdgesCosts[it->first]);
+			sumSumo += it->second;
+			sumVanet += vanetEdgesCosts[it->first];
+		}
 	}
-	double percent = error / (sumSumo + sumVanet);
+	double percent = (sumSumo + sumVanet) == 0 ? 0 : error / (sumSumo + sumVanet);
 	Log::getInstance().getStream("edges_error") << now << "\t" << error << "\t" << percent << "\t" << sumVanet << "\t" << sumSumo << "\t" << sumVanet-sumSumo << endl;
 
 }
@@ -352,6 +403,10 @@ void FceApplication::SendTrafficInformation(void) {
 			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
 			SendPacket(p);
 		}
+		// simple velocity packet every TRAFFIC_INFORMATION_SENDING_INTERVAL
+//		Log::getInstance().getStream("sent_packets") << Simulator::Now().GetSeconds() << "\t" << vehicle.getId() << endl;
+//		Ptr<Packet> p = OvnisPacket::BuildPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, STATE_PACKET_ID, vehicle.getItinerary().getCurrentEdge().getId(), vehicle.getCurrentSpeed());
+//		SendPacket(p);
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
 	}
 }
@@ -380,7 +435,6 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 
 	Address neighborMacAddress;
     Ptr<Packet> packet = socket->RecvFrom(neighborMacAddress);
-
     try {
     	OvnisPacket ovnisPacket(packet);
     	Vector position = mobilityModel->GetPosition();
@@ -452,15 +506,6 @@ void FceApplication::NeighborLost(std::string context, Ptr<const Packet> packet,
 		myApp->m_neighborList.erase(i);
 	}
 
-//	MacAddrMapIterator i = m_neighborList.find (addr);
-//	if (i == m_neighborList.end ()){
-//		// update the beacon index
-//		NS_LOG_DEBUG("ERROR. Trying to delete an unexisting neighbor");
-//	}
-//	else {
-//		m_neighborList.erase(i);
-//	}
-
 //	if (vehicle.getId() == "0.5") {
 //		std::cout << vehicle.getId() << "," << " lost a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", context: " << context << std::endl;
 //	}
@@ -469,7 +514,7 @@ void FceApplication::NeighborLost(std::string context, Ptr<const Packet> packet,
 /**
  * Neighborhood discovery
  */
-void FceApplication::NewNeighborFound (std::string context, Ptr<const Packet> packet, Mac48Address addr, double rxPwDbm){
+void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> packet, Mac48Address addr, double rxPwDbm) {
 	// Find the nodeId that has been called
 	size_t aux =context.find("/",10);
 	std::string strIndex = context.substr(10,aux-10);
@@ -480,24 +525,18 @@ void FceApplication::NewNeighborFound (std::string context, Ptr<const Packet> pa
 	//Get the application
 	Ptr <Application> app = node->GetApplication(0);
 	Ptr<FceApplication> myApp = DynamicCast<FceApplication>(app);
-
 	MacAddrMapIterator i = myApp->m_neighborList.find (addr);
-	if ( i== myApp->m_neighborList.end ()){
+	if (i== myApp->m_neighborList.end ()) {
 		// include the reception power
 		myApp->m_neighborList[addr] = rxPwDbm;
 	}
-	else{
+	else {
 		i->second= rxPwDbm;
 	}
-//	MacAddrMapIterator i = m_neighborList.find (addr);
-//	if (i== m_neighborList.end ()){
-//		// include the reception power
-//		m_neighborList[addr] = rxPwDbm;
+//	if (vehicle.getId() == "0.5") {
+	packet->Print(cout) ;
+	std::cout << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
 //	}
-//	else{
-//		i->second= rxPwDbm;
-//	}
-
 }
 
 }

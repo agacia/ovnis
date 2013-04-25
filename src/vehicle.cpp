@@ -34,7 +34,7 @@ namespace ovnis {
 		return id;
 	}
 
-	void Vehicle::setScenario(Scenario scenario) {
+	void Vehicle::setScenario(Network scenario) {
 		this->scenario.setAlternativeRoutes(scenario.getAlternativeRoutes());
 		this->scenario.setDecisionEdges(scenario.getDecisionEdges());
 		this->scenario.setNotificationEdges(scenario.getNotificationEdges());
@@ -44,7 +44,7 @@ namespace ovnis {
 		}
 	}
 
-	Scenario & Vehicle::getScenario() {
+	Network & Vehicle::getScenario() {
 		return this->scenario;
 	}
 
@@ -62,6 +62,14 @@ namespace ovnis {
     		return currentRoute.getEdgeIds()[size - 1];
     	}
     	return "";
+    }
+
+    string Vehicle::getOriginEdgeId() {
+    	int size = itinerary.getEdgeIds().size() ;
+		if (size > 0) {
+			return itinerary.getEdgeIds()[0];
+		}
+		return "";
     }
 
 	void Vehicle::requestRoute(string routeId) {

@@ -93,7 +93,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-//  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 
@@ -231,7 +231,7 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
     }
   else if (hdr->IsBeacon ())
     {
-//	  std::cout<<"Beacon received"<<std::endl;
+	  //std::cout<<"Beacon received"<<std::endl;
 
 	  ovnis::Log::getInstance().packetReceived();
 
@@ -242,29 +242,6 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
 
     }
   return;
-
-//	        bool goodBeacon = false;
-//	        if (GetSsid ().IsBroadcast () ||
-//	            beacon.GetSsid ().IsEqual (GetSsid ()))
-//	          {
-//	            goodBeacon = true;
-//	          }
-//	        if ((IsWaitAssocResp () || IsAssociated ()) && hdr->GetAddr3 () != GetBssid ())
-//	          {
-//	            goodBeacon = false;
-//	          }
-//	        if (goodBeacon)
-//	          {
-//	            Time delay = MicroSeconds (beacon.GetBeaconIntervalUs () * m_maxMissedBeacons);
-//	            RestartBeaconWatchdog (delay);
-//	            SetBssid (hdr->GetAddr3 ());
-//	          }
-//	        if (goodBeacon && m_state == BEACON_MISSED)
-//	          {
-//	            SetState (WAIT_ASSOC_RESP);
-//	            SendAssociationRequest ();
-//	          }
-//    }
 
   // Invoke the receive handler of our parent class to deal with any
   // other frames. Specifically, this will handle Block Ack-related
@@ -305,38 +282,24 @@ BeaconingAdhocWifiMac::SendOneBeacon (void)
   hdr.SetAddr1 (Mac48Address::GetBroadcast ());
   hdr.SetAddr2 (GetAddress ());
   hdr.SetAddr3 (GetAddress ());
-//  hdr.SetDsNotFrom ();
-//  hdr.SetDsNotTo ();
   MgtBeaconHeader beacon;
   beacon.SetSsid (GetSsid ());
   beacon.SetSupportedRates (GetSupportedRates ());
-//  beacon.SetBeaconIntervalUs (m_beaconInterval.GetMicroSeconds ());
-
-
   Ptr<Packet> packet = Create<Packet> ();
-  //packet->AddHeader (hdr);
   packet->AddHeader (beacon);
-
-
 //  Mac48Address aaa= GetAddress();
 //  std::cout<<Simulator::Now()<<" envio beacon "<<aaa<<std::endl;
-
-//  Enqueue(packet,Mac48Address::GetBroadcast () );
   m_dca->Queue (packet, hdr);
-//  cout << "c" << endl;
   ovnis::Log::getInstance().packetSent();
-//  m_dca->Queue (packet, beacon);
-//cout << "sending! " << endl;
   m_beaconEvent = Simulator::Schedule (Seconds(BEACON_INTERVAL), &BeaconingAdhocWifiMac::SendOneBeacon, this);
-
-
 }
+
 void BeaconingAdhocWifiMac::ProcessBeacon( Ptr<Packet> packet, Mac48Address addrFrom){
 
 	if ( m_neighborList.find (addrFrom)== m_neighborList.end ()){
 		// update the beacon index
 		m_neighborList[addrFrom] = m_numberBeaconLost;
-		//std::cout<<addrFrom<<" Addd en beaconing wifi mac "<<std::endl;
+		//std::cout<<addrFrom<<" Addd en beaconing wifi mac " << m_neighborList.size() <<std::endl;
 	}
 	  //Added by Patricia Ruiz (for changing the tx power)
 //	  	MyEnergyTag neighborPower=MyEnergyTag();

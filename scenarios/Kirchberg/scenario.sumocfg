@@ -9,13 +9,14 @@
         <!-- Kirchberg 3 routes -->
 	<net-file value="Kirchberg.net.xml"/>
         <route-files value="Kirchberg.rou.xml"/>
-        <additional-files value="Kirchberg_input_additional.add.xml tlLogic.xml"/>
-	<!--<additional-files value="Kirchberg.add.xml ../test/Luxembourg15/tlLogic.xml"/>-->
+        <additional-files value="Kirchberg_dump.add.xml tlLogic.xml"/>
+	<!--<additional-files value="Kirchberg_dump.add.xml Kirchberg_input_additional.add.xml tlLogic.xml"/>-->
     </files>
 
     <output>
         <summary-output value="summary.xml"/>
-        <tripinfo-output value="tripinfo.xml"/>
+        <tripinfo-output value="ovnisOutput/tripinfo.xml"/>
+	<!--<edgeData-output value="ovnisOutput/dump.xml"/>-->
         <!--<vehroute-output value="vehroute.xml"/>-->
     </output>
 

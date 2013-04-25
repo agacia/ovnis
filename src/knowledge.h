@@ -43,22 +43,34 @@ public:
 
 	bool record(Data data);
 	void record(vector<Data> data);
-
 	map<string,RecordEntry> & getRecords();
 
-	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
-	bool isCapacityDrop(map<string, Route> routes, string startEdgeId, string endEdgeId) ;
+	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId);
+
 	map<std::string,double> getCongestedLengthOnRoutes();
+	map<std::string,double> getDenseLengthOnRoutes();
+	map<std::string,double> getTravelTimesOnRoutes();
+	map<std::string,double> getDelayOnRoutes();
     map<std::string,double> getEdgesCosts(map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId);
+    bool isCongestedFlow() const;
+    bool isDenseFlow() const;
 
 protected:
 	map<long,int> packets; // counter of packets
 	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
 	std::map<std::string, int> numberOfVehicles;
 	map<std::string,double> congestedLengthOnRoutes;
-//	map<std::string, double> edgesCosts;
+	map<std::string,double> delayOnRoutes;
+	map<std::string,double> denseLengthOnRoutes;
+	map<std::string,double> travelTimesOnRoutes;
+	map<string, double> packetAgesOnRoutes;
+	map<string,int> numberOfUpdatedEdges;
 
 	double maxInformationAge;
+	double congestionThreshold;
+	double densityThreshold;
+	bool ifCongestedFlow;
+	bool ifDenseFlow;
 };
 
 }

@@ -16,8 +16,16 @@
 #include "ovnis-constants.h"
 #include <vector>
 #include <map>
+#include "ns3/ptr.h"
 #include "ns3/wifi-phy.h"
 #include "xml_writer.hpp"
+#include "ns3/vector.h"
+
+#include <cstdlib>
+#include <string>
+//#include <set>
+#include <limits.h>
+#include <stdint.h>
 
 
 namespace ovnis {
@@ -53,7 +61,7 @@ class Log
 		std::string outList(std::vector<std::string> & list);
 		void print(const std::string & msg);
 		void print(char const * msg);
-
+		void logMap(std::string name, double time, std::map<std::string,double> data, double sum);
 		void packetSent();
 		void packetSent(uint32_t size);
 		void packetForwarded();
@@ -68,6 +76,8 @@ class Log
 		double getAvgDistance();
 		double getMaxDistance();
 
+		void reportEdgePosition(std::string edgeId, double x, double y);
+
 		volatile long getPacketId();
 		void nextPacketId();
 
@@ -78,6 +88,8 @@ class Log
 //		void writeXml(const char * name, std::map<std::string, std::string> attrs);
 //		void closeXml();
 
+        int congestedTrips;
+        int cheaters;
 
     private:
 		Log();
@@ -88,6 +100,7 @@ class Log
         std::map<std::string, std::ofstream *> logFiles;
 		Writer * writer;
         std::string outputFolder;
+        std::map<std::string,ns3::Vector2D> edgePositions;
 
     protected:
         typedef std::map<VariableType, StatElem> statEnumType;
@@ -106,6 +119,7 @@ class Log
         volatile long received;
         volatile long sent;
         long forwarded;
+
 };
 
 }

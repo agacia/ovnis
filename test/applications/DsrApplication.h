@@ -176,7 +176,7 @@ namespace ns3
 
     EventId m_travelTimeEvent;
 
-    Scenario scenario;
+    Network scenario;
 
     const static double eps = 1e-9;
 

@@ -50,10 +50,30 @@ Log::Log() {
 	maxDistance = 0;
 	packetId = 0;
 	logFiles = map<string, ofstream *>();
+
+	congestedTrips = 0;
+	cheaters = 0;
 }
 
 Log::~Log() {
 }
+
+void Log::logMap(string name, double time, map<string,double> data, double sum) {
+	getStream(name) << time << "\t" << sum << "\t";
+	for (map<string, double>::iterator it = data.begin(); it != data.end(); ++it) {
+		getStream(name) << it->first << "," << it->second << "\t";
+	}
+	getStream(name) << endl;
+}
+
+void Log::reportEdgePosition(string edgeId, double x, double y) {
+	map<string, ns3::Vector2D>::iterator it = edgePositions.find(edgeId);
+	if (it == edgePositions.end()) {
+		edgePositions[edgeId] = ns3::Vector2D(x, y);
+		getStream("edges_positions") << edgeId << "\t" << x << "\t" << y << endl;
+	}
+}
+
 
 void Log::setOutputFolder(string folderName) {
 	outputFolder = folderName + "/ovnisOutput";

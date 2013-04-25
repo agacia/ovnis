@@ -25,17 +25,27 @@ TIS::~TIS() {
 }
 
 
-void TIS::reportStartingRoute(string routeId, string startEdgeId, string endEdgeId) {
-	++vehiclesOnRoute[routeId];
+void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string currentRouteId, string newEdgeId, string newRouteId,
+		string originEdgeId, string destinationEdgeId, bool isCheater, bool isCongested,
+		double expectedTravelTime, double shortestExpectedTravelTime) {
+	// xxx only one entering on route - no need for subtract
+	++vehiclesOnRoute[newRouteId];
+	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
+			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
+			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime;
+	Log::getInstance().getStream("routing_start") << endl;
 }
 
-void TIS::reportEndingRoute(string routeId, string startEdgeId, string endEdgeId, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime) {
+void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId, string endEdgeId, double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested) {
 	--vehiclesOnRoute[routeId];
 	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 	travelTimesOnRoute[routeId] = travelTime;
 //	travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId]; // smooth
-	Log::getInstance().getStream("fixedTIS") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t" << selfishExpectedTravelTime << "\t" << expectedTravelTime;
-	Log::getInstance().getStream("fixedTIS") << endl;
+	double delayTime = travelTime - computeStaticCostExcludingMargins(routeId, startEdgeId, endEdgeId);
+	Log::getInstance().getStream("routing_end") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
+			<< travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t"
+			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime;
+	Log::getInstance().getStream("routing_end") << endl;
 }
 
 int TIS::getVehiclesOnRoute(string routeId) {
@@ -119,34 +129,36 @@ map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId,
 		}
 		packetAges[it->first] = informationAge;
 	}
-
 	Log::getInstance().getStream("global_costs") << now << "\t";
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		Log::getInstance().getStream("global_costs") << it->first << "," << costs[it->first] << "," << packetAges[it->first] << "," << vehiclesOnRoute[it->first] << "\t";
 	}
 	Log::getInstance().getStream("global_costs") << endl;
-
 	return costs;
 }
 
 string TIS::getEvent(vector<pair<string, double> > probabilities) {
 //    double r = rando.GetValue(0, 1);
+	double shifting_weight = 0;
     double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
-//    Log::getInstance().getStream("prob") << r << "\t" << endl;
-//	for (vector<pair<string, double> >::iterator it = probabilities.begin(); it != probabilities.end(); ++it)
-//	{
-//		Log::getInstance().getStream("prob") << it->first << "," << it->second << " ";
-//	}
-//	Log::getInstance().getStream("prob") << endl;
+    string lastChoice = "";
+    Log::getInstance().getStream("prob") << r << "\t" << endl;
+	for (vector<pair<string, double> >::iterator it = probabilities.begin(); it != probabilities.end(); ++it)
+	{
+		Log::getInstance().getStream("prob") << it->first << "," << it->second << " ";
+	}
+	Log::getInstance().getStream("prob") << endl;
 
     vector<pair<string, double> >::iterator it;
     for (it = probabilities.begin(); it != probabilities.end(); ++it) {
     	r -= it->second;
+    	r -= shifting_weight;
+    	lastChoice = it->first;
     	if (r < eps) {
-			return it->first;
+			return lastChoice;
 		}
     }
-    return "";
+    return lastChoice;
 }
 
 string TIS::chooseMinCostRoute(map<string,double> costs) {
@@ -158,6 +170,9 @@ string TIS::chooseMinCostRoute(map<string,double> costs) {
 			minCost = value;
 			chosenRouteId = it->first;
 		}
+	}
+	if (minCost == 0) {
+		chosenRouteId = "";
 	}
 	return chosenRouteId;
 }
@@ -211,35 +226,46 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 	double sumCost = 0;
 
 	string chosenRouteId = "";
+	int costsSize = 0;
 
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
 		sumCost += it->second;
+		costsSize += it->second > 0 ? 1 : 0;
 	}
-	int costsSize = costs.size();
 	if (sumCost == 0 || costsSize == 0) {
 		return "";
 	}
-	if (costsSize == 1) {
-		return costs.begin()->first;
-	}
+	vector<string> correlated = vector<string>();
+	correlated.push_back("routedist#0");
+	correlated.push_back("routedist#1");
+
+	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds() << "\t" << costsSize << "/" << costs.size() << "\t";
 	vector<pair<string, double> > sortedProbabilities = vector<pair<string, double> >();
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
-		double probability = (sumCost-it->second)/((costsSize-1)*sumCost);
-		sortedProbabilities.push_back(pair<string,double>(it->first, probability));
+		double probability = 0;
+		if (it->second == 0) { // there are routes with no cost!
+			// take only them into probabilities, skip the rest of routes
+			probability = 1 / costsSize;
+		}
+		else {
+			if (costsSize == costs.size()) {
+				probability = (sumCost-it->second)/((costsSize-1)*sumCost);
+			}
+			else {
+				probability = 0;
+			}
+		}
+		Log::getInstance().getStream("probabilities") << it->first << "," << it->second << "," << probability << "\t";
+		if (probability != 0) {
+			sortedProbabilities.push_back(pair<string,double>(it->first, probability));
+		}
 	}
+	Log::getInstance().getStream("probabilities") << endl;
 
 //	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 
 	chosenRouteId = getEvent(sortedProbabilities);
 	return chosenRouteId;
-}
-
-void TIS::reportEdgePosition(string edgeId, double x, double y) {
-	map<string, Vector2D>::iterator it = edgePositions.find(edgeId);
-	if (it == edgePositions.end()) {
-		edgePositions[edgeId] = Vector2D(x, y);
-		Log::getInstance().getStream("edges_positions") << edgeId << "\t" << x << "\t" << y << endl;
-	}
 }
 
 double TIS::getEdgeLength(std::string edgeId) {
@@ -261,13 +287,15 @@ bool TIS::isCongestion()
 	return congestion;
 }
 
-void TIS::setCongestion(bool congestion)
+void TIS::setCongestion(bool congestion, bool ifDense, bool ifCongested)
 {
 	if (this->congestion != congestion) {
-		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion << endl;
+		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
 		this->congestion = congestion;
 	}
-
+	if (this->congestion == true) {
+		Log::getInstance().congestedTrips ++;
+	}
 }
 
 //void TIS::DetectJam(double currentSpeed, double maxSpeed, string currentEdge) {

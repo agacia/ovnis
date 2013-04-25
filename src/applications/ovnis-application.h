@@ -24,70 +24,24 @@
 #ifndef OVNIS_APPLICATION_H_
 #define OVNIS_APPLICATION_H_
 
-//#include <limits.h>
-//
-//#include "ns3/application.h"
-//#include "ns3/nstime.h"
-//#include "ns3/boolean.h"
-//#include "ns3/simulator.h"
-//#include "ns3/packet.h"
-//#include "ns3/uinteger.h"
-//#include "ns3/mac48-address.h"
-//#include "ns3/address.h"
-//#include "ns3/event-id.h"
-//#include "ns3/traced-callback.h"
-//#include "ns3/callback.h"
-//#include "ns3/global-value.h"
-//#include "ns3/data-rate.h"
-//#include "ns3/ptr.h"
-//#include "ns3/ipv4-address.h"
-//#include "ns3/core-module.h"
-//#include "ns3/common-module.h"
-//#include "ns3/node-module.h"
-//#include "ns3/helper-module.h"
-//#include "ns3/mobility-module.h"
-//#include "ns3/contrib-module.h"
-//#include "ns3/udp-socket-factory.h"
-//#include "ns3/node-list.h"
-//#include "ns3/log.h"
-//#include "ns3/node.h"
-//#include "ns3/random-variable.h"
-//#include "ns3/socket.h"
-//#include "ns3/ipv4.h"
-//#include "ns3/trace-source-accessor.h"
-//#include "ns3/tag-buffer.h"
-//#include "ns3/wifi-net-device.h"
-//#include "ns3/config.h"
-//#include "ns3/integer.h"
-//#include "ns3/assert.h"
-//
-//#include "ovnis-constants.h"
-//#include "applications/Vehicle.h"
-//#include "log.h"
-
 #include "ns3/application.h"
-
 #include "ns3/nstime.h"
 #include "ns3/boolean.h"
-
 #include "ns3/simulator.h"
-
 #include "ns3/packet.h"
 #include "ns3/uinteger.h"
 #include "ns3/mac48-address.h"
-
 #include "ns3/address.h"
-
 #include "ns3/event-id.h"
 #include "ns3/traced-callback.h"
 #include "ns3/callback.h"
 #include "ns3/global-value.h"
-#include <vector>
 #include "ns3/data-rate.h"
-#include  "ns3/constant-velocity-mobility-model.h"
+#include "ns3/constant-velocity-mobility-model.h"
 #include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/log.h"
+#include <vector>
 #include <set>
 
 #include "traci/traci-client.h"
