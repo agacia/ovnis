@@ -15,6 +15,7 @@ Knowledge::Knowledge() {
 	maxInformationAge = PACKET_TTL;
 	congestionThreshold = CONGESTION_THRESHOLD;
 	densityThreshold = DENSITY_THRESHOLD;
+
 }
 
 Knowledge::~Knowledge() {
@@ -75,20 +76,25 @@ map<string,RecordEntry> & Knowledge::getRecords()
 void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	ifCongestedFlow = false;
 	ifDenseFlow = false;
-	double sumLength = 0;
-	double congestedLength = 0;
-	double denseLength = 0;
-	double sumDelay = 0;
+	sumLength = 0;
+	congestedLength = 0;
+	denseLength = 0;
+	sumDelay = 0;
 	int totalNumberOfUpdatedEdges = 0;
 	map<string,int> vehicles;
-	travelTimesOnRoutes = map<string,double>();
+
+	map<string,double> newTravelTimesOnRoutes = map<string,double>(); // for comparison to the last state in the local data base
+	//travelTimesOnRoutes = map<string,double>();
 	packetAgesOnRoutes = map<string,double>();
 	delayOnRoutes = map<string,double>();
 	congestedLengthOnRoutes = map<string,double>();
 	denseLengthOnRoutes = map<string,double>();
 	// initialize
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		travelTimesOnRoutes[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, startEdgeId, endEdgeId);
+		newTravelTimesOnRoutes[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, startEdgeId, endEdgeId);
+		if (travelTimesOnRoutes[it->first] == 0) {
+			travelTimesOnRoutes[it->first] = newTravelTimesOnRoutes[it->first];
+		}
 		packetAgesOnRoutes[it->first] = 0;
 		vehicles[it->first] = 0;
 		numberOfUpdatedEdges[it->first] = 0;
@@ -108,12 +114,14 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		double staticCost = 0;
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)) { // if the edge belongs to the part of the future route
+				maxInformationAge = travelTimesOnRoutes[itRoutes->first];
+				Log::getInstance().getStream("ttl") << Simulator::Now().GetSeconds() << "\t" << packetAge << "\t" <<  maxInformationAge << endl;
 				if (travelTime > 0 && packetAge < maxInformationAge) { // information was recorded about this edge and is fresh enough
 					staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
 					if (staticCost != 0) {
 						it->second.setCapacity(staticCost);
 					}
-					travelTimesOnRoutes[itRoutes->first] = travelTimesOnRoutes[itRoutes->first] - staticCost + travelTime;
+					newTravelTimesOnRoutes[itRoutes->first] = newTravelTimesOnRoutes[itRoutes->first] - staticCost + travelTime;
 					packetAgesOnRoutes[itRoutes->first] += packetAge;
 					++numberOfUpdatedEdges[itRoutes->first];
 					++totalNumberOfUpdatedEdges;
@@ -151,6 +159,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	}
 	// calculate the average information age
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+		travelTimesOnRoutes[it->first] = newTravelTimesOnRoutes[it->first];
 		packetAgesOnRoutes[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAgesOnRoutes[it->first] / numberOfUpdatedEdges[it->first];
 	}
 	// print knowledge
@@ -179,9 +188,21 @@ map<string,double> Knowledge::getDenseLengthOnRoutes() {
 	return denseLengthOnRoutes;
 }
 
-//double Knowledge::getSumDelay() {
-//	return sumDelay;
-//}
+double Knowledge::getSumDelay() {
+	return sumDelay;
+}
+
+double Knowledge::getSumCongested() {
+	return congestedLength;
+}
+
+double Knowledge::getSumDensed() {
+	return denseLength;
+}
+
+double Knowledge::getSumLength() {
+	return sumLength;
+}
 
 map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId)
 {

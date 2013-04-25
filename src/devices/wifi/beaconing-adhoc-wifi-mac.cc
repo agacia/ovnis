@@ -93,7 +93,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+  //m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 

@@ -137,7 +137,7 @@ namespace ns3
     bool decisionTaken;
     bool notificationSent;
     string decisionEdgeId;
-    bool wasCongested;
+    bool wasSO;
     double startReroute;
     bool isVanet;
     string routingStrategy;

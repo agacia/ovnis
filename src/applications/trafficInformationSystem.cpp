@@ -32,7 +32,7 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 	++vehiclesOnRoute[newRouteId];
 	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
 			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
-			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime;
+			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime << "\t" << vehiclesOnRoute[newRouteId];;
 	Log::getInstance().getStream("routing_start") << endl;
 }
 

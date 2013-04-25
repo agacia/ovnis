@@ -90,7 +90,7 @@ FceApplication::FceApplication() {
 	decisionTaken = false;
 	notificationSent = false;
 	isCheater = false;
-	wasCongested = false;
+	wasSO = false;
 	startReroute = 0;
 	InitializeScenario();
 }
@@ -107,7 +107,7 @@ void FceApplication::InitializeScenario() {
 //	costFunction = COST_FUNCTION;
 	networkId = "Highway";
 //	networkId = "Kirchberg";
-	routingStrategy = "noRouting";
+//	routingStrategy = "noRouting";
 	routingStrategy = "UE";
 //	routingStrategy = "SO";
 //	routingStrategy = "hybrid";
@@ -116,7 +116,6 @@ void FceApplication::InitializeScenario() {
 //	costFunction = "delayTime";
 	SetNetwork(networkId);
 
-	Log::getInstance().getStream("scenarioSettings") << "vehicleId\t" << vehicle.getId() << endl;
 	Log::getInstance().getStream("scenarioSettings") << "isVanet\t" << isVanet << endl;
 	Log::getInstance().getStream("scenarioSettings") << "penetrationRate\t" << penetrationRate << endl;
 	Log::getInstance().getStream("scenarioSettings") << "cheatersRatio\t" << cheatersRatio << endl;;
@@ -182,6 +181,7 @@ void FceApplication::StartApplication(void) {
 	// initialize vehicle
 	string vehicleId = Names::FindName(GetNode());
 	vehicle.initialize(vehicleId);
+	Log::getInstance().getStream("scenarioSettings") << "vehicleId\t" << vehicle.getId() << endl;
 	vehicle.setScenario(network);
 	// add to the centralised Traffic Information System vehicle's routes (edges) of interest
 	TIS::getInstance().initializeStaticTravelTimes(vehicle.getScenario().getAlternativeRoutes());
@@ -259,7 +259,7 @@ void FceApplication::SimulationRun(void) {
 				string routeChoice = UE_choice;
 				expectedTravelTime = globalCosts[routeChoice];
 				bool isAccident = now > accidentStartTime && now < accidentStopTime;
-				bool isCongested = false;
+				bool needSO = false;
 				isCheater = false;
 				// vanets
 				if (isVanet) {
@@ -267,21 +267,23 @@ void FceApplication::SimulationRun(void) {
 					Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
 					vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
 					CalculateError(currentEdge);
-					isCongested = vanetsKnowledge.isCongestedFlow();
-					wasCongested = isCongested;
-					TIS::getInstance().setCongestion(isCongested, vanetsKnowledge.isDenseFlow(), vanetsKnowledge.isCongestedFlow());
-					map<string, double> travelTime = vanetsKnowledge.getTravelTimesOnRoutes();
-					map<string, double> delayTime = vanetsKnowledge.getDelayOnRoutes();
-					map<string, double> congestionLength = vanetsKnowledge.getCongestedLengthOnRoutes();
-					Log::getInstance().logMap("delay_scale", now, delayTime, 0);
-					Log::getInstance().logMap("congestion_scale", now, congestionLength, 0);
-					Log::getInstance().logMap("travelTime_scale", now, travelTime, 0);
-					map<string, double> cost = travelTime;
+//					needSO = vanetsKnowledge.isCongestedFlow();
+					needSO = vanetsKnowledge.getSumDelay() > 0;
+					wasSO = needSO;
+					TIS::getInstance().setCongestion(needSO, vanetsKnowledge.isDenseFlow(), vanetsKnowledge.isCongestedFlow());
+					map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
+
+					map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
+					map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
+					Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
+					Log::getInstance().logMap("congestion_scale", now, congestionLengthCost, 0);
+					Log::getInstance().logMap("travelTime_scale", now, travelTimeCost, 0);
+					map<string, double> cost = travelTimeCost;
 					if (costFunction == "congestionLength") {
-						cost = congestionLength;
+						cost = congestionLengthCost;
 					}
 					if (costFunction == "delayTime") {
-						cost = delayTime;
+						cost = delayTimeCost;
 					}
 
 					UE_choice = TIS::getInstance().chooseMinCostRoute(cost);
@@ -293,12 +295,15 @@ void FceApplication::SimulationRun(void) {
 					if (routingStrategy == "SO" && SO_choice != "") {
 						routeChoice = SO_choice;
 					}
-					// congestion detected when 'significant' delayTime, so later than in probabilistic
-					if (routingStrategy == "hybrid" && isCongested && SO_choice != "") {
+					// hybrid - SO only if 'needed'
+					if (needSO && SO_choice != "") {
 						routeChoice = SO_choice;
 					}
-					selfishTravelTime = travelTime[UE_choice];
-					expectedTravelTime = travelTime[routeChoice];
+
+
+
+					selfishTravelTime = travelTimeCost[UE_choice];
+					expectedTravelTime = travelTimeCost[routeChoice];
 				}
 				// no routing
 				if (routingStrategy == "noRouting") {
@@ -330,7 +335,7 @@ void FceApplication::SimulationRun(void) {
 				// todo get newEdgeId (pointer to the next edge)
 				TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdge, vehicle.getItinerary().getId(), currentEdge,
 						routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
-						isCongested, expectedTravelTime, selfishExpectedTravelTime);
+						needSO, expectedTravelTime, selfishExpectedTravelTime);
 				decisionTaken = true;
 			}
 
@@ -349,7 +354,7 @@ void FceApplication::SimulationRun(void) {
 							<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
 							<< travelTime2 << "\t"
 							<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdge) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
-					TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdge, startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasCongested);
+					TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdge, startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasSO);
 					notificationSent = true;
 				}
 			}

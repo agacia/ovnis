@@ -55,6 +55,11 @@ public:
     bool isCongestedFlow() const;
     bool isDenseFlow() const;
 
+    double getSumDelay();
+    double getSumCongested();
+    double getSumDensed();
+    double getSumLength();
+
 protected:
 	map<long,int> packets; // counter of packets
 	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
@@ -66,11 +71,16 @@ protected:
 	map<string, double> packetAgesOnRoutes;
 	map<string,int> numberOfUpdatedEdges;
 
+//	map<string, double> packetAgesOnRoutes;
 	double maxInformationAge;
 	double congestionThreshold;
 	double densityThreshold;
 	bool ifCongestedFlow;
 	bool ifDenseFlow;
+	double sumLength;
+	double congestedLength;
+	double denseLength;
+	double sumDelay;
 };
 
 }
