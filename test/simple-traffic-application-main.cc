@@ -60,7 +60,7 @@ int main(int argc, char ** argv) {
 
 	string outputFolder = "scenarios/";
 	string scenario = "Highway";
-//	scenario = "Kirchberg";
+	scenario = "Kirchberg";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
 	string sumoPath="/opt/sumo/bin/sumo"; // mac

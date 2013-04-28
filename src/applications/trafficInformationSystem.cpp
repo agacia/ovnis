@@ -224,9 +224,16 @@ bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 	double minCost = numeric_limits<double>::max();
 	double sumCost = 0;
-
 	string chosenRouteId = "";
 	int costsSize = 0;
+
+	map<string, double> correlated = map<string, double>();
+	correlated["routedist#0"] = 0;
+	correlated["routedist#1"] = 0;
+	correlated["routedist#2"] = 0;
+	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
+		costs[it->first] = it->second + correlated[it->first]*it->second;
+	}
 
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
 		sumCost += it->second;
@@ -235,9 +242,6 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 	if (sumCost == 0 || costsSize == 0) {
 		return "";
 	}
-	vector<string> correlated = vector<string>();
-	correlated.push_back("routedist#0");
-	correlated.push_back("routedist#1");
 
 	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds() << "\t" << costsSize << "/" << costs.size() << "\t";
 	vector<pair<string, double> > sortedProbabilities = vector<pair<string, double> >();

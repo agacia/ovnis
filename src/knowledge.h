@@ -45,7 +45,7 @@ public:
 	void record(vector<Data> data);
 	map<string,RecordEntry> & getRecords();
 
-	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId);
+	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL);
 
 	map<std::string,double> getCongestedLengthOnRoutes();
 	map<std::string,double> getDenseLengthOnRoutes();

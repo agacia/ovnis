@@ -73,7 +73,7 @@ map<string,RecordEntry> & Knowledge::getRecords()
 	return travelTimes;
 }
 
-void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId) {
+void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL) {
 	ifCongestedFlow = false;
 	ifDenseFlow = false;
 	sumLength = 0;
@@ -92,9 +92,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	// initialize
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		newTravelTimesOnRoutes[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, startEdgeId, endEdgeId);
-		if (travelTimesOnRoutes[it->first] == 0) {
-			travelTimesOnRoutes[it->first] = newTravelTimesOnRoutes[it->first];
-		}
+		travelTimesOnRoutes[it->first] = newTravelTimesOnRoutes[it->first];
 		packetAgesOnRoutes[it->first] = 0;
 		vehicles[it->first] = 0;
 		numberOfUpdatedEdges[it->first] = 0;
@@ -102,66 +100,63 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		denseLengthOnRoutes[it->first] = 0;
 		delayOnRoutes[it->first] = 0;
 	}
-	// read vanets records
+
+	// compute newTravelTimes on routes from local knowledge considering packet age!
 	for (map<string, RecordEntry>::iterator it = travelTimes.begin(); it != travelTimes.end(); ++it) {
 		string edgeId = it->first;
-		double travelTime = it->second.getLatestValue();
-		double packetDate = it->second.getLatestTime();
+//		double travelTime = it->second.getLatestValue();
+//		double packetDate = it->second.getLatestTime();
+		double travelTime = it->second.getAverageValue();
+		double packetDate = it->second.getAverageTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
-		int vehs = numberOfVehicles[it->first];
-//		double travelTime = it->second.getAverageValue();
-//		double packetDate = it->second.getAverageTime();
-		double staticCost = 0;
+		int vehs = numberOfVehicles[it->first];double staticCost = 0;
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)) { // if the edge belongs to the part of the future route
-				maxInformationAge = travelTimesOnRoutes[itRoutes->first];
-				Log::getInstance().getStream("ttl") << Simulator::Now().GetSeconds() << "\t" << packetAge << "\t" <<  maxInformationAge << endl;
-				if (travelTime > 0 && packetAge < maxInformationAge) { // information was recorded about this edge and is fresh enough
-					staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
-					if (staticCost != 0) {
-						it->second.setCapacity(staticCost);
-					}
-					newTravelTimesOnRoutes[itRoutes->first] = newTravelTimesOnRoutes[itRoutes->first] - staticCost + travelTime;
-					packetAgesOnRoutes[itRoutes->first] += packetAge;
-					++numberOfUpdatedEdges[itRoutes->first];
-					++totalNumberOfUpdatedEdges;
-					double edgeLength = TIS::getInstance().getEdgeLength(edgeId);
-					sumLength += edgeLength;
-
-					Log::getInstance().getStream("capacity") << Simulator::Now().GetSeconds() << "\t";
-
-					// sumo bug fix
-					if (travelTime != SIMULATION_STEP_INTERVAL || it->second.getExpectedValue() > SIMULATION_STEP_INTERVAL) { // travelTime > 1 means that it was recorded in sumo!
-						double delay = travelTime - it->second.getExpectedValue();
-						if (delay > 0) {
-							delayOnRoutes[itRoutes->first] += delay;
-							sumDelay += delay;
+					maxInformationAge = routeTTL[itRoutes->first];
+					//Log::getInstance().getStream("ttl") << Simulator::Now().GetSeconds() << "\t" << packetAge << "\t" <<  maxInformationAge << endl;
+					if (travelTime > 0 && packetAge < maxInformationAge) { // information was recorded about this edge and is fresh enough
+						staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
+						if (staticCost != 0) {
+							it->second.setCapacity(staticCost);
 						}
-						Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime << "\t";
-						Log::getInstance().getStream("delay") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << travelTime << "\t-\t" << it->second.getExpectedValue() << "\t=\t" << delay << "\t";
-						Log::getInstance().getStream("capacity") << edgeId << "," << it->second.getExpectedValue() << "," << travelTime << "," << it->second.getActualCapacity() << "\t";
-
-						if (it->second.getActualCapacity() < congestionThreshold) {
-							congestedLength += edgeLength;
-							ifCongestedFlow = true;
-							congestedLengthOnRoutes[itRoutes->first] += edgeLength;
-							Log::getInstance().getStream("congestion") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << it->second.getActualCapacity() << "<" << congestionThreshold << "\t" << travelTime << "\t" << it->second.getExpectedValue() << endl;
-						}
-						if (it->second.getActualCapacity() > congestionThreshold && it->second.getActualCapacity() < densityThreshold) {
-							ifDenseFlow = true;
-							denseLengthOnRoutes[itRoutes->first] += edgeLength;
-							Log::getInstance().getStream("dense") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << congestionThreshold << "<" << it->second.getActualCapacity() << "<" << densityThreshold << "\t" << travelTime << "\t" << it->second.getExpectedValue() << endl;
+						travelTimesOnRoutes[itRoutes->first] = travelTimesOnRoutes[itRoutes->first] - staticCost + travelTime;
+						packetAgesOnRoutes[itRoutes->first] += packetAge;
+						++numberOfUpdatedEdges[itRoutes->first];
+						++totalNumberOfUpdatedEdges;
+						double edgeLength = TIS::getInstance().getEdgeLength(edgeId);
+						sumLength += edgeLength;
+						Log::getInstance().getStream("capacity") << Simulator::Now().GetSeconds() << "\t";
+						if (travelTime != SIMULATION_STEP_INTERVAL || it->second.getExpectedValue() > SIMULATION_STEP_INTERVAL) { // sumo bug fix - travelTime > 1 means that it was recorded in sumo!
+							double delay = travelTime - it->second.getExpectedValue();
+							if (delay > 0) {
+								delayOnRoutes[itRoutes->first] += delay;
+								sumDelay += delay;
+							}
+							Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime << "\t";
+							Log::getInstance().getStream("delay") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << travelTime << "\t-\t" << it->second.getExpectedValue() << "\t=\t" << delay << "\t";
+							Log::getInstance().getStream("capacity") << edgeId << "," << it->second.getExpectedValue() << "," << travelTime << "," << it->second.getActualCapacity() << "\t";
+							if (it->second.getActualCapacity() < congestionThreshold) {
+								congestedLength += edgeLength;
+								ifCongestedFlow = true;
+								congestedLengthOnRoutes[itRoutes->first] += edgeLength;
+								Log::getInstance().getStream("congestion") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << it->second.getActualCapacity() << "<" << congestionThreshold << "\t" << travelTime << "\t" << it->second.getExpectedValue() << endl;
+							}
+							if (it->second.getActualCapacity() > congestionThreshold && it->second.getActualCapacity() < densityThreshold) {
+								ifDenseFlow = true;
+								denseLengthOnRoutes[itRoutes->first] += edgeLength;
+								Log::getInstance().getStream("dense") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << congestionThreshold << "<" << it->second.getActualCapacity() << "<" << densityThreshold << "\t" << travelTime << "\t" << it->second.getExpectedValue() << endl;
+							}
 						}
 					}
-				}
 			}
 		}
 	}
+
 	// calculate the average information age
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		travelTimesOnRoutes[it->first] = newTravelTimesOnRoutes[it->first];
 		packetAgesOnRoutes[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAgesOnRoutes[it->first] / numberOfUpdatedEdges[it->first];
 	}
+
 	// print knowledge
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		packetAgesOnRoutes[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAgesOnRoutes[it->first] / numberOfUpdatedEdges[it->first];

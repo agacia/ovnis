@@ -106,10 +106,10 @@ void FceApplication::InitializeScenario() {
 //	routingStrategy = ROUTING_STRATEGY;
 //	costFunction = COST_FUNCTION;
 	networkId = "Highway";
-//	networkId = "Kirchberg";
+	networkId = "Kirchberg";
 //	routingStrategy = "noRouting";
 	routingStrategy = "UE";
-//	routingStrategy = "SO";
+	routingStrategy = "SO";
 //	routingStrategy = "hybrid";
 	costFunction = "travelTime";
 //	costFunction = "congestionLength";
@@ -156,10 +156,9 @@ void FceApplication::SetNetwork(string networkId) {
 		route_capacities.push_back(1000);
 		route_capacities.push_back(600);
 		route_capacities.push_back(800);
-		vector<string> route_strategies = vector<string>();
 		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
 		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
-		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
+		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
 	}
 	int i = 0;
 	for (vector<string>::iterator it = route_ids.begin(); it < route_ids.end(); ++it, ++i) {
@@ -265,10 +264,22 @@ void FceApplication::SimulationRun(void) {
 				if (isVanet) {
 					Vector position = mobilityModel->GetPosition();
 					Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdge << "\t" << vehicle.getDestinationEdgeId() << "\t";
-					vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
+					string endEdgeId = vehicle.getDestinationEdgeId();
+					// for UE we need to reset (do various)
+					map<string,double> routeTTL;
+					for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
+						routeTTL[it->first] = PACKET_TTL;
+					}
+					if (routingStrategy == "UE") {
+						for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
+							routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId) * (1+ CONGESTION_THRESHOLD);
+						}
+					}
+					vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdge, endEdgeId, routeTTL);
 					CalculateError(currentEdge);
-//					needSO = vanetsKnowledge.isCongestedFlow();
-					needSO = vanetsKnowledge.getSumDelay() > 0;
+					needSO = vanetsKnowledge.isCongestedFlow();
+//					needSO = vanetsKnowledge.getSumDelay() > 0;
+//					needSO = isAccident;
 					wasSO = needSO;
 					TIS::getInstance().setCongestion(needSO, vanetsKnowledge.isDenseFlow(), vanetsKnowledge.isCongestedFlow());
 					map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
@@ -296,7 +307,7 @@ void FceApplication::SimulationRun(void) {
 						routeChoice = SO_choice;
 					}
 					// hybrid - SO only if 'needed'
-					if (needSO && SO_choice != "") {
+					if (routingStrategy == "hybrid" && needSO && SO_choice != "") {
 						routeChoice = SO_choice;
 					}
 
