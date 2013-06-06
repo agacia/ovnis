@@ -63,8 +63,10 @@ int main(int argc, char ** argv) {
 //	scenario = "Kirchberg";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
-	string sumoPath="/opt/sumo/bin/sumo"; // mac
-	sumoPath="/opt/sumo/bin/sumo-gui";
+	string dir = "/Users/agatagrzybek/PhD/workshop/sumo-0.17.1";
+	string sumoPath = "/opt/sumo/bin/sumo-gui";
+//	string sumoPath="/Users/agatagrzybek/PhD/workshop/sumo-0.17.1/bin/sumo-gui"; // mac
+//	sumoPath="/opt/sumo/bin/sumo-gui";
 //	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
 	string sumoHost = "localhost";
 	int startTime = 0;

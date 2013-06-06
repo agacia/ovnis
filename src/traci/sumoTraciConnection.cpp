@@ -119,14 +119,22 @@ double SumoTraciConnection::GetVehicleSpeed(string vehicleId) {
 
 string SumoTraciConnection::GetVehicleEdge(string vehicleId) {
 	try {
-		VehicleQuery vehicleQuery(&socket, vehicleId, CMD_GET_VEHICLE_VARIABLE, VAR_ROAD_ID);
-		vehicleQuery.DoCommand();
+        VehicleQuery vehicleQuery(&socket, vehicleId, CMD_GET_VEHICLE_VARIABLE, VAR_ROAD_ID);
+        if (vehicleQuery.DoCommand() != 0) {
+        	return "";
+		}
 		return vehicleQuery.getStringResponse();
+	}
+	catch (TraciException &e) {
+		cout << vehicleId << " " <<  CMD_GET_VEHICLE_VARIABLE << " " <<  VAR_ROAD_ID << endl;
+		return "";
+		throw e;
 	}
 	catch (exception &e) {
 		return "";
 		throw e;
 	}
+
 }
 
 string SumoTraciConnection::GetVehicleLane(string vehicleId) {

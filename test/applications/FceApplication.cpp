@@ -110,7 +110,7 @@ void FceApplication::InitializeScenario() {
 //	routingStrategy = "noRouting";
 	routingStrategy = "UE";
 	routingStrategy = "SO";
-//	routingStrategy = "hybrid";
+    routingStrategy = "hybrid";
 	costFunction = "travelTime";
 //	costFunction = "congestionLength";
 //	costFunction = "delayTime";
@@ -241,7 +241,7 @@ void FceApplication::SimulationRun(void) {
 				Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
-//				Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
+				Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
 			}
 
 			// if approaching an intersection
