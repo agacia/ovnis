@@ -1,6 +1,7 @@
 /*
  * knowledge.h
  *
+/*
  *  Created on: Jan 31, 2013
  *      Author: agata
  */
@@ -46,6 +47,8 @@ public:
 	map<string,RecordEntry> & getRecords();
 
 	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL);
+	map<string,map<string,vector<string> > > analyseLCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeI);
+
 
 	map<std::string,double> getCongestedLengthOnRoutes();
 	map<std::string,double> getDenseLengthOnRoutes();

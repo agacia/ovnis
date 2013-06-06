@@ -106,7 +106,7 @@ void FceApplication::InitializeScenario() {
 //	routingStrategy = ROUTING_STRATEGY;
 //	costFunction = COST_FUNCTION;
 	networkId = "Highway";
-	networkId = "Kirchberg";
+//	networkId = "Kirchberg";
 //	routingStrategy = "noRouting";
 	routingStrategy = "UE";
 	routingStrategy = "SO";
@@ -147,12 +147,9 @@ void FceApplication::SetNetwork(string networkId) {
 	else if (networkId == "Kirchberg") {
 		decisionEdge = "56640729#5";
 		notificationEdge = "53349130#1";
-		route_ids.push_back("routedist#0");
-		route_ids.push_back("routedist#1");
-		route_ids.push_back("routedist#2");
-	//	route_ids.push_back("kennedy");
-	//	route_ids.push_back("adenauer");
-	//	route_ids.push_back("thuengen");
+		route_ids.push_back("routedist#0"); // kennedy
+		route_ids.push_back("routedist#1"); // asenauer
+		route_ids.push_back("routedist#2"); // thuengen
 		route_capacities.push_back(1000);
 		route_capacities.push_back(600);
 		route_capacities.push_back(800);
@@ -184,6 +181,7 @@ void FceApplication::StartApplication(void) {
 	vehicle.setScenario(network);
 	// add to the centralised Traffic Information System vehicle's routes (edges) of interest
 	TIS::getInstance().initializeStaticTravelTimes(vehicle.getScenario().getAlternativeRoutes());
+
 	// ns3
 	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();
 	ToggleNeighborDiscovery(true);
@@ -243,6 +241,7 @@ void FceApplication::SimulationRun(void) {
 				Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
+//				Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
 			}
 
 			// if approaching an intersection
@@ -273,11 +272,28 @@ void FceApplication::SimulationRun(void) {
 					if (routingStrategy == "UE") {
 						for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 							routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId) * (1+ CONGESTION_THRESHOLD);
+//							routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId);
+//							routeTTL[it->first] = 120;
+//							routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId) * 2;
+
 						}
 					}
 					vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdge, endEdgeId, routeTTL);
+					map<string,map<string,vector<string> > > correlated = vanetsKnowledge.analyseLCorrelation(vehicle.getScenario().getAlternativeRoutes(), currentEdge, endEdgeId);
+//					map<string,map<string,vector<string> > > correlated;
+					map<string, double> correlatedValues;
+					string defaultRoute = vehicle.getItinerary().getId();
+					correlatedValues[defaultRoute] = 0;
+					Log::getInstance().getStream("scenarioSettings") << "correlation of default route " << defaultRoute << "\t";
+					for (map<string,vector<string> >::iterator itCorrelatedTo = correlated[defaultRoute].begin(); itCorrelatedTo != correlated[defaultRoute].end(); ++itCorrelatedTo) {
+						correlatedValues[itCorrelatedTo->first] = itCorrelatedTo->second.size()*2;
+						Log::getInstance().getStream("scenarioSettings") << itCorrelatedTo->first << "," << correlatedValues[itCorrelatedTo->first] << "\t";
+					}
+					Log::getInstance().getStream("scenarioSettings") << endl;
+
 					CalculateError(currentEdge);
 					needSO = vanetsKnowledge.isCongestedFlow();
+//					needSO = vanetsKnowledge.isCongestedFlow() || vanetsKnowledge.isDenseFlow();
 //					needSO = vanetsKnowledge.getSumDelay() > 0;
 //					needSO = isAccident;
 					wasSO = needSO;
@@ -298,7 +314,7 @@ void FceApplication::SimulationRun(void) {
 					}
 
 					UE_choice = TIS::getInstance().chooseMinCostRoute(cost);
-					SO_choice =  TIS::getInstance().chooseProbTravelTimeRoute(cost);
+					SO_choice =  TIS::getInstance().chooseProbTravelTimeRoute(cost, correlatedValues);
 
 					if (UE_choice != "") {
 						routeChoice = UE_choice;
@@ -306,12 +322,13 @@ void FceApplication::SimulationRun(void) {
 					if (routingStrategy == "SO" && SO_choice != "") {
 						routeChoice = SO_choice;
 					}
+
 					// hybrid - SO only if 'needed'
 					if (routingStrategy == "hybrid" && needSO && SO_choice != "") {
 						routeChoice = SO_choice;
+						cout << now << " needSO " << needSO << " route choice: " << routeChoice << endl;
+
 					}
-
-
 
 					selfishTravelTime = travelTimeCost[UE_choice];
 					expectedTravelTime = travelTimeCost[routeChoice];
@@ -343,6 +360,10 @@ void FceApplication::SimulationRun(void) {
 				vehicle.reroute(routeChoice);
 				decisionEdgeId = currentEdge;
 				selfishExpectedTravelTime = selfishTravelTime;
+
+				Log::getInstance().getStream("scenarioSettings") << "needSO\t" << needSO << endl;
+				Log::getInstance().getStream("scenarioSettings") << "routeChoice\t" << routeChoice << endl;
+
 				// todo get newEdgeId (pointer to the next edge)
 				TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdge, vehicle.getItinerary().getId(), currentEdge,
 						routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
@@ -400,11 +421,11 @@ void FceApplication::CalculateError(string currentEdge) {
 	double sumSumo = 0;
 	double sumVanet = 0;
 	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
-		if (it->second < 1000) {
+//		if (it->second < 1000) {
 			error += abs(it->second - vanetEdgesCosts[it->first]);
 			sumSumo += it->second;
 			sumVanet += vanetEdgesCosts[it->first];
-		}
+//		}
 	}
 	double percent = (sumSumo + sumVanet) == 0 ? 0 : error / (sumSumo + sumVanet);
 	Log::getInstance().getStream("edges_error") << now << "\t" << error << "\t" << percent << "\t" << sumVanet << "\t" << sumSumo << "\t" << sumVanet-sumSumo << endl;
@@ -478,16 +499,6 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 		if (ovnisPacket.getPacketType() == TRAFFICINFO_PACKET_ID) {
 			vector<Data> data = ovnisPacket.ReadTrafficInfoPacket();
 			vanetsKnowledge.record(data);
-//			for (vector<Data>::iterator it = data.begin(); it != data.end(); ++it) {
-//				if (it->edgeId == "main_3b") {
-//					Log::getInstance().getStream("main_3b_recording") << Simulator::Now().GetSeconds() << "\t" << decisionTaken << "\t";
-//					vanetsKnowledge.record(*it);
-//					Log::getInstance().getStream("main_3b_recording") << endl;
-//				}
-//				else {
-//					vanetsKnowledge.record(*it);
-//				}
-//			}
 		}
 
 		Log::getInstance().packetReceived();

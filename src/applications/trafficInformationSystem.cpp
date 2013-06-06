@@ -70,18 +70,15 @@ void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
 					staticRecords[*it2] = route.getEdgeInfo(*it2);
 				}
 			}
-
 			// print route to file
 			Log::getInstance().getStream("routes_info") << it->first << "\t";
 			for (vector<EdgeInfo>::iterator edges_it = it->second.getEdgeInfos().begin(); edges_it != it->second.getEdgeInfos().end(); ++edges_it) {
 				Log::getInstance().getStream("routes_info") << edges_it->getId() << "," << edges_it->getLength() << "," << edges_it->getMaxSpeed() << "\t";
 			}
 			Log::getInstance().getStream("routes_info") << endl;
-		}
+		};
 	}
 }
-
-
 
 std::map<std::string, EdgeInfo> & TIS::getStaticRecords() {
 	return staticRecords;
@@ -194,27 +191,27 @@ string TIS::chooseRandomRoute() {
 /**
  * If flow exceeds the capacity of the fastest road, then split the rest of the flow proportionally to other alternative routes
  */
-string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
-	string chosenRouteId = chooseMinCostRoute(costs);
-	double capacity = staticRoutes[chosenRouteId].getCapacity();
-	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
-	if (flowRatioNeededToUseOtherAlternatives <= 0) {
-		flowRatioNeededToUseOtherAlternatives = 0;
-	}
-	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
-		flowRatioNeededToUseOtherAlternatives = 1;
-	}
-	//double random = rando.GetValue(0, 1);
-	double random = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
-	if (random < flowRatioNeededToUseOtherAlternatives) {
-		map<string, double>::iterator it = costs.find(chosenRouteId);
-		if (it != costs.end()) {
-			costs.erase(it);
-		}
-		chosenRouteId = chooseProbTravelTimeRoute(costs);
-	}
-	return chosenRouteId;
-}
+//string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
+//	string chosenRouteId = chooseMinCostRoute(costs);
+//	double capacity = staticRoutes[chosenRouteId].getCapacity();
+//	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
+//	if (flowRatioNeededToUseOtherAlternatives <= 0) {
+//		flowRatioNeededToUseOtherAlternatives = 0;
+//	}
+//	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
+//		flowRatioNeededToUseOtherAlternatives = 1;
+//	}
+//	//double random = rando.GetValue(0, 1);
+//	double random = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+//	if (random < flowRatioNeededToUseOtherAlternatives) {
+//		map<string, double>::iterator it = costs.find(chosenRouteId);
+//		if (it != costs.end()) {
+//			costs.erase(it);
+//		}
+//		chosenRouteId = chooseProbTravelTimeRoute(costs);
+//	}
+//	return chosenRouteId;
+//}
 
 bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 {
@@ -222,17 +219,18 @@ bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 }
 
 string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
+	map<string, double> correlated;
+	return chooseProbTravelTimeRoute(costs, correlated);
+}
+
+string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, double> correlated) {
 	double minCost = numeric_limits<double>::max();
 	double sumCost = 0;
 	string chosenRouteId = "";
 	int costsSize = 0;
 
-	map<string, double> correlated = map<string, double>();
-	correlated["routedist#0"] = 0;
-	correlated["routedist#1"] = 0;
-	correlated["routedist#2"] = 0;
-	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
-		costs[it->first] = it->second + correlated[it->first]*it->second;
+	for (map<string, double>::iterator it = correlated.begin(); it != correlated.end(); ++it) {
+		costs[it->first] = costs[it->first] + costs[it->first]*it->second;
 	}
 
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
@@ -265,7 +263,6 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
 		}
 	}
 	Log::getInstance().getStream("probabilities") << endl;
-
 //	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 
 	chosenRouteId = getEvent(sortedProbabilities);

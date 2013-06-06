@@ -83,8 +83,10 @@ namespace ns3
     UniformVariable  rando;
 
     std::vector<std::string> runningVehicles;
+    std::vector<std::string> connectedVehicles;
     std::vector<std::string> departedVehicles;
     std::vector<std::string> arrivedVehicles;
+    int newConnectedVehiclesCount;
 
     // network
     NqosWifiMacHelper mac;
@@ -149,6 +151,7 @@ namespace ns3
     bool is80211p;
     bool isLTE;
     bool isOvnisChannel;
+    double penetrationRate;
     int currentTime;
     time_t start;
     std::map<std::string,double> edgeTravelTime;

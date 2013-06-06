@@ -78,26 +78,26 @@ double RecordEntry::setCapacity(double expectedValue) {
 
 double RecordEntry::getAverageValue() {
 	double sum = 0;
-	int count = 0;
+	int num = 0;
 	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
-		if (senders[i] != "") {
+		if (values[i] != 0) {
 			sum += values[i];
-			++count;
+			++num;
 		}
 	}
-	return sum/count;
+	return sum/num;
 }
 
 double RecordEntry::getAverageTime() {
 	double sum = 0;
-	int count = 0;
+	int num = 0;
 	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
-		if (senders[i] != "") {
+		if (values[i] != 0) {
 			sum += times[i];
-			++count;
+			++num;
 		}
 	}
-	return sum/count;
+	return sum/num;
 }
 
 double RecordEntry::getLatestTime() {

@@ -111,6 +111,7 @@ void Ovnis::DoStart(void) {
     is80211p = true;
     isLTE = false;
     isOvnisChannel = false;
+    penetrationRate = 1;
 
     Log::getInstance().setOutputFolder(scenarioFolder);
 
@@ -144,7 +145,7 @@ void Ovnis::DoStart(void) {
 		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
 		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 
-		Log::getInstance().getStream("simulation") << "time \t running \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
+		Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
 		Object::DoStart();
 	}
@@ -193,7 +194,6 @@ void Ovnis::InitializeDefaultNetwork() {
 }
 
 void Ovnis::InitializeOvnisNetwork() {
-
 	if (is80211p) {
 		ovnisPhyHelper = OvnisWifiPhyHelper::Default();
 		ovnisPhyHelper.Set("TxPowerStart",DoubleValue(TX_POWER_START));
@@ -269,8 +269,19 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
 				ns3::Time stopTime = Simulator::Now();
 				if (isOvnisChannel) {
-					Ptr<OvnisApplication> app = DynamicCast<OvnisApplication>(n->GetApplication(j));
-					app->SetStopTime(stopTime);
+					Ptr<Application> app = n->GetApplication(j);
+					try {
+						Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+						for (vector<string>::iterator k = connectedVehicles.begin(); k < connectedVehicles.end(); ++k) {
+							if (*i == *k) {
+//								cout << "stopping connected app" << endl;
+								ovnisApp->SetStopTime(stopTime);
+								break;
+							}
+						}
+					}
+					catch (exception & e) {
+					}
 				}
 				else {
 					n->GetApplication(j)->SetStopTime(stopTime);
@@ -338,13 +349,16 @@ void Ovnis::UpdateInOutVehicles() {
 }
 
 void Ovnis::StartApplications() {
-	int j = 0;
+	newConnectedVehiclesCount = 0;
 	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
 		Ptr<Node> node = Names::Find<Node>((*i));
-		if (node!=0) {
+		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+		if (node!=0 && isOvnisChannel && penetrationRate > 0 && r <= penetrationRate) {
+			connectedVehicles.insert(connectedVehicles.end(), i, i+1);
 			Ptr<Application> app = m_application_factory.Create<Application>();
 			node->AddApplication(app);
 			app->SetStartTime(Seconds(0));
+			++newConnectedVehiclesCount;
 		}
 	}
 	departedVehicles.clear();
@@ -384,8 +398,9 @@ void Ovnis::TrafficSimulationStep() {
 		currentTime = traci->GetCurrentTime();
 		ovnis::Log::getInstance().logInTime(currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_DEPARTURED, departedVehicles.size(), currentTime);
+		ovnis::Log::getInstance().logIn(VEHICLES_CONNECTED, newConnectedVehiclesCount, currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_ARRIVED, arrivedVehicles.size(), currentTime);
-		Log::getInstance().getStream("simulation") << currentTime/1000 << " \t " << runningVehicles.size() << " \t " << departedVehicles.size() << " \t " << arrivedVehicles.size() << " \t " << ns3::NodeList::GetNNodes() << " \t "
+		Log::getInstance().getStream("simulation") << currentTime/1000 << " \t " << runningVehicles.size() << " \t " << connectedVehicles.size() << " \t " << departedVehicles.size() << " \t " << arrivedVehicles.size() << " \t " << ns3::NodeList::GetNNodes() << " \t "
 				<< Log::getInstance().getSentPackets() << " \t " << Log::getInstance().getReceivedPackets() << " \t"
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::SWITCHING) << ", "
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::TX) << ", "

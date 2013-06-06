@@ -32,16 +32,15 @@
 // NS-3 RELATED CONSTANTS
 #define MAX_COMMUNICATION_RANGE 560
 
-//#define TX_POWER_START 21.0206
-//#define TX_POWER_END 21.0206
-#define TX_POWER_START 16.02
-#define TX_POWER_END 16.02
+#define TX_POWER_START 21.0206
+#define TX_POWER_END 21.0206
+//#define TX_POWER_START 16.02
+//#define TX_POWER_END 16.02
 #define TX_POWER_LEVELS 1
 #define TX_GAIN 0
 #define RX_GAIN 0
 #define ENERGY_DETECTION_THRESHOLD -96.0
 #define CCA_MODEL_THRESHOLD -99
-
 #define PROPAGATION_LOSS_MODEL "ns3::NakagamiPropagationLossModel"
 #define PROPAGATION_DELAY_MODEL "ns3::ConstantSpeedPropagationDelayModel"
 #define WIFI_PHY_STANDARD WIFI_PHY_STANDARD_80211_10MHZ
@@ -76,6 +75,7 @@
 #define CHEATER_RATIO 0 // % of drivers choosing selfish route
 #define CONGESTION_THRESHOLD 0.56 // Ratio of expected_travel_time/actual_travel time. For highways when speed limit = 115 kmph , traffic is considered congested when speed < 64 kmph
 #define DENSITY_THRESHOLD 0.77 // For highways when speed limit = 115 kmph , traffic is considered dense when speed < 88 kmph
+//#define DENSITY_THRESHOLD 0.8 // For highways when speed limit = 115 kmph , traffic is considered dense when speed < 88 kmph
 #define PENETRATION_RATE 1
 #define IS_VANET true
 #define ACCIDENT_START_TIME 300
@@ -105,7 +105,8 @@ typedef enum _VariableType {
   	VEHICLES_ARRIVED = 2,
   	VEHICLES_LOADED = 3,
   	VEHICLES_WAITING = 4,
-  	VEHICLES_RUNNING = 5
+  	VEHICLES_RUNNING = 5,
+  	VEHICLES_CONNECTED = 6
   } VariableType;
 
 #endif /* OVNIS_CONSTANTS_H_ */

@@ -60,11 +60,11 @@ int main(int argc, char ** argv) {
 
 	string outputFolder = "scenarios/";
 	string scenario = "Highway";
-	scenario = "Kirchberg";
+//	scenario = "Kirchberg";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
 	string sumoPath="/opt/sumo/bin/sumo"; // mac
-//	sumoPath="/opt/sumo/bin/sumo-gui";
+	sumoPath="/opt/sumo/bin/sumo-gui";
 //	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
 	string sumoHost = "localhost";
 	int startTime = 0;
@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
 	cmd.Parse(argc, argv);
 
 	// reset seed to generate different numbers every time
-//	srand(time(0));
+	srand(time(0));
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),

@@ -82,7 +82,7 @@ AM_LDFLAGS="$LDFLAGS"
 ##########################################################################
 # check for NS3 
 ##########################################################################
-LIB_NS3="ns3.16-antenna-debug"
+#LIB_NS3="ns3.16-antenna-debug"
 #libns3.16-antenna-debug.so            libns3.16-flow-monitor-debug.so           libns3.16-propagation-debug.so
 #libns3.16-antenna-test-debug.so       libns3.16-flow-monitor-test-debug.so      libns3.16-propagation-test-debug.so
 #libns3.16-aodv-debug.so               libns3.16-internet-debug.so               libns3.16-spectrum-debug.so

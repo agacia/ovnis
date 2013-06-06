@@ -59,11 +59,12 @@ public:
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
+	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs, std::map<std::string, double> correlated);
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();
 	string getEvent(vector<pair<string, double> > probabilities);
 
-
+    bool executeOnce;
     //	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
 private:
     TIS();
@@ -81,6 +82,7 @@ private:
     UniformVariable rando;
     static const double eps = 1e-9;
     static const double alfa = 0.;
+
 };
 
 }

@@ -211,8 +211,10 @@ void Log::summariseSimulation(string name) {
 	getStream(name) << "duration time [s]:\t" << (currentTime - start)/SIMULATION_TIME_UNIT << endl;
 	getStream(name) << "Vehicles: " << endl;
 	statEnumType::iterator departured = statistics.find(VEHICLES_DEPARTURED);
+	statEnumType::iterator connected = statistics.find(VEHICLES_CONNECTED);
 	statEnumType::iterator arrived = statistics.find(VEHICLES_ARRIVED);
 	getStream(name) << "departured:\t" << departured->second.sum << endl;
+	getStream(name) << "connected:\t" << connected->second.sum << endl;
 	getStream(name) << "arrived:\t" << arrived->second.sum  << endl;
 	getStream(name) << "Packets:\t" << endl;
 	getStream(name) << "created:\t" << packetId <<  endl;

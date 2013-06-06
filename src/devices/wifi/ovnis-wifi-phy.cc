@@ -543,6 +543,7 @@ OvnisWifiPhy::SendPacket (Ptr<const Packet> packet, WifiMode txMode, WifiPreambl
   NotifyMonitorSniffTx (packet, (uint16_t)GetChannelFrequencyMhz (), GetChannelNumber (), dataRate500KbpsUnits, isShortPreamble);
   m_state->SwitchToTx (txDuration, packet, txMode, preamble, txPower);
 
+	//std::cout << "txPower: " << GetPowerDbm (txPower) + m_txGainDb << " txMode: " << txMode << std::endl;
 
   //Added by Patricia Ruiz (for changing the tx power)
   	MyTxEnergyTag neighborPower=MyTxEnergyTag();

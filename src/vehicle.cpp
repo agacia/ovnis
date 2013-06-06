@@ -168,7 +168,7 @@ namespace ovnis {
 	}
 
 	/*
-	 * Including current edge (in case it's very longer than communication range)
+	 * Including current edge (in case it's much longer than communication range)
 	 */
 	std::vector<std::string> Vehicle::getEdgesAhead() {
 		bool metCurrentEdge = false;
