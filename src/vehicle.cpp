@@ -98,6 +98,9 @@ namespace ovnis {
     {
     	try {
     		string newEdge = traci->GetVehicleEdge(id);
+    		if (newEdge == "") {
+    			return false;
+    		}
     		bool edgeChanged = false;
 			if (newEdge != itinerary.getCurrentEdge().getId() && currentRoute.containsEdge(newEdge)) {
 				edgeChanged = true;

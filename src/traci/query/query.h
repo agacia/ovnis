@@ -42,7 +42,7 @@ public:
 	void SetStringValue(string stringValue);
 	void SetStringListValue(vector<string> stringList);
 
-	void DoCommand();
+	int DoCommand();
 
 	int getIntResponse() const;
 	double getDoubleResponse() const;

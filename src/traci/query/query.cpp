@@ -69,7 +69,7 @@ void Query::SetStringListValue(vector<string> stringList) {
 	stringListValue = stringList;
 }
 
-void Query::DoCommand() {
+int Query::DoCommand() {
 	doubleValue = 0;
 	stringValue.clear();
 	intValue = 0;
@@ -81,13 +81,14 @@ void Query::DoCommand() {
 	SendRequestAndReceiveResponse(requestCommand);
 	if (ValidateResponse(responseStream)) {
 		ReadResponse(responseStream);
+		return 0;
 	}
 	else {
 		stringstream ss;
 		ss << "Wrong response to command " << commandId << ", variable " << variableId << " " << responseStatus.getDescription();
 		string msg = ss.str();
-//		cout << msg << endl;
-		throw TraciException(msg);
+//		throw TraciException(msg);
+		return -1;
 	}
 }
 

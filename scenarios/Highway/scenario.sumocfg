@@ -36,5 +36,5 @@
         <no-step-log value="false" />
     </report>
 
-   <remote-port value="1233"/>
+   <remote-port value="1235"/>
 </configuration>

@@ -2,7 +2,6 @@
 AC_INIT([ovnis], [0.1],[yoann@pigne.org])
 AC_CONFIG_SRCDIR([test/simple-traffic-application-main.cc])
 
-
 dnl create an config-header
 AC_CONFIG_HEADER(src/config.h)
 
@@ -33,25 +32,13 @@ AC_CONFIG_MACRO_DIR([m4])
 # use the C++ compiler for the following checks
 AC_LANG([C++])
 
-
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string])
 AC_CHECK_HEADERS([iostream])
 
-
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
-
-
-
-
-
-
-
-
-
-
 AC_CHECK_FUNCS([pow]) 
 AC_CHECK_FUNCS([socket])
 AC_CHECK_FUNCS([sqrt])
@@ -66,45 +53,13 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
 
-
-
-
-
-
-
-
 AM_CPPFLAGS="$CPPFLAGS"
-
 AM_LIBS="$LIBS"
-
 AM_LDFLAGS="$LDFLAGS"
 
 ##########################################################################
 # check for NS3 
 ##########################################################################
-#LIB_NS3="ns3.16-antenna-debug"
-#libns3.16-antenna-debug.so            libns3.16-flow-monitor-debug.so           libns3.16-propagation-debug.so
-#libns3.16-antenna-test-debug.so       libns3.16-flow-monitor-test-debug.so      libns3.16-propagation-test-debug.so
-#libns3.16-aodv-debug.so               libns3.16-internet-debug.so               libns3.16-spectrum-debug.so
-#libns3.16-aodv-test-debug.so          libns3.16-internet-test-debug.so          libns3.16-spectrum-test-debug.so
-#libns3.16-applications-debug.so       libns3.16-lte-debug.so                    libns3.16-stats-debug.so
-#libns3.16-applications-test-debug.so  libns3.16-lte-test-debug.so               libns3.16-stats-test-debug.so
-#libns3.16-bridge-debug.so             libns3.16-mesh-debug.so                   #libns3.16-tap-bridge-debug.so
-#libns3.16-buildings-debug.so          libns3.16-mesh-test-debug.so              libns3.16-test-debug.so
-#libns3.16-buildings-test-debug.so     libns3.16-mobility-debug.so               libns3.16-test-test-debug.so
-#libns3.16-config-store-debug.so       libns3.16-mobility-test-debug.so          libns3.16-tools-debug.so
-#libns3.16-core-debug.so               libns3.16-mpi-debug.so                    libns3.16-tools-test-debug.so
-#libns3.16-core-test-debug.so          libns3.16-netanim-debug.so                libns3.16-topology-read-debug.so
-#libns3.16-csma-debug.so               libns3.16-netanim-test-debug.so           libns3.16-topology-read-test-debug.so
-#libns3.16-csma-layout-debug.so        libns3.16-network-debug.so                libns3.16-uan-debug.so
-#libns3.16-dsdv-debug.so               libns3.16-network-test-debug.so           libns3.16-uan-test-debug.so
-#libns3.16-dsdv-test-debug.so          libns3.16-nix-vector-routing-debug.so     libns3.16-virtual-net-device-debug.so
-#libns3.16-dsr-debug.so                libns3.16-olsr-debug.so                   libns3.16-wifi-debug.so
-#libns3.16-dsr-test-debug.so           libns3.16-olsr-test-debug.so              libns3.16-wifi-test-debug.so
-#libns3.16-emu-debug.so                libns3.16-point-to-point-debug.so         libns3.16-wimax-debug.so
-#libns3.16-energy-debug.so             libns3.16-point-to-point-layout-debug.so  libns3.16-wimax-test-debug.so
-#libns3.16-energy-test-debug.so        libns3.16-point-to-point-test-debug.so
-
 
 # store current *FLAGS and merge with AM_*FLAGS for compilation and linker check   
 OLD_CPPFLAGS="$AM_CPPFLAGS $CPPFLAGS"
@@ -112,7 +67,8 @@ LDFLAGS="$AM_LDFLAGS $LDFLAGS"
 
 # ensure the library to check for is covered by the LIBS variable
 OLD_LIBS=$LIBS
-LIBS="-lns3.16-antenna-debug            -lns3.16-flow-monitor-debug           -lns3.16-propagation-debug -lns3.16-antenna-test-debug       -lns3.16-flow-monitor-test-debug      -lns3.16-propagation-test-debug -lns3.16-aodv-debug               -lns3.16-internet-debug               -lns3.16-spectrum-debug -lns3.16-aodv-test-debug          -lns3.16-internet-test-debug          -lns3.16-spectrum-test-debug -lns3.16-applications-debug       -lns3.16-lte-debug                    -lns3.16-stats-debug -lns3.16-applications-test-debug  -lns3.16-lte-test-debug               -lns3.16-stats-test-debug -lns3.16-bridge-debug             -lns3.16-mesh-debug                 -lns3.16-buildings-debug          -lns3.16-mesh-test-debug              -lns3.16-test-debug -lns3.16-buildings-test-debug     -lns3.16-mobility-debug               -lns3.16-test-test-debug -lns3.16-config-store-debug       -lns3.16-mobility-test-debug          -lns3.16-tools-debug -lns3.16-core-debug               -lns3.16-mpi-debug                    -lns3.16-tools-test-debug -lns3.16-core-test-debug          -lns3.16-netanim-debug                -lns3.16-topology-read-debug -lns3.16-csma-debug               -lns3.16-netanim-test-debug           -lns3.16-topology-read-test-debug -lns3.16-csma-layout-debug        -lns3.16-network-debug                -lns3.16-uan-debug -lns3.16-dsdv-debug               -lns3.16-network-test-debug           -lns3.16-uan-test-debug -lns3.16-dsdv-test-debug          -lns3.16-nix-vector-routing-debug     -lns3.16-virtual-net-device-debug -lns3.16-dsr-debug                -lns3.16-olsr-debug                   -lns3.16-wifi-debug -lns3.16-dsr-test-debug           -lns3.16-olsr-test-debug              -lns3.16-wifi-test-debug                -lns3.16-point-to-point-debug         -lns3.16-wimax-debug -lns3.16-energy-debug             -lns3.16-point-to-point-layout-debug  -lns3.16-wimax-test-debug -lns3.16-energy-test-debug        -lns3.16-point-to-point-test-debug "
+AM_LIBS="$LIBS $AM_LIBS"
+LIBS="-lns3.16-antenna-debug -lns3.16-flow-monitor-debug -lns3.16-propagation-debug -lns3.16-aodv-debug -lns3.16-internet-debug -lns3.16-spectrum-debug -lns3.16-applications-debug -lns3.16-lte-debug -lns3.16-stats-debug -lns3.16-bridge-debug -lns3.16-mesh-debug -lns3.16-buildings-debug -lns3.16-mobility-debug -lns3.16-config-store-debug -lns3.16-tools-debug -lns3.16-core-debug -lns3.16-mpi-debug -lns3.16-netanim-debug -lns3.16-topology-read-debug -lns3.16-csma-debug -lns3.16-csma-layout-debug -lns3.16-network-debug -lns3.16-uan-debug -lns3.16-dsdv-debug -lns3.16-nix-vector-routing-debug -lns3.16-virtual-net-device-debug -lns3.16-dsr-debug -lns3.16-olsr-debug -lns3.16-wifi-debug -lns3.16-point-to-point-debug -lns3.16-wimax-debug -lns3.16-energy-debug -lns3.16-point-to-point-layout-debug "
 
 AM_LIBS="$LIBS $AM_LIBS"
 
@@ -128,17 +84,16 @@ AC_CHECK_HEADER([ns3/empty.h],
    [AM_CPPFLAGS="$CPPFLAGS $AM_CPPFLAGS"], 
    [AC_MSG_ERROR([ns3-includes not found in ${with_ns3}/build nor in ${with_ns3}/src. Did you properly set the --with-ns3=DIR option? See "./configure --help".])])
 
-
-#AC_CHECK_LIB([$LIB_NS3], [main], [ AM_LDFLAGS="$LDFLAGS $AM_LDFLAGS"],
+#AC_CHECK_LIB([ibns3.16-antenna-debug.dylib], [GetTypeId], [ AM_LDFLAGS="$LDFLAGS $AM_LDFLAGS"],
 #      [AC_MSG_ERROR([ns3-lib not found in "${with_ns3}/build". Did you properly set the --with-ns3=DIR option? See "./configure --help".])])
 AM_LDFLAGS="$LDFLAGS $AM_LDFLAGS"
 
-LIBS=$OLD_LIBS
-CPPFLAGS=$OLD_CPPFLAGS
-LDFLAGS=$OLD_LDFLAGS
-#export CPPFLAGS
-#export LDFLAGS
 
+#LIBS=$OLD_LIBS
+CPPFLAGS=$OLD_CPPFLAGS
+#LDFLAGS=$OLD_LDFLAGS
+#export CPPFLAGS
+export LDFLAGS
 
 ##########################################################################
 # check for SUMO
@@ -178,8 +133,6 @@ LDFLAGS=$OLD_LDFLAGS
 
 
 
-
-
 ##########################################################################
 # check for xerces-c
 ##########################################################################
@@ -203,8 +156,6 @@ export CPPFLAGS
 export LDFLAGS
 
 
-
-
 AC_CHECK_HEADER([xercesc/util/XercesVersion.hpp], 
    [AM_CPPFLAGS="$CPPFLAGS $AM_CPPFLAGS"], 
    [AC_MSG_ERROR([xerces-includes not found in "${with_xerces}/src". Did you properly set the --with-xerces=DIR option? See "./configure --help".])])
@@ -219,9 +170,6 @@ AC_CHECK_LIB([$LIB_XERCES], [main], [ AM_LDFLAGS="$LDFLAGS $AM_LDFLAGS"],
 #LDFLAGS=$OLD_LDFLAGS
 #export CPPFLAGS
 #export LDFLAGS
-
-
-
 
 
 LIBS="$AM_LIBS"
