@@ -2,11 +2,19 @@
 OVNIS
 =====
 
+:Date: March, 2013
+:Author: Agata Grzybek
+:Organization: University of Luxembourg
+:Contact: agata.grzybek@uni.lu
+:Version: 2.0
+:Copyright: 2012-2013, University of Luxembourg
+
+
 :Date: Jan 16, 2011
 :Author: Yoann Pigné
 :Organization: University of Luxembourg
 :Contact: yoann@pigne.org
-:Version: 0.1
+:Version: 1.0
 :Copyright: 2010-2011, University of Luxembourg
 
 .. This document is a general introduction to the project. Check the wiki for more information. 

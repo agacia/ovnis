@@ -1,6 +1,7 @@
-/*
+/**
  *
- * Copyright (c) 2010-2011 University of Luxembourg
+ *
+ * Copyright (c) 2012-2013 University of Luxembourg
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as 
@@ -15,10 +16,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * DsrApplication.h
+ * @file DsrApplication.cpp
  *
- *  Created on: Mar 26, 2010
- *      Author: Yoann Pigné
+ * @author Agata Grzybek <agatagrzybek@gmail.com>
+ *
  */
 
 #ifndef DSRAPPLICATION_H_

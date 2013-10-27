@@ -42,7 +42,9 @@ test/Makefile
 test/Makefile.in
 test/ovnisSample_static
 test/.deps/
-
+src/Makefile.in
+src/config.h*
+tests/Makefile.in
 *.lo
 *.o
 .DS_Store

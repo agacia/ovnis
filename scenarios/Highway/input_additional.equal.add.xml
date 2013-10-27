@@ -1,6 +1,6 @@
 <additionals xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/additional_file.xsd">
-<edgeData id="netstats" file="netstats.xml"/>
-<inductionLoop id="main_2b" lane="main_2b_0" pos="10" freq="60" file="sumoOutput/main_2b_0.xml" friendlyPos="true" splitByType="true" />
+<!-- <edgeData id="netstats" file="sumoOutput/netstats.xml"/> -->
+<!-- <inductionLoop id="main_2b" lane="main_2b_0" pos="10" freq="60" file="sumoOutput/main_2b_0.xml" friendlyPos="true" splitByType="true" /> -->
 
 <!--
     <variableSpeedSign id="vss" lanes="main_2b_0 main_2b_1" file="input_definition5.def.xml"/> 
