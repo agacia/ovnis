@@ -93,7 +93,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-  //m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 
@@ -302,13 +302,13 @@ void BeaconingAdhocWifiMac::ProcessBeacon( Ptr<Packet> packet, Mac48Address addr
 		//std::cout<<addrFrom<<" Addd en beaconing wifi mac " << m_neighborList.size() <<std::endl;
 	}
 	  //Added by Patricia Ruiz (for changing the tx power)
-//	  	MyEnergyTag neighborPower=MyEnergyTag();
-//	  	Ptr<Packet> packet2 = packet->Copy();
-//	  	bool aux =packet2->RemovePacketTag (neighborPower);
-//	  	double rxPowerDbm=-95;
-//	  	if (aux){
-//	  		rxPowerDbm = neighborPower.GetTagDouble();
-//	  	}
+	  	MyEnergyTag neighborPower=MyEnergyTag();
+	  	Ptr<Packet> packet2 = packet->Copy();
+	  	bool aux =packet2->RemovePacketTag (neighborPower);
+	  	double rxPowerDbm=-95;
+	  	if (aux){
+	  		rxPowerDbm = neighborPower.GetTagDouble();
+	  	}
 
 
 	m_neighborList[addrFrom] = m_numberBeaconLost;

@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <input>
-	
-	<!--
-        <net-file value="net.net.xml"/>
-        <route-files value="input_routes.rou.xml"/>
-        <additional-files value="input_additional.add.xml"/>
-	-->	
-
 	<!-- equal  -->
 	<net-file value="net.equal.net.xml"/>
-        <route-files value="input_routes.equal.rou.xml"/>
-        <additional-files value="input_additional.equal.add.xml"/>
-	
+        <additional-files value="input_additional.add.xml"/>
+	<route-files value="routes.rou.xml"/>
     </input>
 
     <output>
@@ -36,5 +28,6 @@
         <no-step-log value="false" />
     </report>
 
-   <remote-port value="1235"/>
+   <remote-port value="1236"/>
+   
 </configuration>

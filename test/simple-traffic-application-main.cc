@@ -61,16 +61,20 @@ int main(int argc, char ** argv) {
 	string outputFolder = "scenarios/";
 	string scenario = "Highway";
 //	scenario = "Kirchberg";
+//	scenario = "Luxembourg";
+//	scenario = "Berkeley";
 	string scenarioFolder = outputFolder + scenario;
 	string sumoConfig = "scenario.sumocfg";
-	string dir = "/Users/agatagrzybek/PhD/workshop/sumo-0.17.1";
+//	sumoConfig = "scenario_bypass_test.sumocfg";
+//	sumoConfig = "scenario_main_test.sumocfg";
+//	sumoConfig = "scenario_bypass_test_capacity.sumocfg";
+//	string dir = "/Users/agatagrzybek/PhD/workshop/sumo-0.17.1";
 	string sumoPath = "/opt/sumo/bin/sumo-gui";
-//	string sumoPath="/Users/agatagrzybek/PhD/workshop/sumo-0.17.1/bin/sumo-gui"; // mac
-//	sumoPath="/opt/sumo/bin/sumo-gui";
+	sumoPath="/opt/sumo/bin/sumo";
 //	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
 	string sumoHost = "localhost";
 	int startTime = 0;
-	int stopTime = 60;
+	int stopTime = 7000;
 	stopTime = 1800;
 //	stopTime = 600;
 //	startTime = 21600; // 6h
@@ -106,6 +110,7 @@ int main(int argc, char ** argv) {
 
 	// reset seed to generate different numbers every time
 	srand(time(0));
+	cout << time(0) << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
@@ -117,6 +122,7 @@ int main(int argc, char ** argv) {
 			"CommunicationRange", DoubleValue(communicationRange),
 			"StartSumo", BooleanValue(startSumo),
 			"OvnisApplication", StringValue("ns3::FceApplication"));
+//			"OvnisApplication", StringValue("ns3::DssApplication"));
 //			"OvnisApplication", StringValue("ns3::DsrApplication"));
 //			StringValue("ns3::TestApplication"));
 

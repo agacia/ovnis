@@ -1,7 +1,7 @@
 /**
  *
  *
- * Copyright (c) 2010-2011 University of Luxembourg
+ * Copyright (c) 2012-2013 University of Luxembourg
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as 
@@ -18,7 +18,7 @@
  *
  * @file DsrApplication.cpp
  * 
- * @author Yoann Pigné <yoann@pigne.org>
+ * @author Agata Grzybek <agatagrzybek@gmail.com>
  *
  */
 

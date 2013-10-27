@@ -116,10 +116,10 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 
 		Log::getInstance().getStream("latest") << edgeId << "\t" << packetDate << ": " <<  travelTime << endl;
 
-		double avgTravelTime = it->second.getAverageValue();
-		double avgPacketDate = it->second.getAverageTime();
+//		double avgTravelTime = it->second.getAverageValue();
+//		double avgPacketDate = it->second.getAverageTime();
 
-		Log::getInstance().getStream("avg") << edgeId << "\t" << avgPacketDate << ": " <<  avgTravelTime << endl;
+//		Log::getInstance().getStream("avg") << edgeId << "\t" << avgPacketDate << ": " <<  avgTravelTime << endl;
 
 //		travelTime = avgTravelTime;
 //		packetDate = avgPacketDate;

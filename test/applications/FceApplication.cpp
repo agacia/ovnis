@@ -99,7 +99,7 @@ void FceApplication::InitializeScenario() {
 	// scenario settings
 	isVanet = IS_VANET;
 	penetrationRate = PENETRATION_RATE;
-	cheatersRatio = CHEATER_RATIO;
+	cheatersRatio = CHEATER_RATE;
 	accidentStartTime = ACCIDENT_START_TIME;
 	accidentStopTime = ACCIDENT_END_TIME;
 //	accidentStopTime = NETWORK_ID;
@@ -109,8 +109,8 @@ void FceApplication::InitializeScenario() {
 //	networkId = "Kirchberg";
 //	routingStrategy = "noRouting";
 	routingStrategy = "UE";
-	routingStrategy = "SO";
-    routingStrategy = "hybrid";
+//	routingStrategy = "SO";
+//    routingStrategy = "hybrid";
 	costFunction = "travelTime";
 //	costFunction = "congestionLength";
 //	costFunction = "delayTime";
@@ -184,7 +184,7 @@ void FceApplication::StartApplication(void) {
 
 	// ns3
 	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();
-	ToggleNeighborDiscovery(true);
+	ToggleNeighborDiscovery(false);
 	Ptr<SocketFactory> socketFactory = GetNode()->GetObject<UdpSocketFactory> ();
 	m_socket = socketFactory->CreateSocket();
 	m_socket->Connect(InetSocketAddress (Ipv4Address::GetBroadcast(), m_port));
@@ -241,7 +241,7 @@ void FceApplication::SimulationRun(void) {
 				Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 				Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdge);
 				SendPacket(p);
-				Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
+//				Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
 			}
 
 			// if approaching an intersection
@@ -358,6 +358,7 @@ void FceApplication::SimulationRun(void) {
 
 				startReroute = now;
 				vehicle.reroute(routeChoice);
+
 				decisionEdgeId = currentEdge;
 				selfishExpectedTravelTime = selfishTravelTime;
 

@@ -52,6 +52,7 @@
 // ----- Ovnis application includes
 #include "applications/ovnis-application.h"
 #include "helper/ovnis-wifi-helper.h"
+#include "devices/wifi/ovnis-adhoc-wifi-mac.h"
 #include "devices/wifi/beaconing-adhoc-wifi-mac.h"
 #include "ovnis.h"
 #include "ovnis-constants.h"
@@ -190,7 +191,7 @@ void Ovnis::InitializeDefaultNetwork() {
 	address.SetBase(BASE_NETWORK_ADDRESS, NETWORK_MASK); // initial address it defaults to "0.0.0.1"
 	mac = NqosWifiMacHelper::Default();
 	mac.SetType(MAC_TYPE);
-//	BeaconingAdhocWifiMac * bm = new BeaconingAdhocWifiMac();
+	BeaconingAdhocWifiMac * bm = new BeaconingAdhocWifiMac();
 }
 
 void Ovnis::InitializeOvnisNetwork() {

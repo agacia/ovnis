@@ -77,7 +77,7 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 		out.open((outputFolder+"/sumo_output.log").c_str());
 		out << "Output log file from sumo's execution.";
 		FILE * fp;
-		string args = "--tripinfo-output=" + outputFolder + "/sumoOutput/tripinfo.xml --summary-output=" + outputFolder+"/sumoOutput/summary.xml "
+		string args =  "--fcd-output=" + outputFolder + "/sumoOutput/fcd.xml " + "--tripinfo-output=" + outputFolder + "/sumoOutput/tripinfo.xml --summary-output=" + outputFolder+"/sumoOutput/summary.xml "
 				+ " --netstate="   + outputFolder + "/sumoOutput/netsate.xml";
 		//--full-output=" + outputFolder + "/sumoOutput/full.xml";
 		if ((fp = popen((sumoPath + " -c " + outputFolder+"/"+config + " " + args + " 2>&1").c_str(), "r")) == NULL) {

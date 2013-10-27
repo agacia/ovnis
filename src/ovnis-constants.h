@@ -72,7 +72,7 @@
 #define BROADCASTING_DISTANCE_THRESHOLD 60
 #define RESEND_INTERVAL 1
 
-#define CHEATER_RATIO 0 // % of drivers choosing selfish route
+#define CHEATER_RATE 0 // % of drivers choosing selfish route
 #define CONGESTION_THRESHOLD 0.56 // Ratio of expected_travel_time/actual_travel time. For highways when speed limit = 115 kmph , traffic is considered congested when speed < 64 kmph
 #define DENSITY_THRESHOLD 0.77 // For highways when speed limit = 115 kmph , traffic is considered dense when speed < 88 kmph
 //#define DENSITY_THRESHOLD 0.8 // For highways when speed limit = 115 kmph , traffic is considered dense when speed < 88 kmph
