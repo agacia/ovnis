@@ -107,10 +107,10 @@ void FceApplication::InitializeScenario() {
 //	costFunction = COST_FUNCTION;
 	networkId = "Highway";
 //	networkId = "Kirchberg";
-//	routingStrategy = "noRouting";
-	routingStrategy = "UE";
+	routingStrategy = "noRouting";
+//	routingStrategy = "UE";
 //	routingStrategy = "SO";
-//    routingStrategy = "hybrid";
+    routingStrategy = "hybrid";
 	costFunction = "travelTime";
 //	costFunction = "congestionLength";
 //	costFunction = "delayTime";
