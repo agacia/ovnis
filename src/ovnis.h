@@ -59,6 +59,7 @@ namespace ns3
 	  static TypeId GetTypeId(void);
 	  Ovnis();
 	  virtual ~Ovnis();
+	  void SetApplicationParams(std::map <string,string> params);
 
   protected:
     virtual void DoDispose(void);
@@ -81,6 +82,8 @@ namespace ns3
     void logRoutes(std::vector<std::string> routes);
     void resetRouteStats(std::vector<std::string> routes);
     UniformVariable  rando;
+
+	std::map <string,string> _applicationParams;
 
     std::vector<std::string> runningVehicles;
     std::vector<std::string> connectedVehicles;

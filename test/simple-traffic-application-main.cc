@@ -58,29 +58,36 @@ int main(int argc, char ** argv) {
 //  LogComponentEnable("TraciClient", LOG_LEVEL_ALL);
 //  LogComponentEnable("Ovnis", LOG_LEVEL_ALL);
 
-	string outputFolder = "scenarios/";
-	string scenario = "Highway";
-//	scenario = "Kirchberg";
-//	scenario = "Luxembourg";
-//	scenario = "Berkeley";
-	string scenarioFolder = outputFolder + scenario;
+	bool startSumo = true;
+	string sumoHost = "localhost";
+	string sumoPath = "/opt/sumo/bin/sumo-gui";
+	sumoPath="/opt/sumo/bin/sumo";
+	double communicationRange = MAX_COMMUNICATION_RANGE;
+
+	// configurable
+	string scenarioFolder = "scenarios/Highway";
+	string network = "Highway";
+	//	network = "Kirchberg";
+	//	network = "Luxembourg";
+	//	network = "Berkeley";
 	string sumoConfig = "scenario.sumocfg";
 //	sumoConfig = "scenario_bypass_test.sumocfg";
 //	sumoConfig = "scenario_main_test.sumocfg";
 //	sumoConfig = "scenario_bypass_test_capacity.sumocfg";
-//	string dir = "/Users/agatagrzybek/PhD/workshop/sumo-0.17.1";
-	string sumoPath = "/opt/sumo/bin/sumo-gui";
-	sumoPath="/opt/sumo/bin/sumo";
-//	sumoPath="/home/users/agrzybek/src/sumo-0.16.0/bin"; // cluster
-	string sumoHost = "localhost";
 	int startTime = 0;
-	int stopTime = 7000;
-	stopTime = 1800;
-//	stopTime = 600;
-//	startTime = 21600; // 6h
-//	stopTime = 25200; // 7h
-	double communicationRange = MAX_COMMUNICATION_RANGE;
-	bool startSumo = true;
+	int stopTime = 1800;
+	//	startTime = 21600; // 6h
+	//	stopTime = 25200; // 7h
+	string routingStrategy = "UE";
+
+    string networkId;
+    string decisionEdgeId;
+    bool isVanet;
+    string costFunction;
+    double cheatersRatio = 0;
+    double penetrationRate = 1;
+    int accidentStartTime;
+    int accidentStopTime;
 
 	CommandLine cmd;
 	cmd.AddValue("sumoConfig", "The SUMO xml config file", sumoConfig);
@@ -106,6 +113,22 @@ int main(int argc, char ** argv) {
 				"scenarioFolder",
 				"Scenario folder path",
 				scenarioFolder);
+	cmd.AddValue(
+				"network",
+				"Network name",
+				network);
+	cmd.AddValue(
+				"routingStrategy",
+				"Name of routing strategy",
+				routingStrategy);
+	cmd.AddValue(
+				"cheatersRatio",
+				"cheatersRatio",
+				cheatersRatio);
+	cmd.AddValue(
+				"penetrationRate",
+				"penetrationRate",
+				penetrationRate);
 	cmd.Parse(argc, argv);
 
 	// reset seed to generate different numbers every time
@@ -125,6 +148,13 @@ int main(int argc, char ** argv) {
 //			"OvnisApplication", StringValue("ns3::DssApplication"));
 //			"OvnisApplication", StringValue("ns3::DsrApplication"));
 //			StringValue("ns3::TestApplication"));
+
+
+	std::map <string,string> fceParams;
+	fceParams["routingStrategy"] = routingStrategy;
+	fceParams["cheatersRatio"] = cheatersRatio;
+	fceParams["penetrationRate"] = penetrationRate;
+	expe->SetApplicationParams(fceParams);
 
 	Simulator::Schedule(Simulator::Now(), &Ovnis::Start, expe);
 	Simulator::Run();

@@ -72,6 +72,8 @@ namespace ns3
 
     void SetStopTime (Time stop);
 
+    virtual void SetParams(std::map <string,string> params);
+
   private:
 
     // inherited from Application base class.
@@ -90,6 +92,9 @@ namespace ns3
     Time m_realStartDate;
 
     double travelTimeStart;
+
+	std::map <string,string> _applicationParams;
+
 
   };
 

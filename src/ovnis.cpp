@@ -77,11 +77,14 @@ ns3::TypeId Ovnis::GetTypeId(void) {
 			AddAttribute( "CommunicationRange", "Communication range used to subdivide the simulation space (in meters)", DoubleValue(MAX_COMMUNICATION_RANGE), MakeDoubleAccessor(&Ovnis::communicationRange), MakeDoubleChecker<double>(0.0)).
 			AddAttribute("StartSumo", "Does OVNIS have to start SUMO or not?", BooleanValue(), MakeBooleanAccessor(&Ovnis::startSumo), MakeBooleanChecker()).
 			AddAttribute("SumoPath", "The system path where the SUMO executable is located", StringValue(SUMO_PATH), MakeStringAccessor(&Ovnis::sumoPath), MakeStringChecker());
+
 	return tid;
 }
 
 Ovnis::Ovnis() :
 		runningVehicles(vector<string>()), departedVehicles(vector<string>()), arrivedVehicles(vector<string>()) {
+	penetrationRate = 1;
+	Log::getInstance().setOutputFolder(scenarioFolder);
 }
 
 Ovnis::~Ovnis() {
@@ -93,6 +96,22 @@ Ovnis::~Ovnis() {
 	}
 }
 
+
+void Ovnis::SetApplicationParams(std::map <string,string> params) {
+	_applicationParams = params;
+	map<string,string>::iterator penetrationRateIt = _applicationParams.find("penetrationRate");
+	if (penetrationRateIt != _applicationParams.end()) {
+		penetrationRate = atof((penetrationRateIt->second).c_str());
+		cout << "penetrationRate: " << penetrationRateIt->first << ": "  << penetrationRateIt->second << " " << penetrationRate << endl;
+	}
+	map<string,string>::iterator it = _applicationParams.find("routingStrategy");
+	if (it != _applicationParams.end()) {
+		string folder = scenarioFolder + "/" + it->second;
+		Log::getInstance().setOutputFolder(folder);
+		cout << "folder: " << folder << endl;
+
+	}
+}
 void Ovnis::DoDispose() {
 	Log::getInstance().summariseSimulation("simulation");
 	time_t stop = time(0);
@@ -112,10 +131,6 @@ void Ovnis::DoStart(void) {
     is80211p = true;
     isLTE = false;
     isOvnisChannel = false;
-    penetrationRate = 1;
-
-    Log::getInstance().setOutputFolder(scenarioFolder);
-
 	currentTime = 0;
     Names::Add("Ovnis", this);
 
@@ -359,6 +374,14 @@ void Ovnis::StartApplications() {
 			Ptr<Application> app = m_application_factory.Create<Application>();
 			node->AddApplication(app);
 			app->SetStartTime(Seconds(0));
+			Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+			if (ovnisApp==0) {
+				cout << "Null pointer on fceApplication" << endl;
+			}
+			else {
+				ovnisApp->SetParams(_applicationParams);
+
+			}
 			++newConnectedVehiclesCount;
 		}
 	}
