@@ -194,7 +194,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 }
 
 
-map<string,map<string,vector<string> > > Knowledge::analyseLCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId) {
+map<string,map<string,vector<string> > > Knowledge::analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	map<string,map<string,vector<string> > > correlated;
 	for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 		correlated[itRoutes->first] = map<string,vector<string> >();

@@ -102,10 +102,6 @@ namespace ns3
     virtual void ReceivePacket(Ptr<Socket> );
     void SendPacket(Ptr<Packet> packet);
 
-    /**
-     * Gets current information from SUMO.
-     *
-     */
     void SimulationRun();
 
     /**
@@ -113,53 +109,42 @@ namespace ns3
 	 */
     void SendTrafficInformation();
     EventId m_trafficInformationEvent;
-
     bool m_verbose;
 
     /**
-     * Port used to communicate.
+     * Specifies an algorithm for data dissemination.
+     * Criteria for:
+     * - which data to send (e.g. only information about edges ahead, or the one that has changed or is different from expected).
+     * - if/when to forward.
      */
-    uint16_t m_port;
+    Dissemination dissemination;
 
     /**
-     * IP Address used to communicate.
+     * Network settings
      */
-    Ipv4Address m_addr;
-
+    uint16_t m_port; //Port used to communicate.
+    Ipv4Address m_addr; // IP Address used to communicate.
     Address realTo;
+    Ptr<Socket> m_socket; //Socket used to communicate.
 
     /**
-     * Socket used to communicate.
-     */
-    Ptr<Socket> m_socket;
-
-    bool running;
-    bool decisionTaken;
-    bool notificationSent;
-    string decisionEdgeId;
-    bool wasSO;
-    double startReroute;
-    bool isVanet;
-    string routingStrategy;
-    string costFunction;
-    double cheatersRatio;
-    double penetrationRate;
-    int accidentStartTime;
-    int accidentStopTime;
+	 * Neighbour discovery
+	 */
+	void ToggleNeighborDiscovery(bool on); // Connects the callback for the neighbor discovery service
+    MacAddrMap m_neighborList;
 
     /**
      * Physical information about a vehicle, such as position, current speed. It's connected to SUMO with TraCi in both way (reading and writing).
      * Contains also the current selected route (following edges from SUMO).
-     * Also keeps a track on an itinerary: remembers all travelled edges, times, etc.
+     * Also keeps a track on an itinerary: remembers all traveled edges, times, etc.
      * Contains it's own scenario (in case vehicles have different scenarios)
      */
     Vehicle vehicle;
 
-    /**
-	 * Connects the callback for the neighbor discovery service
+	/**
+	 * Scenario settings
 	 */
-	void ToggleNeighborDiscovery(bool on);
-
+	map<string,string> m_params;
     void InitializeScenario();
     /**
      * Abstraction of a single network from a GPS advice.
@@ -167,41 +152,40 @@ namespace ns3
      * All routes have information about maximum speed, capacity, length.
      * To initialize a vehicle with the scenario.
      */
-    string networkId;
     Network network;
     void SetNetwork(std::string networkId);
 
     /**
-     * A local VANET's database containing traffic information ONLY heard from other vehicles
+     * Routing settings
      */
-    Knowledge vanetsKnowledge;
-
-    /**
-     * Specifies an algorithm for data dissemination.
-     * Criteria for:
-     * - which data to send (e.g. only information about edges ahead, or the one that has changed or is different from expected).
-     * - if/when to forward.
-     *
-     */
-    Dissemination dissemination;
-
-    /**
-     * Abstraction of an external TIS (e.g. a centralised one)
-     * Keeps track on travel times reported by vehicles on fixed points.
-     */
-//    TrafficInformationSystem tis;
-
-    const std::vector<std::string> split(std::string sentence);
-    MacAddrMap m_neighborList;
-
-    std::map<long,int> packets; // packets counter
-
+    Knowledge vanetsKnowledge; // A local VANET's database containing traffic information ONLY heard from other vehicles
+    bool running;
+	bool decisionTaken;
+	bool notificationSent;
+	bool wasSO;
+	double startReroute;
     bool isCheater;
-
     double expectedTravelTime;
     double selfishExpectedTravelTime;
-    void CalculateError(std::string currentEdge);
+    bool needSO;
+//    double selfishTravelTime;
+//	double systemTravelTime;
+//	string UE_choice;
+//	string SO_choice;
+	string routeChoice;
+	bool isDense;
+	bool isCongested;
+	string decisionEdgeId;
+	void CalculateError(string currentEdgeId);
+	void OnEdgeChanged(double now, string currentEdgeId);
+	map<string, double> EstimateTravelCostBasedOnCentralised(double now, string currentEdgeId);
+	map<string, double> EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction);
+	string ChooseRoute(double now, string currentEdgeId, map<string, double> routeCost, string routingStrategy, double cheatersRatio);
+	map<string, double> AnalyseRouteCorrelation();
+	void OnReporting(double now, string currentEdgeId);
 
+    std::map<long,int> packets; // packets counter
+    const std::vector<std::string> split(std::string sentence);
   };
 
 }

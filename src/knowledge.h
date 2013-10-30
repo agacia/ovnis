@@ -47,7 +47,7 @@ public:
 	map<string,RecordEntry> & getRecords();
 
 	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL);
-	map<string,map<string,vector<string> > > analyseLCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeI);
+	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeI);
 
 
 	map<std::string,double> getCongestedLengthOnRoutes();

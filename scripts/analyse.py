@@ -243,8 +243,9 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file):
     stats[num_name]['avg'] = []
     stats[num_name]['max'] = []
     stats[num_name]['std'] = []
+    stats[num_name]['sum'] = []
   stats['N'] = []
-
+  
   # find name of data set
   dataSetName = ""
   for label in labels:
@@ -266,20 +267,36 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file):
         stats[num_name]['avg'].append(np.average(data[dataSetName]['recarray'][num_name]))
         stats[num_name]['max'].append(np.max(data[dataSetName]['recarray'][num_name]))
         stats[num_name]['std'].append(np.std(data[dataSetName]['recarray'][num_name]))
-  out.write("\tavg\tmin\tmean\tmax\tstd\n")
+        stats[num_name]['sum'].append(np.sum(data[dataSetName]['recarray'][num_name]))
+  
+  # writr results          
+  out.write("\tavg\t(std)\tmin\t(std)\tmean\t(std)\tmax\t(std)\tstd\t(std)\tsum\t(std)\n")
   for num_name in num_names:
     statarray = np.array(stats[num_name]['avg'])
-    out.write("{0}\t{1}".format(num_name, np.average(statarray)))
+    out.write("{0}\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
     statarray = np.array(stats[num_name]['min'])
-    out.write("\t{1}".format(num_name, np.average(statarray)))
+    out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
     statarray = np.array(stats[num_name]['mean'])
-    out.write("\t{1}".format(num_name, np.average(statarray)))
+    out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
     statarray = np.array(stats[num_name]['max'])
-    out.write("\t{1}".format(num_name, np.average(statarray)))
+    out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
     statarray = np.array(stats[num_name]['std'])
-    out.write("\t{1}\n".format(num_name, np.average(statarray)))
+    out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+    statarray = np.array(stats[num_name]['sum'])
+    out.write("\t{1}\t{2}\n".format(num_name, np.average(statarray), np.std(statarray)))
+  num_name = 'N'
   statarray = np.array(stats['N'])
-  out.write("N\t{0}".format(np.average(statarray)))
+  out.write("{0}\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+  # out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+  # statarray = np.array(stats[num_name]['mean'])
+  # out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+  # statarray = np.array(stats[num_name]['max'])
+  # out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+  # statarray = np.array(stats[num_name]['std'])
+  # out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
+  # statarray = np.array(stats[num_name]['sum'])
+  # out.write("\t{1}\t{2}\n".format(num_name, np.average(statarray), np.std(statarray)))
+
   return data
 
 def processRoutingData(data, clusterIndexes, columnnames, num_columnnames, sortColumn=""):
@@ -448,18 +465,6 @@ def calculateAvg(inputData, num_names, outputFile):
       #   out.write("{0}\t".format(np.max(statarray)))
       #   out.write("{0}\n".format(np.std(statarray)))
   
-# Route Metric
-# Main N Tavg [s] Tmax [s]
-# S tdT
-# Bypass N Tavg [s] Tmax [s]
-# S tdT
-# Shortest time Probabilistic
-# 864 (72%) 640 (55%) 94.59 86.72 144.0 99.0
-# 17.9 7.39
-# 309 (28%) 526 (45%) 103.24 102.28 106.0 104.0 1.03 0.5
-# Hybrid
-# 843 (72%) 86.41 122.0 9.75
-# 330 (28%) 102.29 103.0 0.73
 
   return
 
@@ -674,10 +679,6 @@ def plot2(x, y, plotname):
 # This is the standard boilerplate that calls the main() function.
 if __name__ == '__main__':
   main()
-
-
-
-
 
 
 
