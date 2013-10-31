@@ -14,11 +14,12 @@ using namespace std;
 namespace ovnis {
 
 	Vehicle::Vehicle() {
-		initialize("");
+		initialize("", Simulator::Now().GetSeconds());
 	}
 
-	void Vehicle::initialize(string id) {
+	void Vehicle::initialize(string id, double time) {
 		this->id = id;
+		this->start = time;
 		this->currentSpeed = 0;
 		if (id!="") {
 			traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
@@ -32,6 +33,10 @@ namespace ovnis {
 
 	string Vehicle::getId() {
 		return id;
+	}
+
+	double Vehicle::getStart() {
+		return this->start;
 	}
 
 	void Vehicle::setScenario(Network scenario) {

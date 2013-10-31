@@ -91,29 +91,21 @@ FceApplication::FceApplication() {
 	decisionTaken = false;
 	notificationSent = false;
 	isCheater = false;
-	wasSO = false;
+	wasProbabilistic = false;
 	startReroute = 0;
-	m_params["isVanet"] = "true"; // IS_VANET;
-	m_params["penetrationRate"] = "1"; // PENETRATION_RATE;
-	m_params["cheatersRatio"] = "0"; // CHEATER_RATE;
+	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
+	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
+	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
 	m_params["accidentStartTime"] = "300"; // ACCIDENT_START_TIME;
 	m_params["accidentStopTime"] = "1300"; // ACCIDENT_END_TIME;
-//	m_params["accidentStopTime"] = NETWORK_ID;
-//	m_params["routingStrategy"] = ROUTING_STRATEGY;
-//	m_params["costFunction"] = COST_FUNCTION;
-	m_params["networkId"] = "Highway";
-//	m_params["networkId"] = "Kirchberg";
-	m_params["routingStrategy"] = "noRouting";
-//	m_params["routingStrategy"] = "UE";
-//	m_params["routingStrategy"] = "SO";
-	m_params["routingStrategy"] = "hybrid";
-	m_params["costFunction"] = "travelTime";
-//	m_params["costFunction"] = "congestionLength";
-//	m_params["costFunction"] = "delayTime";
-
+	m_params["networkId"] = "Highway"; // "Kirchberg";
+	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
+	m_params["routingStrategiesProbabilities"] = "1,0,0,0"; // no-routing - uninformed drivers,
+	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
+	m_params["costFunctionProbabilities"] = "1,0,0";
 }
 
-void FceApplication::InitializeScenario() {
+void FceApplication::InitializeParams() {
 	for (map<string, string>::iterator i = _applicationParams.begin(); i != _applicationParams.end(); ++i) {
 		m_params[i->first] = i->second;
 	}
@@ -121,11 +113,28 @@ void FceApplication::InitializeScenario() {
 	for (map<string, string>::iterator i = m_params.begin(); i != m_params.end(); ++i) {
 		Log::getInstance().getStream("scenarioSettings") << i->first << "\t" << i->second << endl;
 	}
+
+	// select routing strategy
+	m_params["routingStrategy"] = "hybrid";
+	vector<string> routingStrategies = CommonHelper::split(m_params["routingStrategies"], ',');
+	vector<string> routingStrategiesProbabilities = CommonHelper::split(m_params["routingStrategiesProbabilities"], ',');
+	int i = 0;
+	map<string, double> probabilities;
+	for (vector<string>::iterator it =  routingStrategies.begin(); it != routingStrategies.end(); ++it) {
+		probabilities[*it] = atof(routingStrategiesProbabilities[i].c_str());
+//		string routingStrategy = *it;
+//		probabilities[routingStrategy] = 1.0;
+		Log::getInstance().getStream("scenarioSettings") << " strategy: " << *it << ",probability: " << probabilities[*it] << "\t";
+		++i;
+	}
+	m_params["routingStrategy"] = TIS::getInstance().getEvent(probabilities);
+	Log::getInstance().getStream("scenarioSettings") << "\nSelected routing strategy " << m_params["routingStrategy"] << endl;
+	Log::getInstance().getStream("selectedStrategies") << m_params["routingStrategy"] << endl;
 	SetNetwork(m_params["networkId"]);
 }
 
 /**
- * TODO read from config file
+ * TODO read from an external config file
  */
 void FceApplication::SetNetwork(string networkId) {
 	string decisionEdge = "";
@@ -163,8 +172,8 @@ void FceApplication::SetNetwork(string networkId) {
 		alternativeRoutes[*it] = Route(*it, route_strategies[i]);
 		alternativeRoutes[*it].setCapacity(route_capacities[i]);
 	}
-	network.setDecisionEdges(CommonHelper::split(decisionEdge));
-	network.setNotificationEdges(CommonHelper::split(notificationEdge));
+	network.setDecisionEdges(CommonHelper::split(decisionEdge, ' '));
+	network.setNotificationEdges(CommonHelper::split(notificationEdge, ' '));
 	network.setAlternativeRoutes(alternativeRoutes);
 }
 
@@ -176,11 +185,10 @@ FceApplication::~FceApplication() {
 void FceApplication::StartApplication(void) {
 	NS_LOG_FUNCTION ("");
 
-	InitializeScenario();
-
+	InitializeParams();
 	// initialize vehicle
 	string vehicleId = Names::FindName(GetNode());
-	vehicle.initialize(vehicleId);
+	vehicle.initialize(vehicleId, Simulator::Now().GetSeconds());
 	Log::getInstance().getStream("scenarioSettings") << "vehicleId\t" << vehicle.getId() << endl;
 	vehicle.setScenario(network);
 
@@ -245,16 +253,15 @@ void FceApplication::SimulationRun(void) {
 			// if approaching an intersection take decision which route to take from current to destination edge
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdgeId) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
-				needSO = false;
+				needProbabilistic = false;
 				isCheater = false;
 				map<string, double> cost = EstimateTravelCostBasedOnCentralised(now, currentEdgeId);
 				// vanets
 				if (m_params["isVanet"] == "true") {
 					map<string, double> cost = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"]);
 				}
-				wasSO = needSO;
+				wasProbabilistic = needProbabilistic;
 				double cheatersRatio = atof(m_params["cheatersRatio"].c_str());
-
 				routeChoice = ChooseRoute(now, currentEdgeId, cost, m_params["routingStrategy"], cheatersRatio);
 				vehicle.reroute(routeChoice);
 			}
@@ -298,12 +305,12 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 	Vector position = mobilityModel->GetPosition();
 	Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdgeId << "\t" << vehicle.getDestinationEdgeId() << "\t";
 	string endEdgeId = vehicle.getDestinationEdgeId();
-	// for UE we need to reset (do dynamic value)
+	// for shortest we need to reset (do dynamic value)
 	map<string,double> routeTTL;
 	for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 		routeTTL[it->first] = PACKET_TTL;
 	}
-	if (m_params["routingStrategy"] == "UE") {
+	if (m_params["routingStrategy"] == "shortest") {
 		for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdgeId, endEdgeId) * (1+ CONGESTION_THRESHOLD);
 //			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId);
@@ -333,26 +340,26 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 }
 
 string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string, double> routeCost, string routingStrategy, double cheatersRatio) {
-	string UE_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
+	string shortest_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
 	map<string, double> correlatedValues = AnalyseRouteCorrelation();
-	string SO_choice =  TIS::getInstance().chooseProbTravelTimeRoute(routeCost, correlatedValues);
-	needSO = isCongested;
-	//	needSO = isCongested || isDense;
-	//	needSO = vanetsKnowledge.getSumDelay() > 0;
+	string probabilistic_choice =  TIS::getInstance().chooseProbTravelTimeRoute(routeCost, correlatedValues);
+	needProbabilistic = isCongested;
+	//	needProbabilistic = isCongested || isDense;
+	//	needProbabilistic = vanetsKnowledge.getSumDelay() > 0;
 	//	bool isAccident = now > m_params["accidentStartTime"] && now < m_params["accidentStopTime"];
-	//	needSO = isAccident;
-	TIS::getInstance().setCongestion(needSO, isDense, isCongested);
+	//	needProbabilistic = isAccident;
+	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
 
-	routeChoice = UE_choice;
-	if (UE_choice != "") {
-		routeChoice = UE_choice;
+	routeChoice = shortest_choice;
+	if (shortest_choice != "") {
+		routeChoice = shortest_choice;
 	}
-	if (routingStrategy == "SO" && SO_choice != "") {
-		  routeChoice = SO_choice;
+	if (routingStrategy == "probabilistic" && probabilistic_choice != "") {
+		  routeChoice = probabilistic_choice;
 	}
-	// hybrid - SO only if 'needed'
-	if (routingStrategy == "hybrid" && needSO && SO_choice != "") {
-		routeChoice = SO_choice;
+	// hybrid - probabilistic only if 'needed'
+	if (routingStrategy == "hybrid" && needProbabilistic && probabilistic_choice != "") {
+		routeChoice = probabilistic_choice;
 	}
 	// no routing
 	if (routingStrategy == "noRouting") {
@@ -361,14 +368,14 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	// cheaters
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 	if (cheatersRatio > 0 && r < cheatersRatio) {
-		if (routeChoice != UE_choice) {
-			routeChoice = UE_choice;
+		if (routeChoice != shortest_choice) {
+			routeChoice = shortest_choice;
 			isCheater = true;
 		}
 	}
 	if (cheatersRatio < 0 && -r > cheatersRatio) {
-		if (routeChoice != SO_choice) {
-			routeChoice = SO_choice;
+		if (routeChoice != probabilistic_choice) {
+			routeChoice = probabilistic_choice;
 			isCheater = true;
 		}
 	}
@@ -376,19 +383,19 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 		Log::getInstance().cheaters ++;
 	}
 
-	selfishExpectedTravelTime = routeCost[UE_choice];
+	selfishExpectedTravelTime = routeCost[shortest_choice];
 	expectedTravelTime = routeCost[routeChoice];
 
 	startReroute = now;
 	decisionEdgeId = currentEdgeId;
 	decisionTaken = true;
 
-	Log::getInstance().getStream("scenarioSettings") << "needSO\t" << needSO << endl;
+	Log::getInstance().getStream("scenarioSettings") << "needProbabilistic\t" << needProbabilistic << endl;
 	Log::getInstance().getStream("scenarioSettings") << "routeChoice\t" << routeChoice << endl;
 	// todo get newEdgeId (pointer to the next edge)
 	TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdgeId, vehicle.getItinerary().getId(), currentEdgeId,
 			routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
-			needSO, expectedTravelTime, selfishExpectedTravelTime);
+			needProbabilistic, expectedTravelTime, selfishExpectedTravelTime);
 
 	return routeChoice;
 }
@@ -408,7 +415,9 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 				<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
 				<< travelTime2 << "\t"
 				<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
-		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId, startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasSO);
+		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId,
+				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasProbabilistic,
+				m_params["routingStrategy"], vehicle.getStart());
 		notificationSent = true;
 	}
 }

@@ -114,7 +114,7 @@ void DssApplication::StartApplication(void) {
 	NS_LOG_FUNCTION ("");
 	// initialize vehicle
 	string vehicleId = Names::FindName(GetNode());
-	vehicle.initialize(vehicleId);
+	vehicle.initialize(vehicleId, Simulator::Now().GetSeconds());
 
 	// ns3
 	mobilityModel = GetNode()->GetObject<ConstantVelocityMobilityModel>();

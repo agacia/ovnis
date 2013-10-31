@@ -36,17 +36,20 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 	Log::getInstance().getStream("routing_start") << endl;
 }
 
-void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId, string endEdgeId, double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested) {
+void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId, string endEdgeId,
+		double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested,
+		string routingStrategy, double start) {
 	--vehiclesOnRoute[routeId];
 	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 	travelTimesOnRoute[routeId] = travelTime;
 //	travelTimesOnRoute[routeId] = alfa*travelTime + (1-alfa)*travelTimesOnRoute[routeId]; // smooth
 	double delayTime = travelTime - computeStaticCostExcludingMargins(routeId, startEdgeId, endEdgeId);
 //	cout << "logging" << endl;
-	Log::getInstance().getStream("routing_end") << Simulator::Now().GetSeconds() << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
+	double now = Simulator::Now().GetSeconds();
+	Log::getInstance().getStream("routing_end") << now << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
 			<< travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t"
 			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime;
-	Log::getInstance().getStream("routing_end") << endl;
+	Log::getInstance().getStream("routing_end") << "\t" << routingStrategy << "\t" << start << "\t" << (now-start) << endl;
 }
 
 int TIS::getVehiclesOnRoute(string routeId) {
@@ -135,20 +138,23 @@ map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId,
 	return costs;
 }
 
-string TIS::getEvent(vector<pair<string, double> > probabilities) {
-//    double r = rando.GetValue(0, 1);
+string TIS::getEvent(map<string, double> probabilities) {
+	// sort probabilities
+	vector<pair<string, double> > sortedProbabilities = vector<pair<string, double> >();
+	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
+		sortedProbabilities.push_back(pair<string,double>(it->first, it->second));
+	}
+//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
+//		Log::getInstance().getStream("probabilities") << it->first << "," << it->second << "\t";
+//	}
+//	Log::getInstance().getStream("probabilities") << endl;
+
 	double shifting_weight = 0;
     double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
     string lastChoice = "";
-    Log::getInstance().getStream("prob") << r << "\t" << endl;
-	for (vector<pair<string, double> >::iterator it = probabilities.begin(); it != probabilities.end(); ++it)
-	{
-		Log::getInstance().getStream("prob") << it->first << "," << it->second << " ";
-	}
-	Log::getInstance().getStream("prob") << endl;
 
     vector<pair<string, double> >::iterator it;
-    for (it = probabilities.begin(); it != probabilities.end(); ++it) {
+    for (it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
     	r -= it->second;
     	r -= shifting_weight;
     	lastChoice = it->first;
@@ -243,7 +249,7 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, doub
 	}
 
 	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds() << "\t" << costsSize << "/" << costs.size() << "\t";
-	vector<pair<string, double> > sortedProbabilities = vector<pair<string, double> >();
+	map<string, double> probabilities;
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
 		double probability = 0;
 		if (it->second == 0) { // there are routes with no cost!
@@ -258,15 +264,13 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, doub
 				probability = 0;
 			}
 		}
-		Log::getInstance().getStream("probabilities") << it->first << "," << it->second << "," << probability << "\t";
 		if (probability != 0) {
-			sortedProbabilities.push_back(pair<string,double>(it->first, probability));
+			probabilities[it->first] = it->second;
 		}
 	}
-	Log::getInstance().getStream("probabilities") << endl;
-//	sort(sortedProbabilities.begin(), sortedProbabilities.end(), comp_prob);
 
-	chosenRouteId = getEvent(sortedProbabilities);
+	chosenRouteId = getEvent(probabilities);
+
 	return chosenRouteId;
 }
 

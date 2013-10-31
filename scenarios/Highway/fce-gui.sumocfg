@@ -1,31 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <input>
-	<!-- Kirchberg 3 routes
-	<net-file value="Kirchberg.net.xml"/>
-        <route-files value="Kirchberg.rou.xml"/>
-        <additional-files value="Kirchberg_input_additional.add.xml tlLogic.xml"/>
-	-->
-	<!-- Kirchberg VehiLux 
-	<net-file value="Kirchberg.net.xml"/>
-        <route-files value="Kirchberg_vehilux.rou.xml"/>
-        <additional-files value="Kirchberg.shapes.xml tlLogic.xml"/>
-	-->
-	<!--
-        <net-file value="net.net.xml"/>
-        <route-files value="input_routes.rou.xml"/>
-        <additional-files value="input_additional.add.xml"/>
-	-->	
-	<!-- various
-        <net-file value="net.various.net.xml"/>
-        <route-files value="input_routes.various.rou.xml"/>
-        <additional-files value="input_additional.various.add.xml"/>
-	-->
-	<!-- equal  -->
-	<net-file value="net.equal.net.xml"/>
-        <route-files value="input_routes.equal.rou.xml"/>
-        <additional-files value="input_additional.equal.add.xml"/>
-	
+	<net-file value="Highway.net.xml"/>
+        <route-files value="routes.rou.xml"/>
+        <additional-files value="accident_300_1300.add.xml"/>
     </input>
 
     <output>

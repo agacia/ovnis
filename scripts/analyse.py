@@ -47,6 +47,7 @@ def main():
   parser = OptionParser()
   parser.add_option('--inputFile', help=("inputFile."), type="string", dest="inputFile")
   parser.add_option('--inputFiles', help=("inputFiles."), type="string", dest="inputFiles")
+  parser.add_option('--inputCapacityFiles', help=("inputCapacityFiles."), type="string", dest="inputCapacityFiles")
   parser.add_option('--labels', help=("Label titles"), type="string", dest='labelTitles')
   parser.add_option('--outputFile', help=("outputFile."), type="string", dest="outputFile")
   parser.add_option('--outputDir', help=("outputDir."), type="string", dest="outputDir")
@@ -69,7 +70,11 @@ def main():
   args['data'] = {}
   delimiterStr = "\t"
   avg_output_file = options.outputDir + "avg.txt"
-  
+  routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId', 
+      'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime',
+      'routingStrategy', 'startTravelTime', 'totalTravelTime']
+  num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime', 'totalTravelTime']
+      
   if options.inputFiles:
     inputFiles = options.inputFiles.split(' ')
     inputLabels = options.labelTitles.split(' ')
@@ -82,18 +87,21 @@ def main():
       shortestExpectedTravelTimeIndex = 9
       expectedTravelTimeIndex = 10
       orderingColumn = 'startReroute'
-      routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime']
-      num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime']
       # inputFile = data['fileName']
       inputData = readData(inputFiles, inputLabels, delimiterStr, routing_names, num_names, avg_output_file)
       clusterIndexes = {
       'routeId':routing_names.index('routeId'), 
       'selfishExpectedTravelTime': routing_names.index('selfishExpectedTravelTime'),
       'isCheater' : routing_names.index('isCheater')}
+
       for name,data in inputData.iteritems():
-    
+
         clusteredData = processRoutingData(data['recarray'], clusterIndexes, routing_names, num_names, orderingColumn)
         data['clusteredData'] = clusteredData
+
+        for route,routeData in clusteredData.iteritems():
+          print "route {0}, columns:".format(route, routeData['columns'].keys())
+
         xData = [clusteredData['main']['columns']['time'], clusteredData['bypass']['columns']['time']]
         yData = [clusteredData['main']['columns']['travelTime'], clusteredData['bypass']['columns']['travelTime'], clusteredData['main']['columns']['vehiclesOnRoute'], clusteredData['bypass']['columns']['vehiclesOnRoute']]
         xLabel = "Simulation time"
@@ -127,7 +135,6 @@ def main():
         
         # cheaterData = processRoutingData(data['recarray'], cheaterIndex, routing_names, num_names, orderingColumn)
         # data['cheaterData'] = cheaterData
-       
 
         # yData = [clusteredData['main']['columns']['travelTime'], clusteredData['bypass']['columns']['travelTime']]
         # outputFile = "{0}/{1}/routing_end_traveltime.png".format(options.outputDir,name)
@@ -162,6 +169,60 @@ def main():
         plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
     
     calculateAvg(inputData, num_names, options.outputFile)
+
+  if options.inputCapacityFiles:
+    inputFiles = options.inputCapacityFiles.split(' ')
+    inputLabels = options.labelTitles.split(' ')
+    if not inputFiles or not inputFiles[0]:
+      return
+    if "routing_end" in inputFiles[0]:
+      inputData = readData(inputFiles, inputLabels, delimiterStr, routing_names, num_names, avg_output_file)
+      flows = []
+      avgTotalTravelTimes = {}
+      out = open(options.outputDir+'averageTravelTimes.txt', 'w')
+      out.write("flow\tavg total travel time\n")
+    
+      for name,data in inputData.iteritems():
+        # data['recarray']['totalTravelTime']
+        recarrayData = data['recarray']
+        xData = [recarrayData['time']]
+        yData = [recarrayData['totalTravelTime']]
+        # plotType = "scatterplot"
+        # xLabel = "Simulation time"
+        # yLabel = ""
+        # yLabels = ["Travel time"]
+        # linesX = [300,1300]
+        outputFolder = options.outputDir + name + "/"
+        # outputFile =  outputFolder + "total_traveltime.png"
+        # plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
+        avgTotalTravelTime = np.average(yData)
+        flows.append(name)
+        avgTotalTravelTimes[name] = avgTotalTravelTime
+
+        out.write("{0}\t{1}\n".format(name, avgTotalTravelTime))
+        # yData = [recarrayData['travelTime']]
+        # outputFile =  outputFolder + "traveltime.png"
+        # plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
+
+      print "flows {0}".format(flows)
+      flows.sort()
+      print "flows {0}".format(flows)
+      sortedAvgTravelTimes = []
+      for flow in flows:
+        sortedAvgTravelTimes.append(avgTotalTravelTimes[flow])
+      print "flows {0}".format(flows)
+      print "avgTotalTravelTimes {0}".format(sortedAvgTravelTimes)
+      
+      xData = flows
+      yData = [sortedAvgTravelTimes]
+      
+      plotType = "line"
+      xLabel = "Flow"
+      yLabel = "Average travel time"
+      yLabels = ["Average travel time"]
+      outputFile =  options.outputDir + "traveltime_flow.png"
+      plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile)
+        
 
   if options.inputFile:
     inputFile = options.inputFile
@@ -205,10 +266,12 @@ def main():
       plot("line", data['time'], [data['meanTravelTime']], "Simulation time", "Averag travel time", ["Average travel time"], options.outputDir + "plot_meantraveltime.png")
     
     # read csv dataFile
+
+
     if ".csv" in inputFile or "routing_end" in inputFile:
       # formats = ['f', np.object, np.object, 'f', 'f' , np.object, np.object, 'f', int, 'f', 'f', int, 'f']
       # dtype = dict(names = routing_names, formats=formats)
-      data = readCVSFile(inputFile, delimiterStr, routing_names)
+  
       data = processRoutingData(data, 1, routing_names, num_names, orderingColumn)
       plotType = "scatterplot"
       xData = [data['main']['columns']['time'], data['bypass']['columns']['time']]

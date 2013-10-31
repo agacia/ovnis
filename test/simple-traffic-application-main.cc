@@ -58,102 +58,89 @@ int main(int argc, char ** argv) {
 //  LogComponentEnable("TraciClient", LOG_LEVEL_ALL);
 //  LogComponentEnable("Ovnis", LOG_LEVEL_ALL);
 
+	// ovnis params
 	bool startSumo = true;
 	string sumoHost = "localhost";
 	string sumoPath = "/opt/sumo/bin/sumo-gui";
 	sumoPath="/opt/sumo/bin/sumo";
 	double communicationRange = MAX_COMMUNICATION_RANGE;
+	string scenarioFolder = "scenarios/Highway/";
+	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/test_3strategies";
+	string sumoConfig = "scenario.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
+	int startTime = 0; // 21600; // 6h
+	int stopTime = 1800; // 25200; // 7h
+    string penetrationRate = "1";
 
-	// configurable
-	string scenarioFolder = "scenarios/Highway";
-	string network = "Highway";
-	//	network = "Kirchberg";
-	//	network = "Luxembourg";
-	//	network = "Berkeley";
-	string sumoConfig = "scenario.sumocfg";
-//	sumoConfig = "scenario_bypass_test.sumocfg";
-//	sumoConfig = "scenario_main_test.sumocfg";
-//	sumoConfig = "scenario_bypass_test_capacity.sumocfg";
-	int startTime = 0;
-	int stopTime = 1800;
-	//	startTime = 21600; // 6h
-	//	stopTime = 25200; // 7h
-	string routingStrategy = "UE";
-
-    string networkId;
-    string decisionEdgeId;
-    bool isVanet;
-    string costFunction;
-    double cheatersRatio = 0;
-    double penetrationRate = 1;
-    int accidentStartTime;
-    int accidentStopTime;
+	// TrafficEQ (FceApplication) params
+    string networkId = "Highway"; // "Kirchberg, Luxembourg, Berkeley"
+    string routingStrategies = "noRouting shortest probabilistic hybrid";
+    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
+    string costFunctions = "travelTime,congestionLength,delayTime";
+    string costFunctionProbabilities = "1,0,0";
+    string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
+    string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
+    string cheatersRatio = "0";
+    string accidentStartTime = "300";
+    string accidentStopTime = "1300";
 
 	CommandLine cmd;
+	// ovnis
 	cmd.AddValue("sumoConfig", "The SUMO xml config file", sumoConfig);
 	cmd.AddValue("sumoHost", "Name of the machine hosting SUMO", sumoHost);
-	cmd.AddValue(
-			"startTime",
-			"Date at which the network simulation starts. Before that, SUMO runs on its own. (Seconds)",
-			startTime);
-	cmd.AddValue("stopTime", "Date at which the simulation stops. (Seconds)",
-			stopTime);
-	cmd.AddValue("range",
-			"The minimum distance limit for 2 devices to communicate. (Meters)",
-			communicationRange);
-	cmd.AddValue(
-			"startSumo",
-			"If true, ovnis will start SUMO by itself (on the same host only). If false, it is assumed that you start SUMO by yourself.",
-			startSumo);
-	cmd.AddValue(
-			"sumoPath",
-			"Path to binary file SUMO.",
-			sumoPath);
-	cmd.AddValue(
-				"scenarioFolder",
-				"Scenario folder path",
-				scenarioFolder);
-	cmd.AddValue(
-				"network",
-				"Network name",
-				network);
-	cmd.AddValue(
-				"routingStrategy",
-				"Name of routing strategy",
-				routingStrategy);
-	cmd.AddValue(
-				"cheatersRatio",
-				"cheatersRatio",
-				cheatersRatio);
-	cmd.AddValue(
-				"penetrationRate",
-				"penetrationRate",
-				penetrationRate);
+	cmd.AddValue("startTime","Date at which the network simulation starts. Before that, SUMO runs on its own. (Seconds)",startTime);
+	cmd.AddValue("stopTime", "Date at which the simulation stops. (Seconds)",stopTime);
+	cmd.AddValue("communicationRange", "The minimum distance limit for 2 devices to communicate. (Meters)", communicationRange);
+	cmd.AddValue("startSumo","If true, ovnis will start SUMO by itself (on the same host only). If false, it is assumed that you start SUMO by yourself.",startSumo);
+	cmd.AddValue("sumoPath","Path to binary file SUMO.",sumoPath);
+	cmd.AddValue("scenarioFolder","Scenario folder path",scenarioFolder);
+	cmd.AddValue("outputFolder","Output folder path",outputFolder);
+	cmd.AddValue("penetrationRate","penetrationRate",penetrationRate);
+	// fce
+	cmd.AddValue("networkId", "Network name", networkId);
+	cmd.AddValue("routingStrategies","Names of routing strategies",routingStrategies);
+	cmd.AddValue("routingStrategiesProbabilities","Probabilities of routing strategies",routingStrategiesProbabilities);
+	cmd.AddValue("cheatersRatio","cheatersRatio", cheatersRatio);
+	cmd.AddValue("vanetKnowlegePenetrationRate","vanetKnowlegePenetrationRate", vanetKnowlegePenetrationRate);
+	cmd.AddValue("vanetDisseminationPenetrationRate","vanetDisseminationPenetrationRate", vanetDisseminationPenetrationRate);
+	cmd.AddValue("accidentStartTime","accidentStartTime", accidentStartTime);
+	cmd.AddValue("accidentStopTime","accidentStopTime", accidentStopTime);
+	cmd.AddValue("costFunctions","Names of routing costFunctions",costFunctions);
+	cmd.AddValue("costFunctionProbabilities","Probabilities of routing costFunctions",costFunctionProbabilities);
+
 	cmd.Parse(argc, argv);
 
 	// reset seed to generate different numbers every time
 	srand(time(0));
-	cout << time(0) << endl;
+	cout << "Start time\t" << time(0) << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
 			"SumoPath", StringValue(sumoPath),
 			"SumoHost", StringValue(sumoHost),
 			"StartTime", IntegerValue(startTime),
-			"ScenarioFolder", StringValue(scenarioFolder),
 			"StopTime", IntegerValue(stopTime),
 			"CommunicationRange", DoubleValue(communicationRange),
 			"StartSumo", BooleanValue(startSumo),
+			"ScenarioFolder", StringValue(scenarioFolder),
 			"OvnisApplication", StringValue("ns3::FceApplication"));
-//			"OvnisApplication", StringValue("ns3::DssApplication"));
-//			"OvnisApplication", StringValue("ns3::DsrApplication"));
-//			StringValue("ns3::TestApplication"));
 
+	std::map <string,string> ovnisParams;
+	ovnisParams["penetrationRate"] = penetrationRate;
+	ovnisParams["outputFolder"] = outputFolder;
+	expe->SetOvnisParams(ovnisParams);
 
 	std::map <string,string> fceParams;
-	fceParams["routingStrategy"] = routingStrategy;
+	fceParams["routingStrategies"] = routingStrategies;
 	fceParams["cheatersRatio"] = cheatersRatio;
-	fceParams["penetrationRate"] = penetrationRate;
+	fceParams["networkId"] = networkId;
+	fceParams["routingStrategiesProbabilities"] = routingStrategiesProbabilities;
+	fceParams["vanetKnowlegePenetrationRate"] = vanetKnowlegePenetrationRate;
+	fceParams["vanetDisseminationPenetrationRate"] = vanetDisseminationPenetrationRate;
+	fceParams["accidentStartTime"] = accidentStartTime;
+	fceParams["accidentStopTime"] = accidentStopTime;
+	fceParams["costFunctions"] = costFunctions;
+	fceParams["costFunctionProbabilities"] = costFunctionProbabilities;
+
 	expe->SetApplicationParams(fceParams);
 
 	Simulator::Schedule(Simulator::Now(), &Ovnis::Start, expe);
