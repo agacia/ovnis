@@ -76,12 +76,13 @@ void Log::reportEdgePosition(string edgeId, double x, double y) {
 
 
 void Log::setOutputFolder(string folderName) {
-	outputFolder = folderName + "/ovnisOutput";
+	outputFolder = folderName;
 }
 
 ostream & Log::getStream(string name) {
 	ostream * log;
 	if (strlen(name.c_str())==0) {
+//	if (name=="") {
 		log = &cout;
 	}
 	else if (logFiles.count(name) > 0) {
@@ -222,8 +223,6 @@ void Log::summariseSimulation(string name) {
 	getStream(name) << "sent:\t" << sent << endl;
 	getStream(name) << "received:\t" << received << endl;
 	getStream(name) <<	"maxDistance:\t"  << maxDistance << "\tavgDistance "  << getAvgDistance() << endl;
-
-
 }
 
 void Log::logIn(VariableType key, int value, int time) {

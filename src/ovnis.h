@@ -60,6 +60,7 @@ namespace ns3
 	  Ovnis();
 	  virtual ~Ovnis();
 	  void SetApplicationParams(std::map <string,string> params);
+	  void SetOvnisParams(std::map <string,string> params);
 
   protected:
     virtual void DoDispose(void);
@@ -77,19 +78,11 @@ namespace ns3
     void CloseRoad(std::string edgeId);
     void ReadTravelTime(std::string edgeId);
     void CloseLane(std::string laneId);
-    Ptr<ovnis::SumoTraciConnection> traci;
     void summariseRoutes(std::vector<std::string> routes);
     void logRoutes(std::vector<std::string> routes);
     void resetRouteStats(std::vector<std::string> routes);
+
     UniformVariable  rando;
-
-	std::map <string,string> _applicationParams;
-
-    std::vector<std::string> runningVehicles;
-    std::vector<std::string> connectedVehicles;
-    std::vector<std::string> departedVehicles;
-    std::vector<std::string> arrivedVehicles;
-    int newConnectedVehiclesCount;
 
     // network
     NqosWifiMacHelper mac;
@@ -107,7 +100,7 @@ namespace ns3
     YansWifiPhyHelper phyHelper;
     YansWifiChannelHelper channelHelper;
 
-    // SUMO
+    // SUMO mandatory parameters
     /**
      * The configuration file for running SUMO
      */
@@ -121,46 +114,59 @@ namespace ns3
      */
     std::string sumoPath;
 
-//    std::string outputFolder;
-
+    /**
+     * The path to the scenario folder
+     */
     std::string scenarioFolder;
+
     /**
      * The port number (network) on the host machine SUMO will run on
      */
     int sumoPort;
+
     /**
 	 * Do we start SUMO?
 	 */
 	bool startSumo;
 
-    // Simulation
     /**
      * Start time in the simulation scale (in seconds)
      */
-    int startTime;
-    /**
+	int startTime;
+
+	/**
      * Stop time in the simulation scale (in seconds)
      */
-    int stopTime;
-    /**
+	int stopTime;
+
+	/**
      * Communication range used to subdivide the simulation space (in meters)
      */
     double communicationRange;
-    /**
-     *
-     */
-    double boundaries[2];
 
+    /**
+     * Optional ovnis params
+     */
+    std::map <string,string> _params;
+
+    /**
+     * Application parameters
+     */
+    std::map <string,string> _applicationParams;
+
+    Ptr<ovnis::SumoTraciConnection> traci;
+    std::vector<std::string> runningVehicles;
+    std::vector<std::string> connectedVehicles;
+    std::vector<std::string> departedVehicles;
+    std::vector<std::string> arrivedVehicles;
+    int newConnectedVehiclesCount;
+    double boundaries[2];
     bool is80211p;
-    bool isLTE;
     bool isOvnisChannel;
-    double penetrationRate;
     int currentTime;
     time_t start;
     std::map<std::string,double> edgeTravelTime;
     std::map<std::string,long> edgeLogCount;
-
-
 
   };
 }

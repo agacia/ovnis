@@ -40,7 +40,9 @@ public:
 	void reportStartingRoute(string vehicleId, string currentEdgeId, string currentRouteId, string newEdgeId, string newRouteId,
 			string originEdgeId, string destinationEdgeId, bool isCheater, bool isCongested,
 			double expectedTravelTime, double shortestExpectedTravelTime);
-	void reportEndingRoute(string vehicleId, std::string routeId, std::string startEdgeId, std::string endEdgeId, double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested);
+	void reportEndingRoute(string vehicleId, std::string routeId, std::string startEdgeId, std::string endEdgeId,
+			double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested,
+			string routingStrategy, double start);
 
     int getVehiclesOnRoute(std::string routeId);
 	std::map<std::string,double> & getTravelTimesOnRoute();
@@ -62,7 +64,7 @@ public:
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs, std::map<std::string, double> correlated);
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();
-	string getEvent(vector<pair<string, double> > probabilities);
+	std::string getEvent(std::map<std::string, double> probabilities);
 
     bool executeOnce;
     //	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);

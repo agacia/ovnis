@@ -24,7 +24,7 @@ class CommonHelper {
 public:
 	CommonHelper();
 	virtual ~CommonHelper();
-	static const std::vector<std::string> split(std::string sentence);
+	static const std::vector<std::string> split(std::string input, char delimeter);
 };
 
 #endif /* COMMONHELPER_H_ */

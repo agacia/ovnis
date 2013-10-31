@@ -145,7 +145,7 @@ namespace ns3
 	 * Scenario settings
 	 */
 	map<string,string> m_params;
-    void InitializeScenario();
+    void InitializeParams();
     /**
      * Abstraction of a single network from a GPS advice.
      * Contains a set of alternative routes between two points, called decision edges and notification edges.
@@ -162,16 +162,12 @@ namespace ns3
     bool running;
 	bool decisionTaken;
 	bool notificationSent;
-	bool wasSO;
+	bool wasProbabilistic;
 	double startReroute;
     bool isCheater;
     double expectedTravelTime;
     double selfishExpectedTravelTime;
-    bool needSO;
-//    double selfishTravelTime;
-//	double systemTravelTime;
-//	string UE_choice;
-//	string SO_choice;
+    bool needProbabilistic;
 	string routeChoice;
 	bool isDense;
 	bool isCongested;

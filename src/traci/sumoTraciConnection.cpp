@@ -66,7 +66,9 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 	}
 	// retrieve SUMO network port number and simulation boundaries from config files
 	int sumoPort;
-	XMLSumoConfParser::parseConfiguration(outputFolder+"/"+config, &sumoPort, boundaries);
+	string configPath = outputFolder+config;
+	cout << "Reading config file " << configPath << endl;
+	XMLSumoConfParser::parseConfiguration(configPath, &sumoPort, boundaries);
 	this->port = sumoPort;
 	if (this->port == 0) {
 		this->port = SUMO_PORT;
@@ -77,9 +79,11 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 		out.open((outputFolder+"/sumo_output.log").c_str());
 		out << "Output log file from sumo's execution.";
 		FILE * fp;
-		string args =  "--fcd-output=" + outputFolder + "/sumoOutput/fcd.xml " + "--tripinfo-output=" + outputFolder + "/sumoOutput/tripinfo.xml --summary-output=" + outputFolder+"/sumoOutput/summary.xml "
-				+ " --netstate="   + outputFolder + "/sumoOutput/netsate.xml";
-		//--full-output=" + outputFolder + "/sumoOutput/full.xml";
+		string args =  " --summary-output=" + outputFolder+"summary.xml ";
+//				+ "--fcd-output=" + outputFolder + "fcd.xml "
+//				+ " --netstate="   + outputFolder + "netsate.xml"
+//				+ "--tripinfo-output=" + outputFolder + "tripinfo.xml
+//				+ "--full-output=" + outputFolder + "/full.xml";
 		if ((fp = popen((sumoPath + " -c " + outputFolder+"/"+config + " " + args + " 2>&1").c_str(), "r")) == NULL) {
 			cerr <<  "#Error: Sumo processes cannot be created" << endl;
 			throw;

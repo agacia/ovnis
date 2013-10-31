@@ -83,8 +83,6 @@ ns3::TypeId Ovnis::GetTypeId(void) {
 
 Ovnis::Ovnis() :
 		runningVehicles(vector<string>()), departedVehicles(vector<string>()), arrivedVehicles(vector<string>()) {
-	penetrationRate = 1;
-	Log::getInstance().setOutputFolder(scenarioFolder);
 }
 
 Ovnis::~Ovnis() {
@@ -96,29 +94,15 @@ Ovnis::~Ovnis() {
 	}
 }
 
+void Ovnis::SetOvnisParams(std::map <string,string> params) {
+	_params = params;
+}
 
 void Ovnis::SetApplicationParams(std::map <string,string> params) {
 	_applicationParams = params;
-	map<string,string>::iterator penetrationRateIt = _applicationParams.find("penetrationRate");
-	if (penetrationRateIt != _applicationParams.end()) {
-		penetrationRate = atof((penetrationRateIt->second).c_str());
-		cout << "penetrationRate: " << penetrationRateIt->first << ": "  << penetrationRateIt->second << " " << penetrationRate << endl;
-	}
-	map<string,string>::iterator it = _applicationParams.find("routingStrategy");
-	if (it != _applicationParams.end()) {
-		string folder = scenarioFolder + "/" + it->second;
-		Log::getInstance().setOutputFolder(folder);
-		cout << "folder: " << folder << endl;
-
-	}
 }
+
 void Ovnis::DoDispose() {
-	Log::getInstance().summariseSimulation("simulation");
-	time_t stop = time(0);
-	Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
-	Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
-	cout << "Finished! Simulation time: " << (double)(time(0) - start) << " s. " << endl;
-	cout << "congested trips:  " << Log::getInstance().congestedTrips << " cheaters:" << Log::getInstance().cheaters << endl;
 	Object::DoDispose();
 }
 
@@ -129,12 +113,18 @@ void Ovnis::DoStart(void) {
 //	LogComponentEnable("OvnisWifiPhy", LOG_LEVEL_INFO);
 
     is80211p = true;
-    isLTE = false;
     isOvnisChannel = false;
 	currentTime = 0;
     Names::Add("Ovnis", this);
 
-	try {
+    Log::getInstance().setOutputFolder(scenarioFolder + "ovnisOutput");
+    map<string, string>::iterator it = _params.find("outputFolder");
+    if (it != _params.end()) {
+    	cout << "Setting output folder " << it->second << endl;
+    	Log::getInstance().setOutputFolder(it->second);
+    }
+
+    try {
 		traci = CreateObject<SumoTraciConnection> ();
 		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder);
 		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
@@ -159,8 +149,8 @@ void Ovnis::DoStart(void) {
 		start =  time(0);
 		Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
-		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 
+		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 		Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
 		Object::DoStart();
@@ -234,25 +224,6 @@ void Ovnis::InitializeOvnisNetwork() {
 		mac = NqosWifiMacHelper::Default();
 		mac.SetType(MAC_TYPE);
 	}
-//	else if (isLTE) {
-//		phy = OvnisWifiPhyHelper::Default();
-//		ObjectFactory factory1;
-//		channel = CreateObject<OvnisWifiChannel>();
-//		channel->updateArea(boundaries[0], boundaries[1], communicationRange);
-//		phy.SetChannel(channel);
-//		phy.Set("TxPowerStart",DoubleValue(26.5));	// 250-300 meter transmission range
-//		phy.Set("TxPowerEnd",DoubleValue(26.5));      // 250-300 meter transmission range
-//		phy.Set("TxPowerLevels",UintegerValue(1));
-//		phy.Set("TxGain",DoubleValue(0));
-//		phy.Set("RxGain",DoubleValue(0));
-//		phy.Set("EnergyDetectionThreshold", DoubleValue(-101.0));
-//		wifi = WifiHelper::Default();
-//		wifi.SetStandard(WIFI_PHY_STANDARD_80211b);
-//		wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", StringValue("OfdmRate6Mbps"));
-//		address.SetBase("10.0.0.0", "255.0.0.0");
-//		mac = NqosWifiMacHelper::Default();
-//		mac.SetType("ns3::AdhocWifiMac");
-//	}
 }
 
 void Ovnis::CreateNetworkDevices(ns3::NodeContainer & node_container) {
@@ -270,7 +241,6 @@ void Ovnis::CreateNetworkDevices(ns3::NodeContainer & node_container) {
 }
 
 void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
-
 	for (vector<string>::iterator i = to_destroy.begin(); i != to_destroy.end(); ++i) {
 		Ptr<Node> n = Names::Find<Node>((*i));
 		if (n != 0) {
@@ -368,8 +338,15 @@ void Ovnis::StartApplications() {
 	newConnectedVehiclesCount = 0;
 	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
 		Ptr<Node> node = Names::Find<Node>((*i));
-		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
-		if (node!=0 && isOvnisChannel && penetrationRate > 0 && r <= penetrationRate) {
+		bool isVANET = true;
+		map<string,string>::iterator it = _params.find("penedtrationRate");
+		if (it != _params.end()) {
+			double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+			double penetrationRate = atof((it->second).c_str());
+			cout << "Penetration rate is set: " << penetrationRate << endl;
+			isVANET = penetrationRate > 0 && r <= penetrationRate;
+		}
+		if (node!=0 && isOvnisChannel && isVANET) {
 			connectedVehicles.insert(connectedVehicles.end(), i, i+1);
 			Ptr<Application> app = m_application_factory.Create<Application>();
 			node->AddApplication(app);
@@ -380,7 +357,6 @@ void Ovnis::StartApplications() {
 			}
 			else {
 				ovnisApp->SetParams(_applicationParams);
-
 			}
 			++newConnectedVehiclesCount;
 		}
@@ -420,7 +396,6 @@ void Ovnis::TrafficSimulationStep() {
 
 	try {
 		currentTime = traci->GetCurrentTime();
-		ovnis::Log::getInstance().logInTime(currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_DEPARTURED, departedVehicles.size(), currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_CONNECTED, newConnectedVehiclesCount, currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_ARRIVED, arrivedVehicles.size(), currentTime);
@@ -445,8 +420,14 @@ void Ovnis::TrafficSimulationStep() {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
-			cout << "end at " << currentTime << endl;
 			DestroyNetworkDevices(runningVehicles);
+			Log::getInstance().summariseSimulation("simulation");
+			time_t stop = time(0);
+			cout << "Finished! Steps: " << currentTime/1000 << ", Simulation time" << (double)(time(0) - start) << " s. " << endl;
+			Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
+			Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
+			Log::getInstance().getStream("simulation") << "congested trips\t" << Log::getInstance().congestedTrips << endl;
+			Log::getInstance().getStream("simulation") << "cheaters\t" << Log::getInstance().cheaters << endl;
 		}
 	}
 	catch (TraciException &e) {

@@ -41,7 +41,7 @@ public:
 	Vehicle();
 	virtual ~Vehicle();
 
-    void initialize(std::string id);
+    void initialize(std::string id, double time);
 
     std::string getId();
 
@@ -74,13 +74,15 @@ public:
 	double getEdgeTravelTime(std::string edgeId);
 	map<std::string, double> getSumoCosts(std::string startEdgeId);
 
+	double getStart();
+
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;
     std::string id;
 
     Position2D currentPosition;
     double currentSpeed;
-
+    double start;
     Network scenario;
     Route currentRoute ;
     Itinerary itinerary;
