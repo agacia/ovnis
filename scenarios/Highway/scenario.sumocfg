@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <input>
-	<net-file value="../../../../Highway.net.xml"/>
-        <additional-files value="../../../../accident_300_1300.add.xml"/>
-	<route-files value="../../../../routes.rou.xml"/>
+	<net-file value="../../../Highway.net.xml"/>
+        <additional-files value="../../../accident_300_1300.add.xml"/>
+	<route-files value="../../../routes.rou.xml"/>
     </input>
 
     <output>
