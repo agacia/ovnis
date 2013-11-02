@@ -192,14 +192,14 @@ def main():
         # yLabel = ""
         # yLabels = ["Travel time"]
         # linesX = [300,1300]
-        outputFolder = options.outputDir + name + "/"
+        # outputFolder = options.outputDir + name + "/"
         # outputFile =  outputFolder + "total_traveltime.png"
         # plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
         avgTotalTravelTime = np.average(yData)
-        flows.append(name)
-        avgTotalTravelTimes[name] = avgTotalTravelTime
+        flowNumber = float(name)
+        flows.append(flowNumber)
+        avgTotalTravelTimes[flowNumber] = avgTotalTravelTime
 
-        out.write("{0}\t{1}\n".format(name, avgTotalTravelTime))
         # yData = [recarrayData['travelTime']]
         # outputFile =  outputFolder + "traveltime.png"
         # plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
@@ -210,6 +210,8 @@ def main():
       sortedAvgTravelTimes = []
       for flow in flows:
         sortedAvgTravelTimes.append(avgTotalTravelTimes[flow])
+        out.write("{0}\t{1}\n".format(flow, avgTotalTravelTimes[flow]))
+        
       print "flows {0}".format(flows)
       print "avgTotalTravelTimes {0}".format(sortedAvgTravelTimes)
       
@@ -268,7 +270,7 @@ def main():
     # read csv dataFile
 
 
-    if ".csv" in inputFile or "routing_end" in inputFile:
+    if "routing_end" in inputFile:
       # formats = ['f', np.object, np.object, 'f', 'f' , np.object, np.object, 'f', int, 'f', 'f', int, 'f']
       # dtype = dict(names = routing_names, formats=formats)
   
@@ -287,7 +289,10 @@ def main():
       outputFile = options.outputDir + "plot_traveltime.png"
       plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
       
- 
+    if ".tsv" in inputFile:
+       data = csv2rec(inputFile, delimiter='\t')
+       print dataFile
+
     return
     
 # --------------------------------------------  

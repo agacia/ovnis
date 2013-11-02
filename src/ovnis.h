@@ -64,7 +64,7 @@ namespace ns3
 
   protected:
     virtual void DoDispose(void);
-    virtual void DoStart(void);
+    virtual void DoInitialize	(void);
     void InitializeNetwork();
     void InitializeOvnisNetwork();
     void InitializeDefaultNetwork();

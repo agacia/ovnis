@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <input>
-	<!-- equal  -->
-	<net-file value="net.equal.net.xml"/>
-        <additional-files value="input_additional.add.xml"/>
-	<route-files value="routes.rou.xml"/>
+	<net-file value="../../../../Highway.net.xml"/>
+        <additional-files value="../../../../accident_300_1300.add.xml"/>
+	<route-files value="../../../../routes.rou.xml"/>
     </input>
 
     <output>
-        <summary-output value="sumoOutput/summary.xml"/>
-        <tripinfo-output value="sumoOutput/tripinfo.xml"/>
-        <vehroute-output value="sumoOutput/vehroute.xml"/>
+        <summary-output value="summary.xml"/>
+        <!--<tripinfo-output value="sumoOutput/tripinfo.xml"/>
+        <vehroute-output value="sumoOutput/vehroute.xml"/>-->
     </output>
    
    <time-to-teleport value="0" />
@@ -28,6 +27,6 @@
         <no-step-log value="false" />
     </report>
 
-   <remote-port value="1236"/>
+   <remote-port value="1237"/>
    
 </configuration>

@@ -106,7 +106,7 @@ void Ovnis::DoDispose() {
 	Object::DoDispose();
 }
 
-void Ovnis::DoStart(void) {
+void Ovnis::DoInitialize(void) {
 //	LogComponentEnable("YansWifiChannel", LOG_LEVEL_INFO);
 //	LogComponentEnable("YansWifiPhy", LOG_LEVEL_INFO);
 //	LogComponentEnable("OvnisWifiChannel", LOG_LEVEL_INFO);
@@ -153,7 +153,7 @@ void Ovnis::DoStart(void) {
 		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 		Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
-		Object::DoStart();
+		Object::DoInitialize();
 	}
 	catch (TraciException &e) {
 		cerr << "TrafficSimulationStep " << e.what();

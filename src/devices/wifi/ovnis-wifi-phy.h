@@ -54,6 +54,7 @@
 
 #include "channel-cell.h"
 
+#define HT_PHY 127
 
 namespace ns3 {
 
@@ -111,7 +112,7 @@ public:
   
   void StartReceivePacket (Ptr<Packet> packet,
                            double rxPowerDbm,
-                           WifiMode mode,
+                           WifiTxVector txVector,
                            WifiPreamble preamble);
 
   void SetRxNoiseFigure (double noiseFigureDb);
@@ -144,7 +145,8 @@ public:
   virtual uint32_t GetNTxPower (void) const;
   virtual void SetReceiveOkCallback (WifiPhy::RxOkCallback callback);
   virtual void SetReceiveErrorCallback (WifiPhy::RxErrorCallback callback);
-  virtual void SendPacket (Ptr<const Packet> packet, WifiMode mode, enum WifiPreamble preamble, uint8_t txPowerLevel);
+//  virtual void SendPacket (Ptr<const Packet> packet, WifiMode mode, enum WifiPreamble preamble, uint8_t txPowerLevel);
+  virtual void SendPacket (Ptr<const Packet> packet, WifiMode txMode, WifiPreamble preamble, WifiTxVector txVector);
   virtual void RegisterListener (WifiPhyListener *listener);
   virtual bool IsStateCcaBusy (void);
   virtual bool IsStateIdle (void);
@@ -162,6 +164,90 @@ public:
   virtual Ptr<WifiChannel> GetChannel (void) const;
   virtual void ConfigureStandard (enum WifiPhyStandard standard);
   virtual int64_t AssignStreams (int64_t stream);
+  virtual uint32_t GetNBssMembershipSelectors (void) const;
+   virtual uint32_t GetBssMembershipSelector (uint32_t selector) const;
+   virtual WifiModeList GetMembershipSelectorModes(uint32_t selector);
+   /**
+    * The WifiPhy::GetNMcs() and  WifiPhy::GetMcs() methods are used
+    * (e.g., by a WifiRemoteStationManager) to determine the set of
+    * transmission/reception MCS indexes that this WifiPhy(-derived class)
+    * can support - a set of Mcs indexes which we call the
+    * DeviceMcsSet, and which is stored as WifiPhy::m_deviceMcsSet.
+    *
+    * This was introduced with 11n
+    *
+    * \param Mcs index in array of supported Mcs
+    * \returns the Mcs index whose index is specified.
+    *
+    * \sa WifiPhy::GetNMcs()
+    */
+   virtual uint8_t GetNMcs (void) const;
+   virtual uint8_t GetMcs (uint8_t mcs) const;
+
+   /* Converts from DataRate to MCS index and vice versa */
+   virtual uint32_t WifiModeToMcs (WifiMode mode);
+   virtual WifiMode McsToWifiMode (uint8_t mcs);
+   /**
+      * \param the operating frequency on this node.
+      */
+     virtual void SetFrequency (uint32_t freq);
+     virtual uint32_t GetFrequency (void) const;
+     /**
+      * \param the number of transmitters on this node.
+      */
+     virtual void SetNumberOfTransmitAntennas (uint32_t tx);
+
+     virtual uint32_t GetNumberOfTransmitAntennas (void) const;
+      /**
+      * \param the number of recievers on this node.
+      */
+     virtual void SetNumberOfReceiveAntennas (uint32_t rx) ;
+     /**
+      * \returns the number of recievers on this node.
+      */
+     virtual uint32_t GetNumberOfReceiveAntennas (void) const;
+     /**
+      * \paramif short guard interval is supported or not
+      */
+      virtual void SetGuardInterval (bool GuardInterval);
+      /**
+      *  \returns if short guard interval is supported or not
+      */
+     virtual bool GetGuardInterval (void) const;
+     /**
+      * \paramif LDPC is supported or not
+      */
+     virtual void SetLdpc (bool Ldpc);
+     /**
+      * \returns if LDPC is supported or not
+      */
+     virtual bool GetLdpc (void) const;
+     /**
+      * \paramif STBC is supported or not
+      */
+     virtual void SetStbc (bool stbc);
+     /**
+      *  \returns if STBC is supported or not
+      */
+     virtual bool GetStbc (void) const;
+
+     /**
+      * \paramif GreenField is supported or not
+      */
+     virtual void SetGreenfield (bool greenfield);
+     /**
+      *  \returns if Green field is supported or not
+      */
+     virtual bool GetGreenfield (void) const;
+     /**
+      * \paramif channel bonding 40 MHz is supported or not
+      */
+     virtual bool GetChannelBonding (void) const;
+     /**
+      *  \returns if channel bonding is supported or not
+      */
+     virtual void SetChannelBonding (bool channelbonding) ;
+
 
 
 private:
@@ -194,6 +280,22 @@ private:
   double   m_txPowerBaseDbm;
   double   m_txPowerEndDbm;
   uint32_t m_nTxPower;
+  std::vector<uint32_t> m_bssMembershipSelectorSet;
+  // number of transmitters
+    uint32_t m_numberOfTransmitters;
+    // number of recievers
+    uint32_t m_numberOfReceivers;
+    //if true use LDPC
+    bool     m_ldpc;
+    // True if STBC is used
+    bool     m_stbc;
+    //True if GreenField format is supported
+    bool     m_greenfield;
+    //True is short guard interval is used
+    bool     m_guardInterval;
+    //True if channel bonding is used
+    bool     m_channelBonding;
+
 
   Ptr<OvnisWifiChannel> m_channel;
   uint16_t m_channelNumber;
@@ -241,6 +343,7 @@ private:
    */
   WifiModeList m_deviceRateSet;
 
+  std::vector<uint8_t> m_deviceMcsSet;
   EventId m_endRxEvent;
   Ptr<UniformRandomVariable> m_random;
   /// Standard-dependent center frequency of 0-th channel, MHz 

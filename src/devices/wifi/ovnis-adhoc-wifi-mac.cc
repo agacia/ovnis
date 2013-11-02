@@ -296,8 +296,8 @@ OvnisAdhocWifiMac::TxFailed (const WifiMacHeader &hdr)
 void
 OvnisAdhocWifiMac::DoStart ()
 {
-  m_dca->Start ();
-  WifiMac::DoStart ();
+  m_dca->Initialize ();
+  WifiMac::DoInitialize ();
 }
 
 } // namespace ns3

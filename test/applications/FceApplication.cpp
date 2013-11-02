@@ -366,8 +366,10 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 		routeChoice = vehicle.getItinerary().getId();
 	}
 	// cheaters
-	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * 100;
+	cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
 	if (cheatersRatio > 0 && r < cheatersRatio) {
+
 		if (routeChoice != shortest_choice) {
 			routeChoice = shortest_choice;
 			isCheater = true;
