@@ -81,20 +81,36 @@ public:
    */
   void SetPropagationDelayModel (Ptr<PropagationDelayModel> delay);
 
+//  /**
+//   * \param sender the device from which the packet is originating.
+//   * \param packet the packet to send
+//   * \param txPowerDbm the tx power associated to the packet
+//   * \param wifiMode the tx mode associated to the packet
+//   * \param preamble the preamble associated to the packet
+//   *
+//   * This method should not be invoked by normal users. It is
+//   * currently invoked only from WifiPhy::Send. YansWifiChannel
+//   * delivers packets only between PHYs with the same m_channelNumber,
+//   * e.g. PHYs that are operating on the same channel.
+//   */
+//  virtual void Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
+//             WifiMode wifiMode, WifiPreamble preamble) const;
+
   /**
-   * \param sender the device from which the packet is originating.
-   * \param packet the packet to send
-   * \param txPowerDbm the tx power associated to the packet
-   * \param wifiMode the tx mode associated to the packet
-   * \param preamble the preamble associated to the packet
-   *
-   * This method should not be invoked by normal users. It is 
-   * currently invoked only from WifiPhy::Send. YansWifiChannel 
-   * delivers packets only between PHYs with the same m_channelNumber,
-   * e.g. PHYs that are operating on the same channel.
-   */
-  virtual void Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
-             WifiMode wifiMode, WifiPreamble preamble) const;
+     * \param sender the device from which the packet is originating.
+     * \param packet the packet to send
+     * \param txPowerDbm the tx power associated to the packet
+     * \param wifiMode the tx mode associated to the packet
+     * \param preamble the preamble associated to the packet
+     *
+     * This method should not be invoked by normal users. It is
+     * currently invoked only from WifiPhy::Send. YansWifiChannel
+     * delivers packets only between PHYs with the same m_channelNumber,
+     * e.g. PHYs that are operating on the same channel.
+     */
+    void Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
+               WifiTxVector txVector, WifiPreamble preamble) const;
+
 
   void
   updateArea(double x, double y, double r);
@@ -109,8 +125,8 @@ public:
 protected:
   typedef std::vector<Ptr<OvnisWifiPhy> > PhyList;
 
-  void Receive ( Ptr<OvnisWifiPhy> i, Ptr<Packet> packet, double rxPowerDbm,
-                 WifiMode txMode, WifiPreamble preamble) const;
+  void Receive (Ptr<OvnisWifiPhy>  i, Ptr<Packet> packet, double rxPowerDbm,
+                WifiTxVector txVector, WifiPreamble preamble) const;
  double area_x;
   double area_y;
   double range;

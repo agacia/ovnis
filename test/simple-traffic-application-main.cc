@@ -65,8 +65,8 @@ int main(int argc, char ** argv) {
 	sumoPath="/opt/sumo/bin/sumo";
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	string scenarioFolder = "scenarios/Highway/";
-	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/test_3strategies";
-	string sumoConfig = "scenario.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
+	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/test_3strategies/";
+	string sumoConfig = "scenario_eclipse.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
 	int stopTime = 1800; // 25200; // 7h
     string penetrationRate = "1";
@@ -79,7 +79,7 @@ int main(int argc, char ** argv) {
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
     string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
-    string cheatersRatio = "0";
+    string cheatersRatio = "50";
     string accidentStartTime = "300";
     string accidentStopTime = "1300";
 
@@ -143,7 +143,7 @@ int main(int argc, char ** argv) {
 
 	expe->SetApplicationParams(fceParams);
 
-	Simulator::Schedule(Simulator::Now(), &Ovnis::Start, expe);
+	Simulator::Schedule(Simulator::Now(), &Ovnis::Initialize, expe);
 	Simulator::Run();
 	Simulator::Destroy();
 

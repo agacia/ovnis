@@ -4,6 +4,7 @@ AM_CXXFLAGS = -I$(top_srcdir) @AM_CPPFLAGS@
 # the library names to build (note we are building static libs only)
 #lib_LIBRARIES = libovnis.a
 
+
 # where to install the headers on the system
 #libovnis_adir = $(includedir)
 

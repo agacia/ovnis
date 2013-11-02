@@ -90,69 +90,133 @@ namespace ns3
   }
 
   void
-  OvnisWifiChannel::Send(Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiMode wifiMode,
-      WifiPreamble preamble) const
+  OvnisWifiChannel::Send (Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm,
+                         WifiTxVector txVector, WifiPreamble preamble) const
   {
-    //NS_LOG_FUNCTION_NOARGS();
-
-    Ptr<MobilityModel> senderMobility = sender->GetMobility()->GetObject<MobilityModel> ();
+    Ptr<MobilityModel> senderMobility = sender->GetMobility ()->GetObject<MobilityModel> ();
     NS_ASSERT (senderMobility != 0);
+//    uint32_t j = 0;
     Ptr<ChannelCell> senderCell = sender->cell;//GetObject<ChannelCell> ();
-    NS_ASSERT (senderCell != 0);
-    int nbcells=0;
-    int i, j;
-    for (i = (senderCell->i - 1) > 0 ? (senderCell->i - 1) : 0; i
-        <= ((senderCell->i + 1) < cells.size() ? (senderCell->i + 1) : cells.size()-1); i++)
-    {
-      for (j = (((senderCell->j - 1) > 0) ? (senderCell->j - 1) : 0); j
-          <= ((senderCell->j + 1) < cells[0].size() ? (senderCell->j + 1) : cells[0].size()-1); j++)
-      {
-        Ptr<ChannelCell> thatCell = cells[i][j];
-        nbcells++;
-
-        for (vector<Ptr<OvnisWifiPhy> >::iterator it = thatCell->content.begin(); it != thatCell->content.end(); it++)
+        NS_ASSERT (senderCell != 0);
+        int nbcells=0;
+        int i, j;
+        for (i = (senderCell->i - 1) > 0 ? (senderCell->i - 1) : 0; i
+            <= ((senderCell->i + 1) < cells.size() ? (senderCell->i + 1) : cells.size()-1); i++)
         {
-          if (sender != (*it))
+          for (j = (((senderCell->j - 1) > 0) ? (senderCell->j - 1) : 0); j
+              <= ((senderCell->j + 1) < cells[0].size() ? (senderCell->j + 1) : cells[0].size()-1); j++)
           {
-            // For now don't account for inter channel interference
-            if ((*it)->GetChannelNumber() != sender->GetChannelNumber())
-              continue;
+            Ptr<ChannelCell> thatCell = cells[i][j];
+            nbcells++;
 
-            Ptr<MobilityModel> receiverMobility = (*it)->GetMobility()->GetObject<MobilityModel> ();
-            Time delay = m_delay->GetDelay(senderMobility, receiverMobility);
-            double rxPowerDbm = m_loss->CalcRxPower(txPowerDbm, senderMobility, receiverMobility);
-            //if (senderMobility->GetDistanceFrom (receiverMobility)>1400)
-            //{
-            NS_LOG_DEBUG ("propagation: txPower="<<txPowerDbm<<"dbm, rxPower="<<rxPowerDbm<<"dbm, "<<
-               "distance="<<senderMobility->GetDistanceFrom (receiverMobility)<<"m, delay="<<delay);
-              //}
-            Ptr<Packet> copy = packet->Copy();
-            Ptr<Object> dstNetDevice = (*it)->GetDevice();
-            uint32_t dstNode;
-            if (dstNetDevice == 0)
+            for (vector<Ptr<OvnisWifiPhy> >::iterator it = thatCell->content.begin(); it != thatCell->content.end(); it++)
             {
-              dstNode = 0xffffffff;
+              if (sender != (*it))
+              {
+                // For now don't account for inter channel interference
+                if ((*it)->GetChannelNumber() != sender->GetChannelNumber())
+                  continue;
+
+                Ptr<MobilityModel> receiverMobility = (*it)->GetMobility()->GetObject<MobilityModel> ();
+                Time delay = m_delay->GetDelay(senderMobility, receiverMobility);
+                double rxPowerDbm = m_loss->CalcRxPower(txPowerDbm, senderMobility, receiverMobility);
+                //if (senderMobility->GetDistanceFrom (receiverMobility)>1400)
+                //{
+                NS_LOG_DEBUG ("propagation: txPower="<<txPowerDbm<<"dbm, rxPower="<<rxPowerDbm<<"dbm, "<<
+                   "distance="<<senderMobility->GetDistanceFrom (receiverMobility)<<"m, delay="<<delay);
+                  //}
+                Ptr<Packet> copy = packet->Copy();
+                Ptr<Object> dstNetDevice = (*it)->GetDevice();
+                uint32_t dstNode;
+                if (dstNetDevice == 0)
+                {
+                  dstNode = 0xffffffff;
+                }
+                else
+                {
+                  dstNode = dstNetDevice->GetObject<NetDevice> ()->GetNode()->GetId();
+                }
+                Simulator::ScheduleWithContext(dstNode, delay,
+                		&OvnisWifiChannel::Receive, this, (*it), copy, rxPowerDbm, txVector, preamble);
+    //            Simulator::ScheduleWithContext (dstNode,
+    //                                                        delay, &YansWifiChannel::Receive, this,
+    //                                                        j, copy, rxPowerDbm, txVector, preamble);
+              }
             }
-            else
-            {
-              dstNode = dstNetDevice->GetObject<NetDevice> ()->GetNode()->GetId();
-            }
-            Simulator::ScheduleWithContext(dstNode, delay, &OvnisWifiChannel::Receive, this, (*it), copy, rxPowerDbm,
-                wifiMode, preamble);
           }
         }
-      }
-    }
-//    cout<<"Send into "<<nbcells<<" different cells."<<endl;
   }
 
-  void
-  OvnisWifiChannel::Receive(Ptr<OvnisWifiPhy> i, Ptr<Packet> packet, double rxPowerDbm, WifiMode txMode,
-      WifiPreamble preamble) const
-  {
-   // NS_LOG_FUNCTION_NOARGS();
+//  void
+//  OvnisWifiChannel::Send(Ptr<OvnisWifiPhy> sender, Ptr<const Packet> packet, double txPowerDbm, WifiMode wifiMode,
+//      WifiPreamble preamble) const
+//  {
+//    Ptr<ChannelCell> senderCell = sender->cell;//GetObject<ChannelCell> ();
+//    NS_ASSERT (senderCell != 0);
+//    int nbcells=0;
+//    int i, j;
+//    for (i = (senderCell->i - 1) > 0 ? (senderCell->i - 1) : 0; i
+//        <= ((senderCell->i + 1) < cells.size() ? (senderCell->i + 1) : cells.size()-1); i++)
+//    {
+//      for (j = (((senderCell->j - 1) > 0) ? (senderCell->j - 1) : 0); j
+//          <= ((senderCell->j + 1) < cells[0].size() ? (senderCell->j + 1) : cells[0].size()-1); j++)
+//      {
+//        Ptr<ChannelCell> thatCell = cells[i][j];
+//        nbcells++;
+//
+//        for (vector<Ptr<OvnisWifiPhy> >::iterator it = thatCell->content.begin(); it != thatCell->content.end(); it++)
+//        {
+//          if (sender != (*it))
+//          {
+//            // For now don't account for inter channel interference
+//            if ((*it)->GetChannelNumber() != sender->GetChannelNumber())
+//              continue;
+//
+//            Ptr<MobilityModel> receiverMobility = (*it)->GetMobility()->GetObject<MobilityModel> ();
+//            Time delay = m_delay->GetDelay(senderMobility, receiverMobility);
+//            double rxPowerDbm = m_loss->CalcRxPower(txPowerDbm, senderMobility, receiverMobility);
+//            //if (senderMobility->GetDistanceFrom (receiverMobility)>1400)
+//            //{
+//            NS_LOG_DEBUG ("propagation: txPower="<<txPowerDbm<<"dbm, rxPower="<<rxPowerDbm<<"dbm, "<<
+//               "distance="<<senderMobility->GetDistanceFrom (receiverMobility)<<"m, delay="<<delay);
+//              //}
+//            Ptr<Packet> copy = packet->Copy();
+//            Ptr<Object> dstNetDevice = (*it)->GetDevice();
+//            uint32_t dstNode;
+//            if (dstNetDevice == 0)
+//            {
+//              dstNode = 0xffffffff;
+//            }
+//            else
+//            {
+//              dstNode = dstNetDevice->GetObject<NetDevice> ()->GetNode()->GetId();
+//            }
+//            Simulator::ScheduleWithContext(dstNode, delay,
+//            		&OvnisWifiChannel::Receive, this, (*it), copy, rxPowerDbm, txVector, preamble);
+////            Simulator::ScheduleWithContext (dstNode,
+////                                                        delay, &YansWifiChannel::Receive, this,
+////                                                        j, copy, rxPowerDbm, txVector, preamble);
+//          }
+//        }
+//      }
+//    }
+////    cout<<"Send into "<<nbcells<<" different cells."<<endl;
+//  }
 
-    i->StartReceivePacket(packet, rxPowerDbm, txMode, preamble);
+//  void
+//  OvnisWifiChannel::Receive(Ptr<OvnisWifiPhy> i, Ptr<Packet> packet, double rxPowerDbm, WifiMode txMode,
+//      WifiPreamble preamble) const
+//  {
+//   // NS_LOG_FUNCTION_NOARGS();
+//
+//    i->StartReceivePacket(packet, rxPowerDbm, txMode, preamble);
+//  }
+  void
+  OvnisWifiChannel::Receive (Ptr<OvnisWifiPhy> i, Ptr<Packet> packet, double rxPowerDbm,
+                            WifiTxVector txVector, WifiPreamble preamble) const
+  {
+//    m_phyList[i]->StartReceivePacket (packet, rxPowerDbm, txVector, preamble);
+	  i->StartReceivePacket (packet, rxPowerDbm, txVector, preamble);
   }
 
   void
