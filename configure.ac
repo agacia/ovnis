@@ -162,7 +162,7 @@ AC_CHECK_HEADER([xercesc/util/XercesVersion.hpp],
 
 
 AC_CHECK_LIB([$LIB_XERCES], [main], [ AM_LDFLAGS="$LDFLAGS $AM_LDFLAGS"],
-      [AC_MSG_ERROR([xeces-lib not found in "$LDFLAGS". Did you properly set the --with-xerces=DIR option? See "./configure --help".])])
+      [AC_MSG_ERROR([xeces-lib: "${LIB_XERCES}" not found in "${LDFLAGS}". Did you properly set the --with-xerces=DIR option? See "./configure --help".])])
 
 #LIBS=$OLD_LIBS
 

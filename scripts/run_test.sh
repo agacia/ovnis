@@ -16,7 +16,9 @@ ROUTING_STRATEGIES_PROB="1"
 CHEATERS_RATIO=0;
 # ACCIDENT_START=0;
 # ACCIDENT_STEP=10;
+
 APP_PATH="/Users/agatagrzybek/workspace/ovnis/test/ovnisSample_static"
+ENV="mac"
 
 echo "Number of arguments: "$#
 if [ $1 ]; then ITER_FIRST=$1; fi
@@ -49,6 +51,16 @@ echo "ROOT_FOLDER "$ROOT_FOLDER
 if [ $10 ]; then SUMOCONFIG="${10}"; fi
 echo "SUMOCONFIG "$SUMOCONFIG
 
+if [ $11 ]; then ENV="${11}"; fi
+echo "ENV "$ENV
+if [ $ENV = "cluster" ]; then
+	echo "export LD_LIBRARY_PATH=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
+	export LD_LIBRARY_PATH=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/
+	APP_PATH="/home/users/agrzybek/ovnis/repos/ovnis-master/test/ovnisSample_static"
+fi
+
+
+
 
 
 NUM_ITER=$(((ITER_LAST - $ITER_FIRST) / ITER_STEP))
@@ -56,8 +68,11 @@ echo "Num iter "$NUM_ITER
 
 for ITER in $(seq 0 $NUM_ITER); do
 	FOLDER=$((ITER_FIRST + ITER * ITER_STEP ))
+	OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO
+	mkdir $OUTPUT_FOLDER
 	OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO/$FOLDER"/"
-	copy="cp ${ROOT_FOLDER}../../scenario.sumocfg ${OUTPUT_FOLDER}"
+	mkdir $OUTPUT_FOLDER
+	copy="cp ${ROOT_FOLDER}../scenario.sumocfg ${OUTPUT_FOLDER}"
 	echo $copy
 	$copy
 	mkdir $OUTPUT_FOLDER
