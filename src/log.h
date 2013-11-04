@@ -88,7 +88,8 @@ class Log
 //		void writeXml(const char * name, std::map<std::string, std::string> attrs);
 //		void closeXml();
 
-        int congestedTrips;
+        int needProbabilistic;
+        int couldCheat;
         int cheaters;
 
     private:

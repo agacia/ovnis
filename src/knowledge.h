@@ -73,6 +73,7 @@ protected:
 	map<std::string,double> travelTimesOnRoutes;
 	map<string, double> packetAgesOnRoutes;
 	map<string,int> numberOfUpdatedEdges;
+	map<string,int> numberOfEdges;
 
 //	map<string, double> packetAgesOnRoutes;
 	double maxInformationAge;

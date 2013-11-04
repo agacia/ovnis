@@ -91,8 +91,9 @@ FceApplication::FceApplication() {
 	decisionTaken = false;
 	notificationSent = false;
 	isCheater = false;
-	wasProbabilistic = false;
+	neededProbabilistic = false;
 	startReroute = 0;
+	isVanet = true;
 	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
 	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
@@ -253,14 +254,16 @@ void FceApplication::SimulationRun(void) {
 			// if approaching an intersection take decision which route to take from current to destination edge
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdgeId) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
-				needProbabilistic = false;
-				isCheater = false;
+				isDense = false;
+				isCongested = false;
 				map<string, double> cost = EstimateTravelCostBasedOnCentralised(now, currentEdgeId);
 				// vanets
-				if (m_params["isVanet"] == "true") {
-					map<string, double> cost = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"]);
+				double vanetKnowledgeRatio = atof(m_params["vanetKnowlegePenetrationRate"].c_str());
+				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+				isVanet =  r < vanetKnowledgeRatio;
+				if (isVanet) {
+					cost = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"]);
 				}
-				wasProbabilistic = needProbabilistic;
 				double cheatersRatio = atof(m_params["cheatersRatio"].c_str());
 				routeChoice = ChooseRoute(now, currentEdgeId, cost, m_params["routingStrategy"], cheatersRatio);
 				vehicle.reroute(routeChoice);
@@ -318,9 +321,10 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 		}
 	}
 	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL);
-	isDense = vanetsKnowledge.isDenseFlow();
-	isCongested = vanetsKnowledge.isCongestedFlow();
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
+//	for (map<string, double>::iterator it = travelTimeCost.begin(); it != travelTimeCost.end(); ++it) {
+//		cout << "in fce read knowledge: route " << it->first << ", travel time " << it->second << endl;
+//	}
 	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
 	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
 	Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
@@ -334,6 +338,9 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 		cost = delayTimeCost;
 	}
 
+	isDense = vanetsKnowledge.isDenseFlow();
+	isCongested = vanetsKnowledge.isCongestedFlow();
+
 	CalculateError(currentEdgeId);
 
 	return cost;
@@ -343,12 +350,14 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	string shortest_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
 	map<string, double> correlatedValues = AnalyseRouteCorrelation();
 	string probabilistic_choice =  TIS::getInstance().chooseProbTravelTimeRoute(routeCost, correlatedValues);
-	needProbabilistic = isCongested;
+	bool needProbabilistic = isCongested;
 	//	needProbabilistic = isCongested || isDense;
 	//	needProbabilistic = vanetsKnowledge.getSumDelay() > 0;
 	//	bool isAccident = now > m_params["accidentStartTime"] && now < m_params["accidentStopTime"];
 	//	needProbabilistic = isAccident;
 	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
+
+//	cout << "Routing. Need probabilistic (iscCngested) " << needProbabilistic << " " <<  isCongested << endl;
 
 	routeChoice = shortest_choice;
 	if (shortest_choice != "") {
@@ -360,27 +369,28 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	// hybrid - probabilistic only if 'needed'
 	if (routingStrategy == "hybrid" && needProbabilistic && probabilistic_choice != "") {
 		routeChoice = probabilistic_choice;
+		Log::getInstance().needProbabilistic ++;
 	}
 	// no routing
 	if (routingStrategy == "noRouting") {
 		routeChoice = vehicle.getItinerary().getId();
 	}
 	// cheaters
-	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * 100;
-	cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
-	if (cheatersRatio > 0 && r < cheatersRatio) {
-
-		if (routeChoice != shortest_choice) {
+	if (routeChoice != shortest_choice) {
+		isCheater = false;
+		Log::getInstance().couldCheat ++;
+		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * 100;
+//		cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
+		if (cheatersRatio > 0 && r < cheatersRatio) {
 			routeChoice = shortest_choice;
 			isCheater = true;
 		}
-	}
-	if (cheatersRatio < 0 && -r > cheatersRatio) {
-		if (routeChoice != probabilistic_choice) {
+		if (cheatersRatio < 0 && -r > cheatersRatio) {
 			routeChoice = probabilistic_choice;
 			isCheater = true;
 		}
 	}
+
 	if (isCheater) {
 		Log::getInstance().cheaters ++;
 	}
@@ -418,7 +428,7 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 				<< travelTime2 << "\t"
 				<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
 		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId,
-				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, wasProbabilistic,
+				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, neededProbabilistic,
 				m_params["routingStrategy"], vehicle.getStart());
 		notificationSent = true;
 	}
