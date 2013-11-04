@@ -158,16 +158,17 @@ namespace ns3
     /**
      * Routing settings
      */
-    Knowledge vanetsKnowledge; // A local VANET's database containing traffic information ONLY heard from other vehicles
+
+	bool isVanet;
+	Knowledge vanetsKnowledge; // A local VANET's database containing traffic information ONLY heard from other vehicles
     bool running;
 	bool decisionTaken;
 	bool notificationSent;
-	bool wasProbabilistic;
 	double startReroute;
     bool isCheater;
     double expectedTravelTime;
     double selfishExpectedTravelTime;
-    bool needProbabilistic;
+    bool neededProbabilistic;
 	string routeChoice;
 	bool isDense;
 	bool isCongested;

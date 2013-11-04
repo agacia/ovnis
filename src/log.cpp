@@ -51,7 +51,7 @@ Log::Log() {
 	packetId = 0;
 	logFiles = map<string, ofstream *>();
 
-	congestedTrips = 0;
+	needProbabilistic = 0;
 	cheaters = 0;
 }
 

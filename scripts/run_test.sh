@@ -18,7 +18,9 @@ CHEATERS_RATIO=0;
 # ACCIDENT_STEP=10;
 
 APP_PATH="/Users/agatagrzybek/workspace/ovnis/test/ovnisSample_static"
+SUMO_PATH="/opt/sumo/bin/sumo"
 ENV="mac"
+CMD="capacity" # or cheaters
 
 echo "Number of arguments: "$#
 if [ $1 ]; then ITER_FIRST=$1; fi
@@ -57,10 +59,13 @@ if [ $ENV = "cluster" ]; then
 	echo "export LD_LIBRARY_PATH=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
 	export LD_LIBRARY_PATH=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/
 	APP_PATH="/home/users/agrzybek/ovnis/repos/ovnis-master/test/ovnisSample_static"
+	SUMO_PATH="/home/users/agrzybek/bin/sumo"
+	echo "APP_PATH=/home/users/agrzybek/ovnis/repos/ovnis-master/test/ovnisSample_static"
+	echo "SUMO_PATH=/home/users/agrzybek/bin/sumo"
 fi
 
-
-
+if [ $12 ]; then CMD="${12}"; fi
+echo "CMD "$CMD
 
 
 NUM_ITER=$(((ITER_LAST - $ITER_FIRST) / ITER_STEP))
@@ -68,18 +73,24 @@ echo "Num iter "$NUM_ITER
 
 for ITER in $(seq 0 $NUM_ITER); do
 	FOLDER=$((ITER_FIRST + ITER * ITER_STEP ))
-	OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO
-	mkdir $OUTPUT_FOLDER
-	OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO/$FOLDER"/"
-	mkdir $OUTPUT_FOLDER
-	copy="cp ${ROOT_FOLDER}../scenario.sumocfg ${OUTPUT_FOLDER}"
-	echo $copy
-	$copy
-	mkdir $OUTPUT_FOLDER
+	if [ $CMD = "capacity" ]; then
+		OUTPUT_FOLDER=$ROOT_FOLDER$FOLDER"/"
+	fi
+	if [ $CMD = "cheaters" ]; then
+		OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO
+		mkdir $OUTPUT_FOLDER
+		OUTPUT_FOLDER=$ROOT_FOLDER$CHEATERS_RATIO/$FOLDER"/"
+		mkdir $OUTPUT_FOLDER
+		copy="cp ${ROOT_FOLDER}../scenario.sumocfg ${OUTPUT_FOLDER}"
+		echo $copy
+		$copy
+	fi
+
 	echo "Iter ${ITER} folder ${FOLDER}"
 	echo "SUMOCONFIG ${OUTPUT_FOLDER}${SUMOCONFIG}"
 	PROGRAM="${APP_PATH} \
 	--sumoConfig=${SUMOCONFIG} \
+	--sumoPath=${SUMO_PATH} \
 	--scenarioFolder=${OUTPUT_FOLDER} \
 	--startTime=${START_TIME} \
 	--stopTime=${STOP_TIME} \

@@ -144,10 +144,10 @@ string TIS::getEvent(map<string, double> probabilities) {
 	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
 		sortedProbabilities.push_back(pair<string,double>(it->first, it->second));
 	}
-//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-//		Log::getInstance().getStream("probabilities") << it->first << "," << it->second << "\t";
-//	}
-//	Log::getInstance().getStream("probabilities") << endl;
+	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
+		Log::getInstance().getStream("probabilities") << "route: " << it->first << ", prob: " << it->second << "\t";
+	}
+	Log::getInstance().getStream("probabilities") << endl;
 
 	double shifting_weight = 0;
     double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
@@ -264,8 +264,9 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, doub
 				probability = 0;
 			}
 		}
+
 		if (probability != 0) {
-			probabilities[it->first] = it->second;
+			probabilities[it->first] = probability;
 		}
 	}
 
@@ -298,9 +299,6 @@ void TIS::setCongestion(bool congestion, bool ifDense, bool ifCongested)
 	if (this->congestion != congestion) {
 		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
 		this->congestion = congestion;
-	}
-	if (this->congestion == true) {
-		Log::getInstance().congestedTrips ++;
 	}
 }
 

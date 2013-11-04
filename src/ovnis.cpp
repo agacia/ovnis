@@ -426,8 +426,9 @@ void Ovnis::TrafficSimulationStep() {
 			cout << "Finished! Steps: " << currentTime/1000 << ", Simulation time" << (double)(time(0) - start) << " s. " << endl;
 			Log::getInstance().getStream("simulation") << "stop\t" << stop << endl;
 			Log::getInstance().getStream("simulation") << "duration\t" << (stop-start) << endl;
-			Log::getInstance().getStream("simulation") << "congested trips\t" << Log::getInstance().congestedTrips << endl;
-			Log::getInstance().getStream("simulation") << "cheaters\t" << Log::getInstance().cheaters << endl;
+			Log::getInstance().getStream("simulation") << "needed probabilistic (congestion detected)\t" << Log::getInstance().needProbabilistic << endl;
+			Log::getInstance().getStream("simulation") << "could cheat (the sugegsted trip != the shortest)\t" << Log::getInstance().cheaters << endl;
+			Log::getInstance().getStream("simulation") << "cheaters (actually cheatet)\t" << Log::getInstance().cheaters << endl;
 		}
 	}
 	catch (TraciException &e) {
