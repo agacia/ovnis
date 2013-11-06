@@ -112,17 +112,17 @@ long RecordEntry::getLatestPacketId() {
 	return packetIds[(count-1+LOCAL_MEMORY_SIZE)%LOCAL_MEMORY_SIZE];
 }
 
-double RecordEntry::computeAverageValue() {
-	double sum = 0;
-	double count = 0;
-	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
-		sum += values[i];
-		if (values[i] != 0) {
-			++count;
-		}
-	}
-	return sum/count;
-}
+//double RecordEntry::computeAverageValue() {
+//	double sum = 0;
+//	double count = 0;
+//	for (int i = 0; i < LOCAL_MEMORY_SIZE; ++i) {
+//		sum += values[i];
+//		if (values[i] != 0) {
+//			++count;
+//		}
+//	}
+//	return sum/count;
+//}
 
 RecordEntry::~RecordEntry() {
 }

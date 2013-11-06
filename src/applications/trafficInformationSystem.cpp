@@ -19,6 +19,7 @@ TIS & TIS::getInstance() {
 
 TIS::TIS() {
 	congestion = false;
+	traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 }
 
 TIS::~TIS() {
@@ -34,6 +35,14 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
 			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime << "\t" << vehiclesOnRoute[newRouteId];;
 	Log::getInstance().getStream("routing_start") << endl;
+}
+
+void TIS::reportEndingEdge(string vehicleId, string edgeId, double travelTime) {
+	perfectTravelTimes[edgeId].add(0, "", Simulator::Now().GetSeconds(), travelTime);
+}
+
+std::map<std::string, RecordEntry> TIS::getPerfectTravelTimes() {
+	return perfectTravelTimes;
 }
 
 void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId, string endEdgeId,
@@ -287,6 +296,10 @@ double TIS::getEdgeStaticCost(std::string edgeId) {
 			return this->staticRecords[edgeId].getStaticCost();
 		}
 	return 0;
+}
+
+double TIS::getEdgePerfectCost(std::string edgeId) {
+	return traci->GetEdgeTravelTime(edgeId);
 }
 
 bool TIS::isCongestion()

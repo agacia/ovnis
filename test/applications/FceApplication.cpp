@@ -101,7 +101,7 @@ FceApplication::FceApplication() {
 	m_params["accidentStopTime"] = "1300"; // ACCIDENT_END_TIME;
 	m_params["networkId"] = "Highway"; // "Kirchberg";
 	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
-	m_params["routingStrategiesProbabilities"] = "1,0,0,0"; // no-routing - uninformed drivers,
+	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
 }
@@ -295,6 +295,7 @@ void FceApplication::OnEdgeChanged(double now, string currentEdgeId) {
 	Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 	Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdgeId);
 	SendPacket(p);
+	TIS::getInstance().reportEndingEdge(vehicle.getId(), lastEdgeId,  travelTimeOnLastEdge);
 	//	Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
 }
 
@@ -320,7 +321,7 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 //			routeTTL[it->first] = 120;
 		}
 	}
-	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL);
+	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, true);
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
 //	for (map<string, double>::iterator it = travelTimeCost.begin(); it != travelTimeCost.end(); ++it) {
 //		cout << "in fce read knowledge: route " << it->first << ", travel time " << it->second << endl;
@@ -358,6 +359,7 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
 
 //	cout << "Routing. Need probabilistic (iscCngested) " << needProbabilistic << " " <<  isCongested << endl;
+//	cout << "Routing. " << routingStrategy << " " << endl;
 
 	routeChoice = shortest_choice;
 	if (shortest_choice != "") {
@@ -434,8 +436,6 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 	}
 }
 
-
-
 map<string, double> FceApplication::AnalyseRouteCorrelation() {
 	string currentEdgeId = vehicle.getItinerary().getCurrentEdge().getId();
 	string endEdgeId = vehicle.getDestinationEdgeId();
@@ -471,6 +471,17 @@ void FceApplication::CalculateError(string currentEdge) {
 		Log::getInstance().getStream("edges_vanet") << it->first << "," << it->second << "\t";
 	}
 	Log::getInstance().getStream("edges_vanet") << endl;
+
+
+	bool usePerfect = false;
+	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "," << usePerfect << "\n";
+	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), usePerfect); // refer to the last call of vanetsKnowledge.getCosts !
+	Log::getInstance().getStream("edges_perfect") << now << "\t";
+	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
+		Log::getInstance().getStream("edges_perfect") << it->first << "," << it->second << "\t";
+	}
+	Log::getInstance().getStream("edges_perfect") << endl;
+
 
 	// error
 	double error = 0;

@@ -31,7 +31,7 @@ public:
 	virtual ~RecordEntry();
 	void add(long packetId, std::string senderId, double time, double value);
 	void printValues();
-	double computeAverageValue();
+//	double computeAverageValue();
 	double getLatestValue();
 	double getLatestTime();
 	double getAverageValue();
