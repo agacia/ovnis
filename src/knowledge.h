@@ -27,6 +27,8 @@
 #include "itinerary.h"
 #include "recordEntry.h"
 #include "applications/trafficInformationSystem.h"
+#include "traci/sumoTraciConnection.h"
+#include <traci-server/TraCIConstants.h>
 
 using namespace std;
 
@@ -46,9 +48,10 @@ public:
 	void record(vector<Data> data);
 	map<string,RecordEntry> & getRecords();
 
-	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL);
+	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, bool usePerfectInformation);
 	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeI);
 
+	map<std::string,double> getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, bool usePerfect);
 
 	map<std::string,double> getCongestedLengthOnRoutes();
 	map<std::string,double> getDenseLengthOnRoutes();
@@ -64,6 +67,7 @@ public:
     double getSumLength();
 
 protected:
+    Ptr<ovnis::SumoTraciConnection> traci;
 	map<long,int> packets; // counter of packets
 	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
 	std::map<std::string, int> numberOfVehicles;

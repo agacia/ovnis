@@ -25,6 +25,8 @@
 #include "ovnisPacket.h"
 #include "itinerary.h"
 #include "recordEntry.h"
+#include "traci/sumoTraciConnection.h"
+#include <traci-server/TraCIConstants.h>
 
 
 using namespace std;
@@ -43,11 +45,13 @@ public:
 	void reportEndingRoute(string vehicleId, std::string routeId, std::string startEdgeId, std::string endEdgeId,
 			double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested,
 			string routingStrategy, double start);
+	void reportEndingEdge(string vehicleId, string edgeId, double travelTime);
 
     int getVehiclesOnRoute(std::string routeId);
 	std::map<std::string,double> & getTravelTimesOnRoute();
 	std::map<std::string,double> & getTravelTimeDateOnRoute();
 
+	double getEdgePerfectCost(std::string edgeId);
 	void vehicleOnRoadsInitialize(std::string routeId);
 
 	void initializeStaticTravelTimes(map<string, Route> routes);
@@ -65,6 +69,7 @@ public:
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();
 	std::string getEvent(std::map<std::string, double> probabilities);
+    std::map<std::string, RecordEntry> getPerfectTravelTimes();
 
     bool executeOnce;
     //	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
@@ -73,12 +78,16 @@ private:
     TIS(const TIS& ); // Don't Implement
     void operator =(const TIS& ); // Don't implement
     static TIS *instance;
+    Ptr<ovnis::SumoTraciConnection> traci;
+
     std::map<std::string,EdgeInfo> staticRecords; // info about expected travel times on routes (whith max speed)
 
     std::map<std::string,Route> staticRoutes;
     std::map<std::string,int> vehiclesOnRoute;
     std::map<std::string,double> travelTimesOnRoute;
     std::map<std::string,double> travelTimeDateOnRoute;
+	std::map<std::string, RecordEntry> perfectTravelTimes; // info about travel times on routes
+
     bool congestion;
     bool comp_prob(const pair<string,double> & v1, const pair<string,double> & v2);
     UniformVariable rando;

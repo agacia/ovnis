@@ -65,7 +65,7 @@ int main(int argc, char ** argv) {
 	sumoPath="/opt/sumo/bin/sumo";
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 	string scenarioFolder = "scenarios/Highway/";
-	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/test_3strategies/";
+	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest";
 	string sumoConfig = "scenario_eclipse.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
 	int stopTime = 1800; // 25200; // 7h
@@ -74,7 +74,7 @@ int main(int argc, char ** argv) {
 	// TrafficEQ (FceApplication) params
     string networkId = "Highway"; // "Kirchberg, Luxembourg, Berkeley"
     string routingStrategies = "noRouting shortest probabilistic hybrid";
-    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,1,0,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
