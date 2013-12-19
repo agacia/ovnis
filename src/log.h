@@ -66,6 +66,7 @@ class Log
 		void packetSent(uint32_t size);
 		void packetForwarded();
 		void packetReceived();
+		void packetReceived2();
 		long getSentPackets();
 		long getForwardedPackets();
 		long getReceivedPackets();
@@ -118,6 +119,7 @@ class Log
         volatile long packetId;
         std::map<ns3::WifiPhy::State,long> dropped;
         volatile long received;
+        volatile long received2;
         volatile long sent;
         long forwarded;
 

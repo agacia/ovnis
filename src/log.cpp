@@ -42,6 +42,7 @@ Log::Log() {
 	currentTime = -1;
 	sent = 0;
 	received = 0;
+	received = 2;
 	dropped[ns3::WifiPhy::TX] = 0;
 	dropped[ns3::WifiPhy::RX] = 0;
 	dropped[ns3::WifiPhy::SWITCHING] = 0;
@@ -128,6 +129,9 @@ void Log::nextPacketId() {
 
 void Log::packetReceived() {
 	received++;
+}
+void Log::packetReceived2() {
+	received2++;
 }
 
 long Log::getSentPackets() {
@@ -222,6 +226,7 @@ void Log::summariseSimulation(string name) {
 	getStream(name) << "forwarded:\t" << forwarded << endl;
 	getStream(name) << "sent:\t" << sent << endl;
 	getStream(name) << "received:\t" << received << endl;
+	getStream(name) << "received2:\t" << received2 << endl;
 	getStream(name) <<	"maxDistance:\t"  << maxDistance << "\tavgDistance "  << getAvgDistance() << endl;
 }
 

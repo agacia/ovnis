@@ -86,12 +86,20 @@ namespace ns3
     void NeighborLost(std::string context, Ptr<const Packet> packet, Mac48Address addr);
     typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
     typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
+    MacAddrMap getNeighborList();
+
+    typedef struct neighbor {
+      string id;
+      double speed;
+    } neighbor;
 
   protected:
 
     virtual void DoDispose(void);
 
   private:
+    int _neighborCount;
+    std::map<std::string, neighbor> _neighbors;
 
     /**
      * Inherited from Application base class.
@@ -109,7 +117,10 @@ namespace ns3
 	 */
     void SendTrafficInformation();
     EventId m_trafficInformationEvent;
+    EventId m_neighborInformationEvent;
     bool m_verbose;
+
+    void SendNeighborInformation(void);
 
     /**
      * Specifies an algorithm for data dissemination.

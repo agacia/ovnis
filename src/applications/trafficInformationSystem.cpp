@@ -278,6 +278,11 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, doub
 			probabilities[it->first] = probability;
 		}
 	}
+	// todo remove
+//	probabilities = map<string, double>();
+//	probabilities["main"] = 0.52;
+//	probabilities["bypass"] = 0.48;
+//	Log::getInstance().getStream("probabilities2") << Simulator::Now().GetSeconds() << "\t" << probabilities["bypass"] << "\t" << probabilities["main"]<< "\n";
 
 	chosenRouteId = getEvent(probabilities);
 

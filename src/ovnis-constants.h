@@ -55,6 +55,7 @@
 #define SIMULATION_STEP_INTERVAL  1 // simulation step interval time
 #define SIMULATION_TIME_UNIT 1000
 #define TRAFFIC_INFORMATION_SENDING_INTERVAL  1
+#define NEIGHBOR_INFORMATION_SENDING_INTERVAL 1
 
 //#define PACKET_TTL  600 // 10 min
 #define PACKET_TTL  120 // 2 min
