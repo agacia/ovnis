@@ -93,7 +93,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+//  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 
@@ -181,15 +181,12 @@ BeaconingAdhocWifiMac::Enqueue (Ptr<const Packet> packet, Mac48Address to)
     {
       // Sanity check that the TID is valid
       NS_ASSERT (tid < 8);
-      ovnis::Log::getInstance().packetSent();
-//      cout << "a" << endl;
+//      std::cout << "a" << std::endl;
       m_edca[QosUtilsMapTidToAc (tid)]->Queue (packet, hdr);
     }
   else
     {
-	  // here when I send a packet with application layer
-//      cout << "b" << endl;
-	  ovnis::Log::getInstance().packetSent();
+//	  std::cout << "b" << std::endl;
 //	  ovnis::Log::getInstance().packetSent(packet->GetSize());
       m_dca->Queue (packet, hdr);
     }
@@ -215,6 +212,10 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   NS_ASSERT (!hdr->IsCtl ());
   Mac48Address from = hdr->GetAddr2 ();
   Mac48Address to = hdr->GetAddr1 ();
+
+  ovnis::Log::getInstance().packetReceived();
+
+
   if (hdr->IsData ())
     {
 
@@ -232,9 +233,6 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   else if (hdr->IsBeacon ())
     {
 	  //std::cout<<"Beacon received"<<std::endl;
-
-	  ovnis::Log::getInstance().packetReceived();
-
 	  MgtBeaconHeader beacon;
 	  packet->RemoveHeader (beacon);
 	  ProcessBeacon(packet,hdr->GetAddr2 ());
@@ -290,7 +288,6 @@ BeaconingAdhocWifiMac::SendOneBeacon (void)
 //  Mac48Address aaa= GetAddress();
 //  std::cout<<Simulator::Now()<<" envio beacon "<<aaa<<std::endl;
   m_dca->Queue (packet, hdr);
-  ovnis::Log::getInstance().packetSent();
   m_beaconEvent = Simulator::Schedule (Seconds(BEACON_INTERVAL), &BeaconingAdhocWifiMac::SendOneBeacon, this);
 }
 
