@@ -212,7 +212,7 @@ void FceApplication::StartApplication(void) {
 	running = true;
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
 	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
-	cout << "r " << r << " r2 " << r2 << endl;
+//	cout << "r " << r << " r2 " << r2 << endl;
 //	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
 	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
 	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
@@ -246,9 +246,16 @@ void FceApplication::DoDispose(void) {
 }
 
 FceApplication::MacAddrMap FceApplication::getNeighborList() {
-	if (vehicle.getId() == "1.7") {
-		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << m_neighborList.size() << " neighbors and received ovnis packets: " << _neighborCount << endl;
+	if (vehicle.getId() == "1.7" || vehicle.getId() == "0.2") {
+//		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << m_neighborList.size() << " neighbors and received ovnis packets: " << _neighborCount << endl;
+		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << _neighborCount << " neighbors: ";
+		for (map<string,neighbor>::iterator i = _neighbors.begin(); i != _neighbors.end (); ++i) {
+//			std::cout << i->first << ":" << i->second.id << "," << i->second.speed << "\t";
+			std::cout << i->first << "\t";
+		}
+		cout << endl;
 	}
+	_neighbors = map<string,neighbor>();
 	_neighborCount = 0;
 //	for (MacAddrMapIterator i = m_neighborList.begin(); i != m_neighborList.end (); ++i) {
 //		std::cout << i->first << "," << i->second << "\t";
@@ -521,9 +528,9 @@ void FceApplication::CalculateError(string currentEdge) {
 void FceApplication::SendNeighborInformation(void) {
 	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
-		if (vehicle.getId() == "1.7") {
-			cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending neighbor packet" << endl;
-		}
+//		if (vehicle.getId() == "1.7") {
+//			cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending neighbor packet" << endl;
+//		}
 		Ptr<Packet> p = OvnisPacket::BuildPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, STATE_PACKET_ID, vehicle.getItinerary().getCurrentEdge().getId(), vehicle.getCurrentSpeed());
 		SendPacket(p);
 		m_neighborInformationEvent = Simulator::Schedule(Seconds(NEIGHBOR_INFORMATION_SENDING_INTERVAL), &FceApplication::SendNeighborInformation, this);
@@ -536,9 +543,9 @@ void FceApplication::SendTrafficInformation(void) {
 		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
 		if (records.size() > 0) {
 			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
-			if (vehicle.getId() == "1.7") {
-				cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending traffic packet" << endl;
-			}
+//			if (vehicle.getId() == "1.7") {
+//				cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending traffic packet" << endl;
+//			}
 			SendPacket(p);
 		}
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
@@ -599,8 +606,9 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 		}
 
 		_neighborCount ++;
-//		_neighbors[senderId] = "1";
-		Log::getInstance().packetReceived2();
+		_neighbors[senderId].id = senderId;
+		_neighbors[senderId].speed = 1.0;
+		Log::getInstance().packetReceived();
 		Log::getInstance().addDistance(distance);
     }
     catch (exception & e) {

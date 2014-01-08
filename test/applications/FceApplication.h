@@ -88,7 +88,7 @@ namespace ns3
     typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
     MacAddrMap getNeighborList();
 
-    typedef struct neighbor {
+    typedef struct n {
       string id;
       double speed;
     } neighbor;
