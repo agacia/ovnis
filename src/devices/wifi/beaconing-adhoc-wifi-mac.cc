@@ -213,7 +213,7 @@ BeaconingAdhocWifiMac::Receive (Ptr<Packet> packet, const WifiMacHeader *hdr)
   Mac48Address from = hdr->GetAddr2 ();
   Mac48Address to = hdr->GetAddr1 ();
 
-  ovnis::Log::getInstance().packetReceived();
+//  ovnis::Log::getInstance().packetReceived();
 
 
   if (hdr->IsData ())
