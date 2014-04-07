@@ -36,7 +36,7 @@ OvnisPacket::~OvnisPacket() {
 			int size = packet->CopyData(t, sizeof(int));
 			tg = TagBuffer(t, t + size);
 			packetSize = tg.ReadU32();
-//			cout << "Read packet " << packetSize << endl;
+			cout << "Read packet size " << packetSize << endl;
 			// read header
 			t = (uint8_t*)(((malloc(packetSize * sizeof (uint8_t)))));
 			size = packet->CopyData(t, packetSize);
