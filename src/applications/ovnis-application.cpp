@@ -117,3 +117,10 @@ void OvnisApplication::ReceiveData(Ptr<Socket> x) {
 }
 
 }
+
+
+Vehicle OvnisApplication::getData() {
+	Vehicle v = Vehicle();
+	cout << "a" << endl;
+	return v;
+}

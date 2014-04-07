@@ -82,6 +82,14 @@ namespace ns3
     void logRoutes(std::vector<std::string> routes);
     void resetRouteStats(std::vector<std::string> routes);
 
+    void DetectCommunities();
+    void writeStep(std::ostream& out);
+    void writeNewNode(std::ostream& out, std::string nodeId);
+    void writeChangeNode(std::ostream out, std::string nodeId);
+    void writeDeleteNode(std::ostream out, std::string nodeId);
+    void updateNodePosition(string nodeId);
+    void cleanTemporaryArrays();
+
     UniformVariable  rando;
 
     // network

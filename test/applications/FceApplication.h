@@ -93,6 +93,8 @@ namespace ns3
       double speed;
     } neighbor;
 
+    virtual Vehicle getData();
+
   protected:
 
     virtual void DoDispose(void);

@@ -44,6 +44,8 @@ public:
     void initialize(std::string id, double time);
 
     std::string getId();
+    double getX();
+    double getY();
 
     Network & getScenario();
     void setScenario(Network scenario);
