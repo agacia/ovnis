@@ -95,12 +95,23 @@ FceApplication::FceApplication() {
 	startReroute = 0;
 	isVanet = true;
 	_neighborCount = 0;
+//	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
+//	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
+//	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
+//	m_params["accidentStartTime"] = "300"; // ACCIDENT_START_TIME;
+//	m_params["accidentStopTime"] = "1300"; // ACCIDENT_END_TIME;
+//	m_params["networkId"] = "Highway"; // "Kirchberg";
+//	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
+//	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
+//	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
+//	m_params["costFunctionProbabilities"] = "1,0,0";
+
 	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
 	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
-	m_params["accidentStartTime"] = "300"; // ACCIDENT_START_TIME;
-	m_params["accidentStopTime"] = "1300"; // ACCIDENT_END_TIME;
-	m_params["networkId"] = "Highway"; // "Kirchberg";
+	m_params["accidentStartTime"] = "0"; // ACCIDENT_START_TIME;
+	m_params["accidentStopTime"] = "1800"; // ACCIDENT_END_TIME;
+	m_params["networkId"] = "Kirchberg";
 	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
 	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
@@ -157,14 +168,14 @@ void FceApplication::SetNetwork(string networkId) {
 		route_strategies.push_back("pre_1 pre_2 bypass_1 bypass_2 bypass_3");
 	}
 	else if (networkId == "Kirchberg") {
-		decisionEdge = "56640729#5";
-		notificationEdge = "53349130#1";
+		decisionEdge = "56640729#5"; // 56640729#4_0
+		notificationEdge = "53349130#1"; // 53349130#0_0
 		route_ids.push_back("routedist#0"); // kennedy
-		route_ids.push_back("routedist#1"); // asenauer
+		route_ids.push_back("routedist#1"); // adenauer
 		route_ids.push_back("routedist#2"); // thuengen
-		route_capacities.push_back(1000);
-		route_capacities.push_back(600);
-		route_capacities.push_back(800);
+		route_capacities.push_back(900); // 1000);
+		route_capacities.push_back(400); // 600);
+		route_capacities.push_back(400); // 800);
 		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640728#0 56640728#1 56640728#2 56640728#3 56640728#4 56640728#5 56640728#6 56640728#7 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
 		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 56640724#0 56640724#1 56640724#2 56640724#3 56640724#4 48977754#0 48977754#1 48977754#2 48977754#3 48977754#4 48977754#5 95511865#0 95511865#1 126603964 -149693909#2 -149693909#1 -149693909#0 -149693907 49248917#0 49248917#1 149693908 126603969 53349130#0 53349130#1");
 		route_strategies.push_back("56640729#0 56640729#1 56640729#2 56640729#3 56640729#4 56640729#5 95511899 95511885#0 95511885#1 95511885#2 95511885#3 95511885#4 95511885#5 -50649897 -37847306#1 56640728#8 55444662 23595095#0 23595095#1 53349130#0 53349130#1");
@@ -213,8 +224,8 @@ void FceApplication::StartApplication(void) {
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
 	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
 //	cout << "r " << r << " r2 " << r2 << endl;
-//	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
-	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
+	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
+//	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
 	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
 
 }
@@ -246,15 +257,15 @@ void FceApplication::DoDispose(void) {
 }
 
 FceApplication::MacAddrMap FceApplication::getNeighborList() {
-	if (vehicle.getId() == "1.7" || vehicle.getId() == "0.2") {
+//	if (vehicle.getId() == "1.7" || vehicle.getId() == "0.2") {
 //		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << m_neighborList.size() << " neighbors and received ovnis packets: " << _neighborCount << endl;
-		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << _neighborCount << " neighbors: ";
-		for (map<string,neighbor>::iterator i = _neighbors.begin(); i != _neighbors.end (); ++i) {
+//		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << _neighborCount << " neighbors: ";
+//		for (map<string,neighbor>::iterator i = _neighbors.begin(); i != _neighbors.end (); ++i) {
 //			std::cout << i->first << ":" << i->second.id << "," << i->second.speed << "\t";
-			std::cout << i->first << "\t";
-		}
-		cout << endl;
-	}
+//			std::cout << i->first << "\t";
+//		}
+//		cout << endl;
+//	}
 	_neighbors = map<string,neighbor>();
 	_neighborCount = 0;
 //	for (MacAddrMapIterator i = m_neighborList.begin(); i != m_neighborList.end (); ++i) {
@@ -319,7 +330,7 @@ void FceApplication::OnEdgeChanged(double now, string currentEdgeId) {
 	Vector position = mobilityModel->GetPosition();
 	Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
 	Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdgeId);
-//	SendPacket(p);
+	SendPacket(p);
 	TIS::getInstance().reportEndingEdge(vehicle.getId(), lastEdgeId,  travelTimeOnLastEdge);
 	//	Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
 }
@@ -332,7 +343,7 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnCentralised(double 
 
 map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction) {
 	Vector position = mobilityModel->GetPosition();
-	Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdgeId << "\t" << vehicle.getDestinationEdgeId() << "\t";
+//	Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdgeId << "\t" << vehicle.getDestinationEdgeId() << "\t";
 	string endEdgeId = vehicle.getDestinationEdgeId();
 	// for shortest we need to reset (do dynamic value)
 	map<string,double> routeTTL;
@@ -541,6 +552,7 @@ void FceApplication::SendTrafficInformation(void) {
 	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
 		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
+//		cout << "records.size() " << records.size() << endl;
 		if (records.size() > 0) {
 			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
 //			if (vehicle.getId() == "1.7") {
@@ -671,6 +683,13 @@ void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> pac
 //	packet->Print(cout) ;
 //	std::cout << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
 //	}
+}
+
+
+Vehicle FceApplication::getData() {
+	Object o;
+	cout << "v" << endl;
+	return vehicle;
 }
 
 }

@@ -74,6 +74,8 @@ namespace ns3
 
     virtual void SetParams(std::map <string,string> params);
 
+    Vehicle getData();
+
   private:
 
     // inherited from Application base class.

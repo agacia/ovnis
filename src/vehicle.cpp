@@ -81,6 +81,7 @@ namespace ovnis {
 		double routeDepartureTime = Simulator::Now().GetSeconds();
 		if (routeId=="") {
 			routeId = traci->GetVehicleRouteId(id);
+//			cout << "Vehicle " << id <<  " Route " << routeId << endl;
 		}
 		itinerary.setId(routeId);
 		currentRoute = Route(routeId, traci->GetVehicleEdges(id));

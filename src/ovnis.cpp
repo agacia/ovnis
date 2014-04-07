@@ -58,6 +58,8 @@
 #include "ovnis-constants.h"
 #include "log.h"
 
+//#include "../test/applications/FceApplication.h"
+
 using namespace std;
 
 namespace ns3 {
@@ -129,6 +131,7 @@ void Ovnis::DoInitialize(void) {
 		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder);
 		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
+
 		vector<double> bounds = traci->GetSimulationBoundaries();
 		if (bounds.size() > 3) {
 			boundaries[0] = bounds[2];
@@ -146,6 +149,7 @@ void Ovnis::DoInitialize(void) {
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
+
 		start =  time(0);
 		Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
@@ -287,7 +291,51 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 	}
 }
 
+void Ovnis::writeStep(ostream& out) {
+	int step = traci->GetCurrentTime();
+	out << "st " << (step/1000) << endl;
+}
+
+void Ovnis::writeNewNode(ostream& out, string nodeId) {
+	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
+		Ptr<Node> n = Names::Find<Node>((*i));
+		if (n!=0 && isOvnisChannel) {
+			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+				ns3::Time curtime = Simulator::Now();
+				Ptr<Application> app = n->GetApplication(j);
+				try {
+//					Ptr<FceApplication> ovnisApp = DynamicCast<FceApplication>(app);
+					Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+					cout << "ovnis app " << ovnisApp << endl;
+//					Vehicle vehicle = ovnisApp->getVehicle();
+					Vehicle vehicle = ovnisApp->getData();
+					out << "an " << vehicle.getId() << " " << nodeId << endl;
+//						for (vector<string>::iterator k = connectedVehicles.begin(); k < connectedVehicles.end(); ++k) {
+//							if (*i == *k) {
+////								cout << "stopping connected app" << endl;
+////								Vehicle vehicle = ovnisApp->getVehicle();
+//
+//								break;
+//							}
+//						}
+				}
+				catch (exception & e) {
+				}
+			}
+		}
+	}
+}
+
+void Ovnis::writeChangeNode(ostream out, string nodeId) {
+
+}
+
+void Ovnis::writeDeleteNode(ostream out, string nodeId) {
+
+}
+
 void Ovnis::UpdateInOutVehicles() {
+
 	NS_LOG_FUNCTION_NOARGS();
 	// remove the eventually removed vehicles while added in the inserted list (especially a the beginning)
 	vector<string>::iterator i = arrivedVehicles.begin();
@@ -311,6 +359,7 @@ void Ovnis::UpdateInOutVehicles() {
 		Names::Add("Nodes", (*i), node_container.Get(j));
 		++j;
 	}
+
 	MobilityHelper mobility;
 	mobility.SetMobilityModel("ns3::ConstantVelocityMobilityModel");
 	mobility.Install(node_container);
@@ -330,8 +379,8 @@ void Ovnis::UpdateInOutVehicles() {
 		}
 	}
 
-	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
-	arrivedVehicles.clear();
+//	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+//	arrivedVehicles.clear();
 }
 
 void Ovnis::StartApplications() {
@@ -361,34 +410,41 @@ void Ovnis::StartApplications() {
 			++newConnectedVehiclesCount;
 		}
 	}
-	departedVehicles.clear();
+//	departedVehicles.clear();
+}
+
+void Ovnis::updateNodePosition(string nodeId) {
+	Ptr<Node> node = Names::Find<Node>(nodeId);
+	if (node!=0) {
+		Ptr<Object> object = node;
+		Ptr<ConstantVelocityMobilityModel> model = object->GetObject<ConstantVelocityMobilityModel>();
+		ovnis::Position2D newPos = traci->GetVehiclePosition(nodeId);
+		if (newPos.x > 0 && newPos.y > 0)
+		{
+			double newSpeed = traci->GetVehicleSpeed(nodeId);
+			double newAngle = traci->GetVehicleAngle(nodeId);
+			Vector velocity(newSpeed * cos((newAngle + 90) * PI / 180.0), newSpeed * sin((newAngle - 90) * PI / 180.0), 0.0);
+			Vector position(newPos.x, newPos.y, 0.0);
+			model->SetPosition(position);
+			model->SetVelocity(velocity); // Note : set the velocity AFTER the position . Else velocity is reset
+			Ptr<NetDevice> d = node->GetDevice(0);
+			Ptr<WifiNetDevice> wd = DynamicCast<WifiNetDevice>(d);
+			Ptr<WifiPhy> wp = wd->GetPhy();
+			if (isOvnisChannel) {
+				Ptr<OvnisWifiPhy> ywp = DynamicCast<OvnisWifiPhy>(wp);
+				ovnisChannel->updatePhy(ywp);
+			}
+		}
+	}
 }
 
 void Ovnis::UpdateVehiclesPositions() {
 	NS_LOG_FUNCTION_NOARGS();
 	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
-		Ptr<Node> node = Names::Find<Node>((*i));
-		if (node!=0) {
-			Ptr<Object> object = node;
-			Ptr<ConstantVelocityMobilityModel> model = object->GetObject<ConstantVelocityMobilityModel>();
-			ovnis::Position2D newPos = traci->GetVehiclePosition(*i);
-			if (newPos.x > 0 && newPos.y > 0)
-			{
-				double newSpeed = traci->GetVehicleSpeed((*i));
-				double newAngle = traci->GetVehicleAngle(*i);
-				Vector velocity(newSpeed * cos((newAngle + 90) * PI / 180.0), newSpeed * sin((newAngle - 90) * PI / 180.0), 0.0);
-				Vector position(newPos.x, newPos.y, 0.0);
-				model->SetPosition(position);
-				model->SetVelocity(velocity); // Note : set the velocity AFTER the position . Else velocity is reset
-				Ptr<NetDevice> d = node->GetDevice(0);
-				Ptr<WifiNetDevice> wd = DynamicCast<WifiNetDevice>(d);
-				Ptr<WifiPhy> wp = wd->GetPhy();
-				if (isOvnisChannel) {
-					Ptr<OvnisWifiPhy> ywp = DynamicCast<OvnisWifiPhy>(wp);
-					ovnisChannel->updatePhy(ywp);
-				}
-			}
-		}
+		updateNodePosition(*i);
+	}
+	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
+		updateNodePosition(*i);
 	}
 }
 
@@ -406,15 +462,18 @@ void Ovnis::TrafficSimulationStep() {
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::RX) << " \t "
 				<< Log::getInstance().getAvgDistance() << endl;
 
+		traci->NextSimStep(departedVehicles, arrivedVehicles);
+
 		// update running vehicles
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
+		DetectCommunities();
+		cleanTemporaryArrays();
 
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
 		// in the first step, departed and arrived vehicles are aggregated from the beginning of running
-		traci->NextSimStep(departedVehicles, arrivedVehicles);
 
 		if (currentTime < stopTime*SIMULATION_TIME_UNIT) {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
@@ -432,8 +491,34 @@ void Ovnis::TrafficSimulationStep() {
 		}
 	}
 	catch (TraciException &e) {
-		cerr << "TrafficSimulationStep " << e.what();
+//		cerr << "TrafficSimulationStep " << e.what();
 	}
+}
+
+void Ovnis::DetectCommunities() {
+//	cerr << "DetectCommunities " << endl;
+	ostream & communityStream = Log::getInstance().getStream("vanet.dgs");
+//
+	writeStep(communityStream);
+//
+	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
+		writeNewNode(communityStream, *i);
+	}
+//
+//	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
+////		writeChangeNode(communityStream, *i);
+//	}
+//
+//	for (vector<string>::iterator i = arrivedVehicles.begin(); i != arrivedVehicles.end(); ++i) {
+//	//		writeDeleteNode(communityStream, *i);
+//	}
+
+}
+
+void Ovnis::cleanTemporaryArrays() {
+	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+	arrivedVehicles.clear();
+	departedVehicles.clear();
 }
 
 void Ovnis::CloseRoad(string edgeId) {
