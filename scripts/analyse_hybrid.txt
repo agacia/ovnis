@@ -1,0 +1,18 @@
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/01/ovnisOutput/global_costs /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/02/ovnisOutput/global_costs /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/03/ovnisOutput/global_costs /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/04/ovnisOutput/global_costs /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/05/ovnisOutput/global_costs" \
+--labels "01/ 02/ 03/ 04/ 05/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/global_costs_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/01/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/02/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/03/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/04/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/05/ovnisOutput/routing_end" \
+--labels "01/ 02/ 03/ 04/ 05/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1

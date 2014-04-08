@@ -41,6 +41,7 @@
 #include "ns3/yans-wifi-phy.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/yans-wifi-helper.h"
+#include "ns3/mac48-address.h"
 
 // ----- application related includes
 #include "helper/ovnis-wifi-helper.h"
@@ -56,12 +57,15 @@ namespace ns3
   {
 
   public:
-	  static TypeId GetTypeId(void);
-	  Ovnis();
-	  virtual ~Ovnis();
-	  void SetApplicationParams(std::map <string,string> params);
-	  void SetOvnisParams(std::map <string,string> params);
-
+	static TypeId GetTypeId(void);
+	Ovnis();
+	virtual ~Ovnis();
+	void SetApplicationParams(std::map <string,string> params);
+	void SetOvnisParams(std::map <string,string> params);
+	typedef std::map <Mac48Address,string> MacVehIdMap;
+	typedef std::map<Mac48Address, string>::iterator MacVehIdMapIterator;
+	typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
+	typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
   protected:
     virtual void DoDispose(void);
     virtual void DoInitialize	(void);
@@ -85,11 +89,16 @@ namespace ns3
     void DetectCommunities();
     void writeStep(std::ostream& out);
     void writeNewNode(std::ostream& out, std::string nodeId);
-    void writeChangeNode(std::ostream out, std::string nodeId);
-    void writeDeleteNode(std::ostream out, std::string nodeId);
+    void writeChangeNode(std::ostream& out, std::string nodeId);
+    void writeDeleteNode(std::ostream& out, std::string nodeId);
     void updateNodePosition(string nodeId);
+    void writeEdges(ostream& out);
     void cleanTemporaryArrays();
+    void MapMacVehId();
 
+    void writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out);
+
+    MacVehIdMap macList;
     UniformVariable  rando;
 
     // network
@@ -167,6 +176,9 @@ namespace ns3
     std::vector<std::string> connectedVehicles;
     std::vector<std::string> departedVehicles;
     std::vector<std::string> arrivedVehicles;
+    std::vector<std::string> lastdepartedVehicles;
+    std::vector<std::string> lastarrivedVehicles;
+    std::vector<std::string> lastrunningVehicles;
     int newConnectedVehiclesCount;
     double boundaries[2];
     bool is80211p;

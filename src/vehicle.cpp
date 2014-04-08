@@ -21,10 +21,10 @@ namespace ovnis {
 		this->id = id;
 		this->start = time;
 		this->currentSpeed = 0;
+		this->currentAngle = NULL;
 		if (id!="") {
 			traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 			requestRoute("");
-
 		}
 	}
 
@@ -150,6 +150,22 @@ namespace ovnis {
 
 	double Vehicle::getCurrentSpeed() const {
 		return currentSpeed;
+	}
+
+    void Vehicle::requestCurrentAngle() {
+		try {
+			double newAngle = traci->GetVehicleAngle(id);
+			if (currentAngle != newAngle) {
+				currentAngle = newAngle;
+			}
+		}
+		catch (TraciException &e) {
+			throw e;
+		}
+	}
+
+	double Vehicle::getCurrentAngle() const {
+		return currentAngle;
 	}
 
 	void Vehicle::reroute(string routeId) {

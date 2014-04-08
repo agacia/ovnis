@@ -1,0 +1,326 @@
+### run - call ovnis
+
+# run_test.sh
+# folder_start
+# folder_end
+# folder_step
+# sim_start
+# sim_end
+# routingStrategies
+# routingStrategiesProb
+# cheatersRatio
+# rootFolder 
+# SUMOCONFIG
+# env ("cluster"|"mac")
+# cmd ("capacity"|"cheaters")
+
+# 10 iteration for 0 cheatersow == hybrid
+oarsub -t besteffort -t idempotent -l nodes=1/cpu=1/core=4,walltime=12:00:0 '/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/run_test.sh 1 10 1 0 1800 "hybrid" "1" 0 /home/users/agrzybek/ovnis/repos/ovnis-master/scenarios/Highway/cheaters/ scenario.sumocfg cluster cheaters'
+
+# 10 iterations for 100 cheatersow == shortest
+oarsub -t besteffort -t idempotent -l nodes=1/cpu=1/core=4,walltime=12:00:0 '/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/run_test.sh 1 10 1 0 1800 "hybrid" "1" 100 /home/users/agrzybek/ovnis/repos/ovnis-master/scenarios/Highway/cheaters/ scenario.sumocfg cluster cheaters'
+
+# 10 iterations for 50% cheatersow
+oarsub -t besteffort -t idempotent -l nodes=1/cpu=1/core=4,walltime=12:00:0 '/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/run_test.sh 1 10 1 0 1800 "hybrid" "1" 50 /home/users/agrzybek/ovnis/repos/ovnis-master/scenarios/Highway/cheaters/ scenario.sumocfg cluster cheaters'
+
+
+### calculate averages  (moved to $WORK directory)
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/0/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/0/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/0/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/0/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/5/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/5/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/5/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/5/" \
+--startX 0 --endX 1800 --stepSize 1
+
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/10/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/10/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/10/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/10/" \
+--startX 0 --endX 1800 --stepSize 1
+
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/15/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/15/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/15/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/15/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/20/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/20/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/20/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/20/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/25/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/25/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/25/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/25/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/25/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/25/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/25/" \
+--startX 0 --endX 1800 --stepSize 1
+
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/30/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/30/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/30/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/30/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/35/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/35/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/35/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/35/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/40/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/40/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/40/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/40/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/45/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/45/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/45/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/45/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/50/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/50/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/50/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/50/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/55/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/55/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/55/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/55/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/60/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/60/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/60/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/60/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/65/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/65/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/65/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/65/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/70/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/70/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/70/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/70/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/75/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/75/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/75/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/75/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/80/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/80/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/80/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/80/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/85/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/85/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/85/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/85/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/90/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/90/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/90/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/90/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/95/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/95/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/95/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/95/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputFiles "/work/users/agrzybek/TrafficEQ/cheaters/100/1/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/2/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/3/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/4/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/5/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/6/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/7/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/8/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/9/routing_end /work/users/agrzybek/TrafficEQ/cheaters/100/10/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/ 6/ 7/ 8/ 9/ 10/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/100/1/routing_end_analysis.txt" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/100/" \
+--startX 0 --endX 1800 --stepSize 1
+
+### calculate average for cheaters 
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputCheaterFiles "/work/users/agrzybek/TrafficEQ/cheaters/0/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/5/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/10/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/15/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/20/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/25/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/30/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/35/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/40/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/45/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/50/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/55/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/60/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/65/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/70/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/75/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/80/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/85/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/90/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/95/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/100/avg.txt" \
+--labels "0/ 5/ 10/ 15/ 20/ 25/ 30/ 35/ 40/ 45/ 50/ 55/ 60/ 65/ 70/ 75/ 80/ 85/ 90/ 95/ 100/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/cheaters.tsv" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputCheaterFiles "/work/users/agrzybek/TrafficEQ/cheaters/0/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/5/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/10/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/15/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/20/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/25/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/30/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/35/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/40/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/45/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/50/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/55/avg.txt /work/users/agrzybek/TrafficEQ/cheaters/60/avg.txt" \
+--labels "0/ 5/ 10/ 15/ 20/ 25/ 30/ 35/ 40/ 45/ 50/ 55/ 60/" \
+--outputFile "/work/users/agrzybek/TrafficEQ/cheaters/cheaters.tsv" \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/" \
+--startX 0 --endX 1800 --stepSize 1
+
+
+### plot cheaters
+/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/analyse.py \
+--inputAverageCheatersFile /work/users/agrzybek/TrafficEQ/cheaters/cheaterssmooth.tsv \
+--outputDir "/work/users/agrzybek/TrafficEQ/cheaters/" 
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputAverageCheatersFile /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/cheaterssmooth.tsv  \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/" 
+
+
+### sync and plot
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/cheaters.tsv /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputAverageCheatersFile /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/cheaters.tsv \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/" 
+
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/cheaters_travelTimeCut.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/
+
+### sync (avg.txt and plots for the first iteration)
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/0/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/0/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/0/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/0/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/5/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/5/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/5/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/5/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/10/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/10/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/10/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/10/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/15/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/15/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/15/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/15/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/20/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/20/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/20/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/20/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/25/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/25/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/25/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/25/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/30/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/30/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/30/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/30/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/35/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/35/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/35/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/35/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/40/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/40/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/40/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/40/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/45/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/45/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/45/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/45/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/50/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/50/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/50/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/50/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/55/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/55/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/55/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/55/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/60/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/60/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/60/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/60/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/65/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/65/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/65/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/65/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/70/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/70/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/70/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/70/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/75/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/75/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/75/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/75/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/80/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/80/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/80/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/80/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/85/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/85/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/85/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/85/1/
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/90/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/90/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/90/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/90/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/95/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/95/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/95/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/95/1/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/100/*.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/100/
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/100/1/*.png /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/100/1/
+
+# calculate average for cheaters (mac)
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputCheaterFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/0/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/5/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/10/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/15/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/20/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/25/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/30/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/35/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/40/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/45/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/50/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/55/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/60/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/65/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/70/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/75/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/80/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/85/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/90/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/95/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/100/avg.txt" \
+--labels "0/ 5/ 10/ 15/ 20/ 25/ 30/ 35/ 40/ 45/ 50/ 55/ 60/ 65/ 70/ 75/ 80/ 85/ 90/ 95/ 100/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/cheaters.tsv" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/" \
+--startX 0 --endX 1800 --stepSize 1
+
+# plot travel time (mac)
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputAverageCheatersFile /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/cheaters.tsv \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/" 
+
+## test mac
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/01/routing_end" \
+--labels "01/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/01/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputCheaterFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cheaters/0/avg.txt /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cheaters/5/avg.txt" \
+--labels "0/ 5/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cheaters/cheaters.tsv" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cheaters/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputAverageCheatersFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/cheaterssmooth.tsv" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/" 
+
+
+# cheaters for shortest OK
+/Users/agatagrzybek/workspace/ovnis/scripts/run_test.sh 1 2 1 0 1800 "hybrid" "1" 100 /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cheaters/ scenario.sumocfg mac cheaters
+
+# perfect knowledge test
+
+/Users/agatagrzybek/workspace/ovnis/scripts/run_test.sh 1 5 1 0 1800 "shortest" "1" 0 /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/ scenario.sumocfg mac capacity
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/1/routing_end" \
+--labels "1/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/1/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/" \
+--startX 0 --endX 1800 --stepSize 1
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/1/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/2/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/3/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/4/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/5/routing_end" \
+--labels "1/ 2/ 3/ 4/ 5/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/5/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/" \
+--startX 0 --endX 1800 --stepSize 1

@@ -93,7 +93,7 @@ BeaconingAdhocWifiMac::BeaconingAdhocWifiMac ()
   t2 = Seconds (randomRangeDouble);
   Time t3 = t1 + t2;
 
-//  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
+  m_beaconEvent = Simulator::Schedule (t3, &BeaconingAdhocWifiMac::SendOneBeacon, this);
 
 }
 
@@ -315,7 +315,7 @@ void BeaconingAdhocWifiMac::ProcessBeacon( Ptr<Packet> packet, Mac48Address addr
 	m_rxPwDbm = TX_POWER_START;
 	m_newNeighborTraceSource (packet, addrFrom,m_rxPwDbm);
 
-	//std::cout<<Simulator::Now()<<GetAddress()<<" Incremento contador de  "<<addrFrom<<" a "<<m_neighborList[addrFrom]<<" con potencia "<<rxPowerDbm<<std::endl;
+//	std::cout<<Simulator::Now()<<GetAddress()<<" Incremento contador de  "<<addrFrom<<" a "<<m_neighborList[addrFrom]<<" con potencia "<<rxPowerDbm<<std::endl;
 
 }
 

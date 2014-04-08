@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "ns3/ptr.h"
+#include "ns3/mac48-address.h"
 
 #include "scenario.h"
 #include "route.h"
@@ -63,6 +64,9 @@ public:
 	void requestCurrentSpeed();
 	double getCurrentSpeed() const;
 
+	void requestCurrentAngle();
+	double getCurrentAngle() const;
+
 	void requestCurrentPosition();
     Position2D getCurrentPosition() const;
 
@@ -78,12 +82,19 @@ public:
 
 	double getStart();
 
+    typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
+	typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
+    MacAddrMap m_neighborListDiscovered;
+    MacAddrMap m_neighborListLost;
+    double lastStep;
+
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;
     std::string id;
 
     Position2D currentPosition;
     double currentSpeed;
+    double currentAngle;
     double start;
     Network scenario;
     Route currentRoute ;
@@ -91,7 +102,6 @@ protected:
     void requestRoute(std::string routeId);
 
 private:
-
 };
 
 } /* namespace ovnis */

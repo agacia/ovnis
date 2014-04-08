@@ -41,6 +41,11 @@
 #include "ns3/ptr.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/log.h"
+#include "ns3/socket.h"
+#include "ns3/udp-socket-factory.h"
+#include "ns3/wifi-net-device.h"
+#include "ns3/wifi-mac.h"
+
 #include <vector>
 #include <set>
 
@@ -74,7 +79,7 @@ namespace ns3
 
     virtual void SetParams(std::map <string,string> params);
 
-    Vehicle getData();
+    virtual Vehicle* getData();
 
   private:
 

@@ -1,0 +1,11 @@
+<additionals xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/additional_file.xsd">
+
+<!-- visualisation: -->
+<!--<edgeData id="edge_dump" file="edge_dump.xml" freq="900" />-->
+
+<!-- probe data with different frequencies -->
+<!--<vTypeProbe id="probe1" freq="1" file="probe1.xml"/>-->
+<!--<vTypeProbe id="probe10" freq="10" file="probe10.xml"/>-->
+<!--<vTypeProbe id="probe60" freq="60" file="probe10.xml"/>-->
+
+</additionals>

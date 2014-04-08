@@ -1,0 +1,33 @@
+##call ovnis
+
+# run_test.sh
+# folder_start
+# folder_end
+# folder_step
+# sim_start
+# sim_end
+# routingStrategies
+# routingStrategiesProb
+# cheatersRatio
+# rootFolder
+# SUMOCONFIG
+
+/Users/agatagrzybek/workspace/ovnis/scripts/run_test.sh 6 10 1 0 1800 "shortest" "1" 0 /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/shortest/ scenario.sumocfg mac capacity
+
+##analyse
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputCapacityFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/500/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/550/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/600/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/650/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/700/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/750/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/800/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/850/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/900/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/950/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1000/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1050/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1100/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1150/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1200/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1250/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1300/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1350/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1400/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1450/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1500/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/1550/routing_end" \
+--labels "500/ 550/ 600/ 650/ 700/ 750/ 800/ 850/ 900/ 950/ 1000/ 1050/ 1100/ 1150/ 1200/ 1250/ 1300/ 1350/ 1400/ 1450/ 1500/ 1550/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/" \
+--startX 0 --endX 1800 --stepSize 1
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputCapacityFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/500/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/550/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/600/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/650/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/700/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/750/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/800/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/850/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/900/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/950/routing_end" \
+--labels "500/ 550/ 600/ 650/ 700/ 750/ 800/ 850/ 900/ 950/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/routes_capacity_bypass/" \
+--startX 0 --endX 1800 --stepSize 1
+

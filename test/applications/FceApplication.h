@@ -26,38 +26,6 @@
 
 #include <vector>
 
-#include "ns3/application.h"
-#include "ns3/boolean.h"
-#include "ns3/event-id.h"
-#include "ns3/traced-callback.h"
-#include "ns3/global-value.h"
-#include "ns3/ptr.h"
-#include "ns3/ipv4-address.h"
-#include "ns3/core-module.h"
-#include "ns3/mobility-module.h"
-#include "ns3/node-list.h"
-#include "ns3/mac48-address.h"
-#include "ns3/log.h"
-#include "ns3/address.h"
-#include "ns3/node.h"
-#include "ns3/nstime.h"
-#include "ns3/data-rate.h"
-#include "ns3/random-variable.h"
-#include "ns3/socket.h"
-#include "ns3/simulator.h"
-#include "ns3/packet.h"
-#include "ns3/uinteger.h"
-#include "ns3/ipv4.h"
-#include "ns3/trace-source-accessor.h"
-#include "ns3/tag-buffer.h"
-#include "ns3/udp-socket-factory.h"
-#include "ns3/inet-socket-address.h"
-#include "ns3/wifi-net-device.h"
-#include "ns3/config.h"
-#include "ns3/integer.h"
-#include "ns3/assert.h"
-#include "ns3/callback.h"
-
 #include "applications/ovnis-application.h"
 #include "vehicle.h"
 #include "scenario.h"
@@ -93,7 +61,7 @@ namespace ns3
       double speed;
     } neighbor;
 
-    virtual Vehicle getData();
+    virtual Vehicle* getData();
 
   protected:
 
@@ -145,6 +113,8 @@ namespace ns3
 	 */
 	void ToggleNeighborDiscovery(bool on); // Connects the callback for the neighbor discovery service
     MacAddrMap m_neighborList;
+    MacAddrMap m_neighborListDiscovered;
+    MacAddrMap m_neighborListLost;
 
     /**
      * Physical information about a vehicle, such as position, current speed. It's connected to SUMO with TraCi in both way (reading and writing).

@@ -30,39 +30,6 @@
 #include <iostream>
 #include <iterator>
 
-#include "ns3/application.h"
-#include "ns3/boolean.h"
-#include "ns3/event-id.h"
-#include "ns3/traced-callback.h"
-#include "ns3/global-value.h"
-#include "ns3/ptr.h"
-#include "ns3/ipv4-address.h"
-#include "ns3/ipv4-interface.h"
-#include "ns3/core-module.h"
-#include "ns3/mobility-module.h"
-#include "ns3/node-list.h"
-#include "ns3/mac48-address.h"
-#include "ns3/log.h"
-#include "ns3/address.h"
-#include "ns3/node.h"
-#include "ns3/nstime.h"
-#include "ns3/data-rate.h"
-#include "ns3/random-variable.h"
-#include "ns3/socket.h"
-#include "ns3/simulator.h"
-#include "ns3/packet.h"
-#include "ns3/uinteger.h"
-#include "ns3/ipv4.h"
-#include "ns3/trace-source-accessor.h"
-#include "ns3/tag-buffer.h"
-#include "ns3/udp-socket-factory.h"
-#include "ns3/inet-socket-address.h"
-#include "ns3/wifi-net-device.h"
-#include "ns3/config.h"
-#include "ns3/integer.h"
-#include "ns3/assert.h"
-#include "ns3/callback.h"
-
 #include "applications/ovnis-application.h"
 #include "ovnis-constants.h"
 #include "ovnisPacket.h"
@@ -116,6 +83,10 @@ FceApplication::FceApplication() {
 	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
+	if (vehicle.getId() == "0.2") {
+		double curtime = Simulator::Now().GetSeconds();
+		cout << curtime << " FceApp: const " << vehicle.getId() << endl; // << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
+	}
 }
 
 void FceApplication::InitializeParams() {
@@ -227,7 +198,10 @@ void FceApplication::StartApplication(void) {
 	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
 //	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
 	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
-
+	if (vehicle.getId() == "0.2") {
+		double curtime = Simulator::Now().GetSeconds();
+		cout << curtime << " FceApp: start app " << vehicle.getId() << endl; // << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
+	}
 }
 
 void FceApplication::ToggleNeighborDiscovery(bool on) {
@@ -242,10 +216,14 @@ void FceApplication::ToggleNeighborDiscovery(bool on) {
 }
 
 void FceApplication::StopApplication(void) {
+	Simulator::Cancel(m_trafficInformationEvent);
+	Simulator::Cancel(m_neighborInformationEvent);
 	running = false;
 }
 
 void FceApplication::DoDispose(void) {
+	Simulator::Cancel(m_trafficInformationEvent);
+	Simulator::Cancel(m_neighborInformationEvent);
 	running = false;
 	double now = Simulator::Now().GetSeconds();
 	if (m_socket != NULL) {
@@ -649,11 +627,13 @@ void FceApplication::NeighborLost(std::string context, Ptr<const Packet> packet,
 		NS_LOG_DEBUG("ERROR. Trying to delete an unexisting neighbor");
 	}
 	else {
+		// neighbor lost
+		vehicle.m_neighborListLost[addr] = 1;
 		myApp->m_neighborList.erase(i);
 	}
-
-//	if (vehicle.getId() == "0.5") {
-//		std::cout << vehicle.getId() << "," << " lost a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", context: " << context << std::endl;
+	double curtime = Simulator::Now().GetSeconds();
+//	if (vehicle.getId() == "0.2") {
+//		std::cout << "fce lost neigh: " << curtime << " " << vehicle.getId() << "," <<  " lost number of neighbors: " << m_neighborList.size() << std::endl;
 //	}
 }
 
@@ -662,7 +642,7 @@ void FceApplication::NeighborLost(std::string context, Ptr<const Packet> packet,
  */
 void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> packet, Mac48Address addr, double rxPwDbm) {
 	// Find the nodeId that has been called
-	size_t aux =context.find("/",10);
+	size_t aux = context.find("/",10);
 	std::string strIndex = context.substr(10,aux-10);
 	// Convert the index to integer
 	int index = atoi (strIndex.c_str());
@@ -673,23 +653,33 @@ void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> pac
 	Ptr<FceApplication> myApp = DynamicCast<FceApplication>(app);
 	MacAddrMapIterator i = myApp->m_neighborList.find (addr);
 	if (i== myApp->m_neighborList.end ()) {
-		// include the reception power
+		// new neighbor -> include the reception power
 		myApp->m_neighborList[addr] = rxPwDbm;
+		vehicle.m_neighborListDiscovered[addr] = 1;
+		double curtime = Simulator::Now().GetSeconds();
+		vehicle.lastStep = curtime;
+		if (vehicle.getId() == "0.2") {
+			cout << curtime << " FceApp: node " << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
+		}
 	}
 	else {
 		i->second= rxPwDbm;
 	}
 //	if (vehicle.getId() == "0.5") {
 //	packet->Print(cout) ;
-//	std::cout << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
+//		std::cout << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
 //	}
+	double curtime = Simulator::Now().GetSeconds();
+//	if (vehicle.getId() == "0.2") {
+//		std::cout << "fce new neigh: " << curtime << " " << vehicle.getId() << "," <<  "  number of neighbors: " << m_neighborList.size()  << " " << addr << std::endl;
+//	}
+//	std::cout << "fce: " << curtime << " " << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", context: " << context << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
 }
 
 
-Vehicle FceApplication::getData() {
-	Object o;
-	cout << "v" << endl;
-	return vehicle;
+Vehicle* FceApplication::getData() {
+//    cout << "return vehicle " << vehicle.getId() << endl;
+	return &vehicle;
 }
 
 }

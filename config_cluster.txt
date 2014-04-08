@@ -1,0 +1,30 @@
+
+autoreconf -fis
+
+./configure --with-ns3=/Users/agatagrzybek/PhD/workshop/ns-allinone-3.16/ns-3.16 --with-sumo=/Users/agatagrzybek/PhD/workshop/sumo-0.17.1 --with-xerces=/opt/local 
+
+./configure --with-ns3=/Users/agatagrzybek/Documents/PhD/Phd_workshop/ns-allinone-3.18/ns-3.18  --with-sumo=/Users/agatagrzybek/Documents/PhD/Phd_workshop/sumo-0.18.0  --with-xerces=/opt/local 
+
+./configure --with-ns3=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18 --with-sumo=/home/users/agrzybek/ovnis/repos/sumo-0.18.0/ --with-xerces=/home/users/agrzybek
+
+export LD_LIBRARY_PATH=/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/
+
+scp /Users/agatagrzybek/workspace/ovnis/test/applications/FceApplication.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/test/applications/
+scp /Users/agatagrzybek/workspace/ovnis/test/applications/FceApplication.h gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/test/applications/
+scp /Users/agatagrzybek/workspace/ovnis/src/ovnis-constants.h gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/
+scp /Users/agatagrzybek/workspace/ovnis/src/ovnis.h gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/
+scp /Users/agatagrzybek/workspace/ovnis/src/ovnis.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/
+scp /Users/agatagrzybek/workspace/ovnis/src/log.h gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/
+scp /Users/agatagrzybek/workspace/ovnis/src/log.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/
+scp /Users/agatagrzybek/workspace/ovnis/src/applications/trafficInformationSystem.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/applications/
+scp /Users/agatagrzybek/workspace/ovnis/src/applications/trafficInformationSystem.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/applications/
+scp /Users/agatagrzybek/workspace/ovnis/src/applications/knowledge.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/applications/
+scp /Users/agatagrzybek/workspace/ovnis/src/applications/knowledge.cpp gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/src/applications/
+
+scp /Users/agatagrzybek/workspace/ovnis/scripts/run_test.sh gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/run_test.sh
+
+scp /Users/agatagrzybek/workspace/ovnis/scripts/analyse.py gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/scripts/
+
+scp  /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/scenario.sumocfg gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/scenarios/Highway/
+
+scp /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/* gaia-cluster:/home/users/agrzybek/ovnis/repos/ovnis-master/scenarios/Highway/

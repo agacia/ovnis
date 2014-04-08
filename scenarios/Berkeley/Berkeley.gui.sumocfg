@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <files>
+       <net-file value="Berkeley.net.xml"/>
+        <route-files value="Berkeley.rou.xml"/>
+        <additional-files value="Berkeley.add.xml"/>
+<!--<additional-files value="Kirchberg_loops.add.xml Kirchberg.add.xml Kirchberg_dump.add.xml tlLogic.xml"/>-->
+    </files>
+   <time>
+       <begin value="0" />
+      <end value="25200" />
+   </time>
+   <time-to-teleport value="0" />
+   <route-steps value="60" />
+   <lanechange.allow-swap value="true" />
+ <report>
+	<verbose value="true" />
+        <no-duration-log value="false" />
+        <no-step-log value="false" />
+    </report>
+
+</configuration>

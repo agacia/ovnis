@@ -278,8 +278,7 @@ void DssApplication::NewNeighborFound(std::string context, Ptr<const Packet> pac
 	}
 }
 
-Vehicle DssApplication::getData() {
-	Object o;
-	return vehicle;
+Vehicle* DssApplication::getData() {
+	return new Vehicle();
 }
 }

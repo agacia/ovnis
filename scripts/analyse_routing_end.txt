@@ -1,0 +1,62 @@
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/hybrid/1/routing_end" \
+--labels "01/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/hybrid/1/routing_end_analysis2.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/perfect/hybrid/1/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/shortest/01/routing_end" \
+--labels "01/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/shortest/routing_end_analysis2.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/shortest/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/probabilistic/01/routing_end" \
+--labels "01/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/probabilistic/routing_end_analysis2.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/probabilistic/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/01/routing_end" \
+--labels "01/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/routing_end_analysis2.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/01/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/02/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/03/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/04/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/05/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/06/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/07/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/08/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/09/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/10/ovnisOutput/routing_end" \
+--labels "01/ 02/ 03/ 04/ 05/ 06/ 07/ 08/ 09/ 10/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/shortest/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/01/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/02/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/03/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/04/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/05/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/06/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/07/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/08/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/09/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/10/ovnisOutput/routing_end" \
+--labels "01/ 02/ 03/ 04/ 05/ 06/ 07/ 08/ 09/ 10/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/probabilistic/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFiles "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/01/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/02/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/03/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/04/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/05/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/06/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/07/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/08/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/09/ovnisOutput/routing_end /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/10/ovnisOutput/routing_end" \
+--labels "01/ 02/ 03/ 04/ 05/ 06/ 07/ 08/ 09/ 10/" \
+--outputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/routing_end_analysis.txt" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/" \
+--startX 0 \
+--endX 1800 \
+--stepSize 1

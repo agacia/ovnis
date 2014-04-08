@@ -1,0 +1,63 @@
+35% cheaters -> travel time cut  for cheaters == non cheaters -> 400 main cut  193 bypass
+
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/0/1/probabilities  /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/0/ 
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/30/1/routing_end_analysis.txt  /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/25/ 
+
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/30/1/routing_end_analysis.txt  /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/30/ 
+
+
+scp gaia-cluster:/work/users/agrzybek/TrafficEQ/cheaters/30/1/routing_end_analysis.txt  /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/cluster-output/cheaters/40/ 
+
+--- candlestick
+
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/01/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/02/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/03/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/04/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/05/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/06/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/07/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/08/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/09/ovnisOutput/
+ruby /Users/agatagrzybek/workspace/ovnis/scripts/ti_quality.rb \
+-d /Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/10/ovnisOutput/
+
+
+
+
+--- error 
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/average_age" \
+--inputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/"
+
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFile "data_quality_age" \
+--inputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/26102013/hybrid/"
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/probabilistic/edges_error" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/probabilistic/"
+
+
+/Users/agatagrzybek/workspace/ovnis/scripts/analyse.py \
+--inputFile "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/edges_error" \
+--outputDir "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/28102013/hybrid/"
+
+

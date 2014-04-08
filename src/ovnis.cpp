@@ -154,6 +154,7 @@ void Ovnis::DoInitialize(void) {
 		Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
 
+//		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
 		Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
@@ -245,6 +246,8 @@ void Ovnis::CreateNetworkDevices(ns3::NodeContainer & node_container) {
 }
 
 void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
+
+    //cout << " DestroyNetworkDevices "  << (to_destroy.size()) << endl;
 	for (vector<string>::iterator i = to_destroy.begin(); i != to_destroy.end(); ++i) {
 		Ptr<Node> n = Names::Find<Node>((*i));
 		if (n != 0) {
@@ -293,31 +296,25 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 
 void Ovnis::writeStep(ostream& out) {
 	int step = traci->GetCurrentTime();
-	out << "st " << (step/1000) << endl;
+	cout << "st " << ((step-1)/1000) << endl;
+	out << "st " << ((step-1)/1000) << endl;
 }
 
 void Ovnis::writeNewNode(ostream& out, string nodeId) {
-	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
-		Ptr<Node> n = Names::Find<Node>((*i));
+		Ptr<Node> n = Names::Find<Node>(nodeId);
 		if (n!=0 && isOvnisChannel) {
 			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
 				ns3::Time curtime = Simulator::Now();
 				Ptr<Application> app = n->GetApplication(j);
 				try {
-//					Ptr<FceApplication> ovnisApp = DynamicCast<FceApplication>(app);
 					Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
-					cout << "ovnis app " << ovnisApp << endl;
-//					Vehicle vehicle = ovnisApp->getVehicle();
-					Vehicle vehicle = ovnisApp->getData();
-					out << "an " << vehicle.getId() << " " << nodeId << endl;
-//						for (vector<string>::iterator k = connectedVehicles.begin(); k < connectedVehicles.end(); ++k) {
-//							if (*i == *k) {
-////								cout << "stopping connected app" << endl;
-////								Vehicle vehicle = ovnisApp->getVehicle();
-//
-//								break;
-//							}
-//						}
+					Vehicle* vehicle = ovnisApp->getData();
+//					vehicle->requestCurrentEdge();
+//					vehicle->requestCurrentSpeed();
+//					vehicle->requestCurrentPosition();
+//					vehicle->requestCurrentAngle();
+					cout << "an " << vehicle->getId() <<  endl;
+					out << "an " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
 				}
 				catch (exception & e) {
 				}
@@ -326,13 +323,103 @@ void Ovnis::writeNewNode(ostream& out, string nodeId) {
 	}
 }
 
-void Ovnis::writeChangeNode(ostream out, string nodeId) {
-
+void Ovnis::writeChangeNode(ostream& out, string nodeId) {
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				vehicle->requestCurrentAngle();
+				vehicle->requestCurrentSpeed();
+				vehicle->requestCurrentPosition();
+				out << "cn " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
+			}
+			catch (exception & e) {
+			}
+		}
+	}
 }
 
-void Ovnis::writeDeleteNode(ostream out, string nodeId) {
-
+void Ovnis::writeDeleteNode(ostream& out, string nodeId) {
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				out << "dn " << vehicle->getId() << endl;
+			}
+			catch (exception & e) {
+			}
+		}
+	}
 }
+
+void Ovnis::writeEdges(ostream& out) {
+	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+	map<string, string> addedEdges;
+	map<string, string> removedEdges;
+	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
+		Ptr<Node> n = Names::Find<Node>(*i);
+		if (n!=0 && isOvnisChannel) {
+			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+				ns3::Time curtime = Simulator::Now();
+				Ptr<Application> app = n->GetApplication(j);
+				try {
+					Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+					Vehicle* vehicle = ovnisApp->getData();
+					string n1 = vehicle->getId();
+					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
+						string n2 = macList[i->first];
+						writeEdge("ae", n1, n2, addedEdges, out);
+					}
+					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
+						string n2 = macList[i->first];
+						writeEdge("de", n1, n2, addedEdges, out);
+					}
+					vehicle->m_neighborListDiscovered = MacAddrMap();
+					vehicle->m_neighborListLost = MacAddrMap();
+				}
+				catch (exception & e) {
+				}
+			}
+		}
+	}
+}
+
+void Ovnis::writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out) {
+	string edge1 = n1+"-"+n2;
+	string edge2 = n2+"-"+n1;
+	map<string,string>::iterator it1 = addedEdges.find(edge1);
+	map<string,string>::iterator it2 = addedEdges.find(edge2);
+	if (it1 == addedEdges.end() && it2 == addedEdges.end()) {
+		addedEdges[edge1] = edge1;
+		addedEdges[edge2] = edge2;
+		out << "ae \"" << edge1 << "\" " << n1 << n2 << endl; //ae "0.1-1.0" 0.1 1.0 weight=139.307967109
+	}
+}
+
+//void Ovnis::writeDeleteEdges(ostream& out, string nodeId) {
+//	Ptr<Node> n = Names::Find<Node>(nodeId);
+//	if (n!=0 && isOvnisChannel) {
+//		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+//			ns3::Time curtime = Simulator::Now();
+//			Ptr<Application> app = n->GetApplication(j);
+//			try {
+//				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+////				Vehicle vehicle = ovnisApp->getData();
+////				out << "dn " << vehicle.getId() << " " << nodeId << endl;
+//			}
+//			catch (exception & e) {
+//			}
+//		}
+//	}
+//}
 
 void Ovnis::UpdateInOutVehicles() {
 
@@ -448,6 +535,16 @@ void Ovnis::UpdateVehiclesPositions() {
 	}
 }
 
+void Ovnis::MapMacVehId() {
+	for ( std::vector< Ptr<Node> >::const_iterator it = ns3::NodeList::Begin(); it != ns3::NodeList::End(); it ++) {
+		Ptr<WifiNetDevice> dev = DynamicCast<WifiNetDevice> ((*it)->GetDevice(0));
+		Mac48Address addr = dev->GetMac()->GetAddress();
+		string vehId = Names::FindName((*it));
+//		cout << "node " << (*it)->GetId() << " addr: " << addr << " vehId " << vehId << endl;
+		macList[addr] = vehId;
+	}
+}
+
 void Ovnis::TrafficSimulationStep() {
 
 	try {
@@ -462,14 +559,22 @@ void Ovnis::TrafficSimulationStep() {
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::RX) << " \t "
 				<< Log::getInstance().getAvgDistance() << endl;
 
+		lastdepartedVehicles.clear();
+		lastdepartedVehicles.insert(lastdepartedVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+
+		MapMacVehId();
+		DetectCommunities();
+		runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+		cleanTemporaryArrays();
+
+
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
+		cout << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t " << endl;
 
 		// update running vehicles
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
-		DetectCommunities();
-		cleanTemporaryArrays();
 
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
@@ -500,23 +605,22 @@ void Ovnis::DetectCommunities() {
 	ostream & communityStream = Log::getInstance().getStream("vanet.dgs");
 //
 	writeStep(communityStream);
-//
-	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
-		writeNewNode(communityStream, *i);
+
+//	for (vector<string>::iterator i = lastdepartedVehicles.begin(); i != lastdepartedVehicles.end(); ++i) {
+//		writeNewNode(communityStream, *i);
+//	}
+	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
+		writeChangeNode(communityStream, *i);
 	}
 //
-//	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
-////		writeChangeNode(communityStream, *i);
-//	}
-//
 //	for (vector<string>::iterator i = arrivedVehicles.begin(); i != arrivedVehicles.end(); ++i) {
-//	//		writeDeleteNode(communityStream, *i);
+//		writeDeleteNode(communityStream, *i);
 //	}
+//	writeEdges(communityStream);
 
 }
 
 void Ovnis::cleanTemporaryArrays() {
-	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
 	arrivedVehicles.clear();
 	departedVehicles.clear();
 }
@@ -560,4 +664,4 @@ void Ovnis::ReadTravelTime(string edgeId) {
 //	}
 //}
 
-}
+//}

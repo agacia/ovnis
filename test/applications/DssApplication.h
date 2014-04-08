@@ -86,7 +86,7 @@ namespace ns3
     void NeighborLost(std::string context, Ptr<const Packet> packet, Mac48Address addr);
     typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
     typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
-    virtual Vehicle getData();
+    virtual Vehicle* getData();
 
   protected:
 

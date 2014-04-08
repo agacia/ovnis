@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <files>
+	<!-- Berkeley VehiLux 
+	<net-file value="Berkeley.net.xml"/>
+        <additional-files value="Berkeley.shapes.xml tlLogic.xml"/>
+	-->
+        <!-- Berkeley routes from Aimsum -->
+	<net-file value="Berkeley.net.xml"/>
+        <route-files value="Berkeley.rou.xml"/>
+        <additional-files value="Berkeley.add.xml"/>
+    </files>
+
+    <output>
+        <summary-output value="summary.xml"/>
+        <tripinfo-output value="tripinfo.xml"/>
+        <!--<vehroute-output value="vehroute.xml"/>-->
+    </output>
+
+    <time>
+      <begin value="0" />
+      <end value="25200" />
+   </time>
+
+   <time-to-teleport value="0" />
+   <route-steps value="60" />
+   <lanechange.allow-swap value="true" />
+
+    <report>
+	<verbose value="true" />
+        <no-duration-log value="false" />
+        <no-step-log value="false" />
+    </report>
+
+   <!--<remote-port value="1233"/>-->
+</configuration>
+
