@@ -68,8 +68,8 @@ namespace ns3
     virtual void DoDispose(void);
 
   private:
-    int _neighborCount;
-    std::map<std::string, neighbor> _neighbors;
+//    int _neighborCount;
+//    std::map<std::string, neighbor> _neighbors;
 
     /**
      * Inherited from Application base class.

@@ -73,7 +73,7 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 	if (this->port == 0) {
 		this->port = SUMO_PORT;
 	}
-	if (fork() == 0) {
+	if ((pid = fork()) == 0) {
 		char buff[512];
 		ofstream out;
 		out.open((outputFolder+"/sumo_output.log").c_str());
@@ -97,6 +97,7 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 	}
 	return port;
 }
+
 
 void SumoTraciConnection::SubscribeSimulation(int startTime, int stopTime) {
 	stepQuery.SetCurrentTime(startTime);

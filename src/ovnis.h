@@ -95,9 +95,19 @@ namespace ns3
     void writeEdges(ostream& out);
     void cleanTemporaryArrays();
     void MapMacVehId();
-
     void writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out);
+    void InitializeSumo();
+    void InitializeCrowdz();
+    void ReadCommunities(int step);
 
+    FILE * fp_com;
+    pid_t com_pid;
+    pid_t sumo_pid;
+
+	map<string, string> addedEdges;
+	map<string, string> removedEdges;
+	ifstream communitystream;
+	int posstream;
     MacVehIdMap macList;
     UniformVariable  rando;
 

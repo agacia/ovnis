@@ -61,7 +61,7 @@ FceApplication::FceApplication() {
 	neededProbabilistic = false;
 	startReroute = 0;
 	isVanet = true;
-	_neighborCount = 0;
+//	_neighborCount = 0;
 //	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 //	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
 //	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
@@ -194,14 +194,9 @@ void FceApplication::StartApplication(void) {
 	running = true;
 	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * SIMULATION_STEP_INTERVAL;
 	double r2 = (double)(rand()%RAND_MAX)/(double)RAND_MAX * TRAFFIC_INFORMATION_SENDING_INTERVAL;
-//	cout << "r " << r << " r2 " << r2 << endl;
 	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
 //	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
 	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
-	if (vehicle.getId() == "0.2") {
-		double curtime = Simulator::Now().GetSeconds();
-		cout << curtime << " FceApp: start app " << vehicle.getId() << endl; // << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
-	}
 }
 
 void FceApplication::ToggleNeighborDiscovery(bool on) {
@@ -235,17 +230,8 @@ void FceApplication::DoDispose(void) {
 }
 
 FceApplication::MacAddrMap FceApplication::getNeighborList() {
-//	if (vehicle.getId() == "1.7" || vehicle.getId() == "0.2") {
-//		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << m_neighborList.size() << " neighbors and received ovnis packets: " << _neighborCount << endl;
-//		cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " has " << _neighborCount << " neighbors: ";
-//		for (map<string,neighbor>::iterator i = _neighbors.begin(); i != _neighbors.end (); ++i) {
-//			std::cout << i->first << ":" << i->second.id << "," << i->second.speed << "\t";
-//			std::cout << i->first << "\t";
-//		}
-//		cout << endl;
-//	}
-	_neighbors = map<string,neighbor>();
-	_neighborCount = 0;
+//	_neighbors = map<string,neighbor>();
+//	_neighborCount = 0;
 //	for (MacAddrMapIterator i = m_neighborList.begin(); i != m_neighborList.end (); ++i) {
 //		std::cout << i->first << "," << i->second << "\t";
 //	}
@@ -595,9 +581,9 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 			vanetsKnowledge.record(data);
 		}
 
-		_neighborCount ++;
-		_neighbors[senderId].id = senderId;
-		_neighbors[senderId].speed = 1.0;
+//		_neighborCount ++;
+//		_neighbors[senderId].id = senderId;
+//		_neighbors[senderId].speed = 1.0;
 		Log::getInstance().packetReceived();
 		Log::getInstance().addDistance(distance);
     }
@@ -658,9 +644,9 @@ void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> pac
 		vehicle.m_neighborListDiscovered[addr] = 1;
 		double curtime = Simulator::Now().GetSeconds();
 		vehicle.lastStep = curtime;
-		if (vehicle.getId() == "0.2") {
-			cout << curtime << " FceApp: node " << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
-		}
+//		if (vehicle.getId() == "0.2") {
+//			cout << curtime << " FceApp: node " << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
+//		}
 	}
 	else {
 		i->second= rxPwDbm;

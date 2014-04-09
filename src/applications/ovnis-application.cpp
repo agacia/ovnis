@@ -54,7 +54,6 @@ void OvnisApplication::DoDispose(void) {
 
 void OvnisApplication::SetStopTime (Time stop) {
        m_stopTime = stop;
-       cout << " OvnisApplication::SetStopTime "  << (stop.GetSeconds()-Simulator::Now().GetSeconds()) << endl;
        if (m_stopTime != TimeStep (0)) {
     	   m_stopEvent = Simulator::Schedule (TimeStep(fabs(stop.GetSeconds()-Simulator::Now().GetSeconds())), &OvnisApplication::StopApplication, this);
        }
@@ -62,7 +61,7 @@ void OvnisApplication::SetStopTime (Time stop) {
 
 void OvnisApplication::StartApplication(void) {
 //    NS_LOG_FUNCTION (m_name);
-	cout << "OvnisApplication::StartApplication" << endl;
+
 	if (m_realStartDate == TimeStep(0)) {
 		m_realStartDate = Simulator::Now();
 	}
@@ -72,7 +71,6 @@ void OvnisApplication::StartApplication(void) {
 }
 
 void OvnisApplication::StopApplication(void) {
-	cout << "OvnisApplication::StopApplication" << endl;
 }
 
 void OvnisApplication::SetParams(std::map <string,string> params) {

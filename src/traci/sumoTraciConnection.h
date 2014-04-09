@@ -60,6 +60,7 @@ public:
 	void CloseLane(std::string laneId);
 	void CloseEdge(std::string edgeId);
 	std::vector<double> GetSimulationBoundaries();
+    pid_t pid;
 
 protected:
     /**
@@ -90,6 +91,7 @@ protected:
     SimStepQuery stepQuery;
 
     int StartSumo(std::string config, std::string sumoPath, std::string outputFolder);
+
 };
 
 } /* namespace ovnis */
