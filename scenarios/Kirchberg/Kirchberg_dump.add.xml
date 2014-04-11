@@ -1,4 +1,0 @@
-<additionals xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.sf.net/xsd/additional_file.xsd">
-   <edgeData id="edge_dump" file="edge_dump.xml" freq="900" />
-</additionals>
-

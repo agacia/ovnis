@@ -249,11 +249,6 @@ vector<string> Ovnis::tokenizeString(string s, string delim) {
 	std::istringstream buf(s);
 	std::istream_iterator<std::string> beg(buf), end;
 	std::vector<std::string> tokens(beg, end); // done!
-//	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i) {
-//	for (int i = 0; i < tokens.size(); ++i) {
-//		cout << "\t " << tokens[i] ;
-//	}
-//	cout << endl;
 	return tokens;
 }
 
@@ -272,46 +267,26 @@ void Ovnis::InitializeCrowdz() {
 		out << "Output log file from crowdz's execution.";
 		string jar = "/Users/agatagrzybek/workspace/crowds/crowdz-trafficEQ.jar";
 		string inputfile = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/vanet.dgs";
-		string call = "java -Xmx4096m -jar " + jar;
+
 		string algorithm="MobileSandSharc";
 		string congestion="CongestionMeasure";
 		int congestion_threshold=5;
 		int history_length=10;
 		string speedType = "timemean";
-		string args = " --inputFile \"" + inputfile + "\" --outputDir " + scenarioFolder+"/" +
-				" --startStep 0 --endStep 400 --algorithm MobileSandSharc --congestion CongestionMeasure --congestionSpeedThreshold 10 --speedHistoryLength 10 > "
-				+ scenarioFolder+"/crowds2log.txt";
-		cout << "call " << call << args << endl;
-//		int st = execl((call + args).c_str(), NULL); /* Execute the program */
-		system((call + args).c_str());
-		std::cerr << "Uh-Oh! execl() failed! " << endl; /* execl doesn't return unless there's an error */
-		exit(1);
-//		if ((fp_com = popen((call + args).c_str(), "r")) == NULL) {
-//			cerr <<  "#Error: Crowdz processes cannot be created" << endl;
-//			throw;
-//		} else {
-//			// start reading community stream
-//			communitystream.seekg(communitystream.beg);
-//			posstream = communitystream.tellg();
-////			ReadCommunities();
-//		}
-//		while (fgets(buff, sizeof(buff), fp_com) != NULL) {
-//			out << buff;
-//			out.flush();
-//		}
+
+		std::stringstream str;
+		str << "java -Xmx4096m -jar " << jar << " --inputFile \"" << inputfile << "\" --outputDir " << scenarioFolder+"/" << " --startStep " << startTime <<
+				" --endStep " << stopTime << " --algorithm " << algorithm << " --congestion " << congestion << " --congestionSpeedThreshold " << congestion_threshold << " --speedHistoryLength " << history_length <<
+				" > " <<  scenarioFolder << "/crowds2log.txt";
+		string call = str.str();
+		cout << "call " << call << endl;
+		system((call).c_str());
 		exit(0);
 	}
 	else {
 		// start reading community stream
 		communitystream.seekg(communitystream.beg);
 		posstream = communitystream.tellg();
-		std::cout << "Process created with pid " << com_pid << " posstream " << posstream << "\n";
-//		ReadCommunities();
-//		int status;
-//		while (!WIFEXITED(status)) {
-//			waitpid(com_pid, &status, 0); /* Wait for the process to complete */
-//		}
-//		std::cout << "Process exited with " << WEXITSTATUS(status) << "\n";
 	}
 }
 
@@ -729,12 +704,6 @@ void Ovnis::TrafficSimulationStep() {
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::RX) << " \t "
 				<< Log::getInstance().getAvgDistance() << endl;
 
-//		cout << "a " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
-//		lastdepartedVehicles.clear();
-//		lastdepartedVehicles.insert(lastdepartedVehicles.end(), departedVehicles.begin(), departedVehicles.end());
-//		lastrunningVehicles.clear();
-//		lastrunningVehicles.insert(lastrunningVehicles.end(), runningVehicles.begin(), runningVehicles.end());
-
 		MapMacVehId();
 		DetectCommunities();
 
@@ -746,9 +715,6 @@ void Ovnis::TrafficSimulationStep() {
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 //		cout << " b " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
 
-//		MapMacVehId();
-//		DetectCommunities();
-		// update running vehicles
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
@@ -756,14 +722,13 @@ void Ovnis::TrafficSimulationStep() {
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
 		// in the first step, departed and arrived vehicles are aggregated from the beginning of running
-
 		if (currentTime < stopTime*SIMULATION_TIME_UNIT) {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
 			pclose(fp_com);
 			cout << "kill java " << kill(com_pid, SIGTERM) << endl;
-			cout << " kill sumo " << kill(sumo_pid, SIGKILL) << endl;
+			cout << "kill sumo " << kill(sumo_pid, SIGKILL) << endl;
 			DestroyNetworkDevices(runningVehicles);
 			Log::getInstance().summariseSimulation("simulation");
 			time_t stop = time(0);
@@ -776,7 +741,7 @@ void Ovnis::TrafficSimulationStep() {
 		}
 	}
 	catch (TraciException &e) {
-//		cerr << "TrafficSimulationStep " << e.what();
+		cerr << "TrafficSimulationStep " << e.what();
 	}
 }
 
@@ -796,7 +761,6 @@ void Ovnis::DetectCommunities() {
 	}
 	writeEdges(communityStream);
 	communityStream << endl;
-//	communityStream.flush();
 	cout << "Wrote dgs at step " << traci->GetCurrentTime() << endl;
 }
 
