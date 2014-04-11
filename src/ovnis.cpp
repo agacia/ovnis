@@ -28,6 +28,13 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
+#include <cstdlib>
+#include <exception>
+#include <signal.h>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iterator>
 
 // ----- NS-3 related includes
 #include "ns3/core-module.h"
@@ -58,7 +65,6 @@
 #include "ovnis-constants.h"
 #include "log.h"
 
-//#include "../test/applications/FceApplication.h"
 
 using namespace std;
 
@@ -88,8 +94,11 @@ Ovnis::Ovnis() :
 }
 
 Ovnis::~Ovnis() {
+	cout << "Closing " << endl;
 	try {
 		traci->Close();
+//		communitystream.close();
+		pclose(fp_com);
 	}
 	catch (TraciException &e) {
 		cerr << "Traci closing " << e.what();
@@ -105,6 +114,7 @@ void Ovnis::SetApplicationParams(std::map <string,string> params) {
 }
 
 void Ovnis::DoDispose() {
+	cout << " DoDispose " << endl;
 	Object::DoDispose();
 }
 
@@ -126,38 +136,181 @@ void Ovnis::DoInitialize(void) {
     	Log::getInstance().setOutputFolder(it->second);
     }
 
-    try {
+   InitializeSumo();
+
+   InitializeCrowdz();
+
+   //application
+	m_application_factory.SetTypeId(m_ovnis_application);
+	// Initialize ns-3 devices
+	InitializeNetwork();
+	UpdateInOutVehicles();
+	UpdateVehiclesPositions();
+	StartApplications();
+	start =  time(0);
+	Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
+	Log::getInstance().getStream("simulation") << "start\t" << start << endl;
+	Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
+	Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
+
+	Object::DoInitialize();
+}
+
+bool Ovnis::ReadCommunities(int step) {
+	step /= 1000;
+	string line;
+	step -= 2; // adjust
+	bool readSteps = false;
+	bool waitForSteps = true;
+	cout << "ReadCommunities reading communities for step " << step << ", posstream " << posstream << " communitystream.tellg() " << communitystream.tellg() << endl;
+	if (step > 0) {
+		while (!communitystream.is_open()) {
+			communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+		}
+		if (communitystream.is_open()) {
+			if (posstream != -1) {
+				communitystream.seekg(posstream);
+			}
+//			cout << "communitystream open  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
+			while (getline (communitystream,line) || !readSteps) {
+				vector<string> tokens = tokenizeString(line, "\t");
+				if (tokens.size() == 17) {
+					// correct line
+					if (tokens[0] == "step") {
+						// skip header
+					}
+					else {
+						int linestep = atoi(tokens[0].c_str());
+
+						if (linestep < step) {
+							// skip earlier steps
+							posstream = communitystream.tellg();
+						}
+						else if (linestep == step) {
+							cout << "read line: " << line << " " << communitystream.tellg() << ", posstream " << posstream << endl;
+							posstream = communitystream.tellg();
+						}
+						else {
+							readSteps = true;
+							break;
+						}
+					}
+				}
+				// end of file
+//				cout << "end of file?  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
+				if (communitystream.tellg() == -1 && readSteps == false) {
+//					cout << "restart " << communitystream.tellg() << ", posstream " << posstream << endl;
+					communitystream.close();
+					communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+					if (posstream == -1) {
+						communitystream.seekg(0);
+					} else {
+						communitystream.seekg(posstream);
+					}
+
+				}
+			}
+			cout << "stopped reading line " << communitystream.tellg() << ", posstream " << posstream << endl;
+			communitystream.close();
+		}
+	}
+	return readSteps;
+}
+
+void Ovnis::ReadCommunities() {
+	string line;
+	while (!communitystream.is_open()) {
+		communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+	}
+	if (communitystream.is_open()) {
+		bool nextStep = true;
+		cout << "ReadCommunities reading communities for step " << currentTime << ", posstream " << posstream << endl;
+		while (true) {
+			cout << "checking tellg " << communitystream.tellg() << " posstream " << posstream << endl;
+			if (getline (communitystream,line) ) {
+				vector<string> tokens = tokenizeString(line, "\t");
+
+				if (tokens[0] == "step") {
+					// skip read headers
+				} else {
+					int linestep = atoi(tokens[0].c_str());
+					if (tokens.size() == 11) {
+						cout << "good line line with step " << linestep << ": " << line << ", tellg " << communitystream.tellg() << endl;
+						posstream = communitystream.tellg();
+					}
+				}
+			}
+			else {
+				// return to the previous position
+				communitystream.seekg(communitystream.beg);
+			}
+		}
+	}
+	else {
+		cout << "Unable to open file";
+	}
+}
+
+
+vector<string> Ovnis::tokenizeString(string s, string delim) {
+	std::istringstream buf(s);
+	std::istream_iterator<std::string> beg(buf), end;
+	std::vector<std::string> tokens(beg, end); // done!
+	return tokens;
+}
+
+void Ovnis::InitializeCrowdz() {
+	cout << "InitializeCrowdz" << endl;
+	posstream = -1;
+	com_pid = fork();
+	if (com_pid == -1) {
+		std::cerr << "Uh-Oh! fork() failed.\n";
+		exit(1);
+	}
+	else if (com_pid == 0) {
+		char buff[512];
+		ofstream out;
+		out.open((scenarioFolder+"/crowdz_output.log").c_str());
+		out << "Output log file from crowdz's execution.";
+		string jar = "/Users/agatagrzybek/workspace/crowds/crowdz-trafficEQ.jar";
+		string inputfile = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/vanet.dgs";
+
+		string algorithm="MobileSandSharc";
+		string congestion="CongestionMeasure";
+		int congestion_threshold=5;
+		int history_length=10;
+		string speedType = "timemean";
+
+		std::stringstream str;
+		str << "java -Xmx4096m -jar " << jar << " --inputFile \"" << inputfile << "\" --outputDir " << scenarioFolder+"/" << " --startStep " << startTime <<
+				" --endStep " << stopTime << " --algorithm " << algorithm << " --congestion " << congestion << " --congestionSpeedThreshold " << congestion_threshold << " --speedHistoryLength " << history_length <<
+				" > " <<  scenarioFolder << "/crowds2log.txt";
+		string call = str.str();
+		cout << "call " << call << endl;
+		system((call).c_str());
+		exit(0);
+	}
+	else {
+		// start reading community stream
+		communitystream.seekg(communitystream.beg);
+		posstream = communitystream.tellg();
+		cout << "Initializing com stream , posstream " << posstream  << endl;
+	}
+}
+
+void Ovnis::InitializeSumo() {
+	 try {
 		traci = CreateObject<SumoTraciConnection> ();
 		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder);
 		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
-
 		vector<double> bounds = traci->GetSimulationBoundaries();
 		if (bounds.size() > 3) {
 			boundaries[0] = bounds[2];
 			boundaries[1] = bounds[3];
 		}
-
 		Names::Add("SumoTraci", traci);
-
-		//application
-		m_application_factory.SetTypeId(m_ovnis_application);
-
-		// Initialize ns-3 devices
-		InitializeNetwork();
-
-		UpdateInOutVehicles();
-		UpdateVehiclesPositions();
-		StartApplications();
-
-		start =  time(0);
-		Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
-		Log::getInstance().getStream("simulation") << "start\t" << start << endl;
-
-		Simulator::Schedule(Simulator::Now(), &Ovnis::TrafficSimulationStep, this);
-		Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
-
-		Object::DoInitialize();
+		sumo_pid = traci->pid;
 	}
 	catch (TraciException &e) {
 		cerr << "TrafficSimulationStep " << e.what();
@@ -165,6 +318,7 @@ void Ovnis::DoInitialize(void) {
 	catch(exception & e) {
 		cerr << "#Error while connecting: " << e.what();
 	}
+	cout << "after InitializeSumo" << endl;
 }
 
 void Ovnis::InitializeNetwork() {
@@ -264,7 +418,6 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 						Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
 						for (vector<string>::iterator k = connectedVehicles.begin(); k < connectedVehicles.end(); ++k) {
 							if (*i == *k) {
-//								cout << "stopping connected app" << endl;
 								ovnisApp->SetStopTime(stopTime);
 								break;
 							}
@@ -293,31 +446,95 @@ void Ovnis::DestroyNetworkDevices(vector<string> to_destroy) {
 
 void Ovnis::writeStep(ostream& out) {
 	int step = traci->GetCurrentTime();
-	out << "st " << (step/1000) << endl;
+	if (step == 1000) {
+		out << "DGS004" << endl;
+		out << "vanet 0 0" << endl;
+	}
+//	cout << "st " << ((step)/1000) << endl;
+	out << "st " << ((step)/1000) << endl;
 }
 
 void Ovnis::writeNewNode(ostream& out, string nodeId) {
-	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
-		Ptr<Node> n = Names::Find<Node>((*i));
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				vehicle->requestCurrentSpeed();
+				vehicle->requestCurrentPosition();
+				vehicle->requestCurrentAngle();
+				out << "an " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
+			}
+			catch (exception & e) {
+			}
+		}
+	}
+}
+
+void Ovnis::writeChangeNode(ostream& out, string nodeId) {
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				vehicle->requestCurrentAngle();
+				vehicle->requestCurrentSpeed();
+				vehicle->requestCurrentPosition();
+				out << "cn " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
+			}
+			catch (exception & e) {
+			}
+		}
+	}
+}
+
+void Ovnis::writeDeleteNode(ostream& out, string nodeId) {
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				out << "dn " << vehicle->getId() << endl;
+			}
+			catch (exception & e) {
+			}
+		}
+	}
+}
+
+void Ovnis::writeEdges(ostream& out) {
+	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+
+	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
+		Ptr<Node> n = Names::Find<Node>(*i);
 		if (n!=0 && isOvnisChannel) {
 			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
 				ns3::Time curtime = Simulator::Now();
 				Ptr<Application> app = n->GetApplication(j);
 				try {
-//					Ptr<FceApplication> ovnisApp = DynamicCast<FceApplication>(app);
 					Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
-					cout << "ovnis app " << ovnisApp << endl;
-//					Vehicle vehicle = ovnisApp->getVehicle();
-					Vehicle vehicle = ovnisApp->getData();
-					out << "an " << vehicle.getId() << " " << nodeId << endl;
-//						for (vector<string>::iterator k = connectedVehicles.begin(); k < connectedVehicles.end(); ++k) {
-//							if (*i == *k) {
-////								cout << "stopping connected app" << endl;
-////								Vehicle vehicle = ovnisApp->getVehicle();
-//
-//								break;
-//							}
-//						}
+					Vehicle* vehicle = ovnisApp->getData();
+					string n1 = vehicle->getId();
+					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
+						string n2 = macList[i->first];
+//						cout << "ae ? " << n1 << " " << n2 << " addedEdges " << addedEdges.size() << endl;
+						writeEdge("ae", n1, n2, addedEdges, out);
+					}
+					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
+						string n2 = macList[i->first];
+//						writeEdge("de", n1, n2, removedEdges, out);
+					}
+					vehicle->m_neighborListDiscovered = MacAddrMap();
+					vehicle->m_neighborListLost = MacAddrMap();
 				}
 				catch (exception & e) {
 				}
@@ -326,13 +543,36 @@ void Ovnis::writeNewNode(ostream& out, string nodeId) {
 	}
 }
 
-void Ovnis::writeChangeNode(ostream out, string nodeId) {
-
+void Ovnis::writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out) {
+	string edge1 = n1+"-"+n2;
+	string edge2 = n2+"-"+n1;
+//	cout << "Checkig edge " << edge1 << " and " << edge2 << " in added edges " << addedEdges.size() << endl;
+	map<string,string>::iterator it1 = addedEdges.find(edge1);
+	// an edge has not yet been added, add both edges
+	if (it1 == addedEdges.end()) {
+		addedEdges[edge1] = edge1;
+		addedEdges[edge2] = edge2;
+		out << "ae \"" << edge1 << "\" " << n1 << " " << n2 << endl; //ae "0.1-1.0" 0.1 1.0 weight=139.307967109
+//		cout << "Adding do added edges" << edge1 << " and " << edge2 <<  " new added edges " << addedEdges.size() << endl;
+	}
 }
 
-void Ovnis::writeDeleteNode(ostream out, string nodeId) {
-
-}
+//void Ovnis::writeDeleteEdges(ostream& out, string nodeId) {
+//	Ptr<Node> n = Names::Find<Node>(nodeId);
+//	if (n!=0 && isOvnisChannel) {
+//		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+//			ns3::Time curtime = Simulator::Now();
+//			Ptr<Application> app = n->GetApplication(j);
+//			try {
+//				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+////				Vehicle vehicle = ovnisApp->getData();
+////				out << "dn " << vehicle.getId() << " " << nodeId << endl;
+//			}
+//			catch (exception & e) {
+//			}
+//		}
+//	}
+//}
 
 void Ovnis::UpdateInOutVehicles() {
 
@@ -448,6 +688,16 @@ void Ovnis::UpdateVehiclesPositions() {
 	}
 }
 
+void Ovnis::MapMacVehId() {
+	for ( std::vector< Ptr<Node> >::const_iterator it = ns3::NodeList::Begin(); it != ns3::NodeList::End(); it ++) {
+		Ptr<WifiNetDevice> dev = DynamicCast<WifiNetDevice> ((*it)->GetDevice(0));
+		Mac48Address addr = dev->GetMac()->GetAddress();
+		string vehId = Names::FindName((*it));
+//		cout << "node " << (*it)->GetId() << " addr: " << addr << " vehId " << vehId << endl;
+		macList[addr] = vehId;
+	}
+}
+
 void Ovnis::TrafficSimulationStep() {
 
 	try {
@@ -462,14 +712,24 @@ void Ovnis::TrafficSimulationStep() {
 				<< Log::getInstance().getDroppedPackets(ns3::WifiPhy::RX) << " \t "
 				<< Log::getInstance().getAvgDistance() << endl;
 
-		traci->NextSimStep(departedVehicles, arrivedVehicles);
+		MapMacVehId();
+		DetectCommunities();
 
+		ReadCommunities(currentTime);
+		TIS::getInstance().communityStep = currentTime;
+
+		runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
+		cleanTemporaryArrays();
+
+		traci->NextSimStep(departedVehicles, arrivedVehicles);
+//		cout << " b " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
+
+//		MapMacVehId();
+//		DetectCommunities();
 		// update running vehicles
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
-		DetectCommunities();
-		cleanTemporaryArrays();
 
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
@@ -479,6 +739,9 @@ void Ovnis::TrafficSimulationStep() {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
+			pclose(fp_com);
+			cout << "kill java " << kill(com_pid, SIGTERM) << endl;
+			cout << " kill sumo " << kill(sumo_pid, SIGKILL) << endl;
 			DestroyNetworkDevices(runningVehicles);
 			Log::getInstance().summariseSimulation("simulation");
 			time_t stop = time(0);
@@ -496,27 +759,26 @@ void Ovnis::TrafficSimulationStep() {
 }
 
 void Ovnis::DetectCommunities() {
-//	cerr << "DetectCommunities " << endl;
 	ostream & communityStream = Log::getInstance().getStream("vanet.dgs");
-//
+	communityStream.setf( std::ios::fixed, std:: ios::floatfield );
+	communityStream.precision(4);
 	writeStep(communityStream);
-//
 	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
 		writeNewNode(communityStream, *i);
 	}
-//
-//	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
-////		writeChangeNode(communityStream, *i);
-//	}
-//
-//	for (vector<string>::iterator i = arrivedVehicles.begin(); i != arrivedVehicles.end(); ++i) {
-//	//		writeDeleteNode(communityStream, *i);
-//	}
-
+	for (vector<string>::iterator i = runningVehicles.begin(); i != runningVehicles.end(); ++i) {
+		writeChangeNode(communityStream, *i);
+	}
+	for (vector<string>::iterator i = arrivedVehicles.begin(); i != arrivedVehicles.end(); ++i) {
+		writeDeleteNode(communityStream, *i);
+	}
+	writeEdges(communityStream);
+	communityStream << endl;
+//	communityStream.flush();
+	cout << "Wrote dgs at step " << traci->GetCurrentTime() << endl;
 }
 
 void Ovnis::cleanTemporaryArrays() {
-	runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
 	arrivedVehicles.clear();
 	departedVehicles.clear();
 }
@@ -561,3 +823,4 @@ void Ovnis::ReadTravelTime(string edgeId) {
 //}
 
 }
+
