@@ -171,7 +171,7 @@ bool Ovnis::ReadCommunities(int step) {
 			if (posstream != -1) {
 				communitystream.seekg(posstream);
 			}
-			cout << "communitystream open  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
+//			cout << "communitystream open  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
 			while (getline (communitystream,line) || !readSteps) {
 				vector<string> tokens = tokenizeString(line, "\t");
 				if (tokens.size() == 17) {
@@ -197,10 +197,17 @@ bool Ovnis::ReadCommunities(int step) {
 					}
 				}
 				// end of file
+//				cout << "end of file?  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
 				if (communitystream.tellg() == -1 && readSteps == false) {
+//					cout << "restart " << communitystream.tellg() << ", posstream " << posstream << endl;
 					communitystream.close();
 					communitystream.open((scenarioFolder +  "/communities.csv").c_str());
-					communitystream.seekg(posstream);
+					if (posstream == -1) {
+						communitystream.seekg(0);
+					} else {
+						communitystream.seekg(posstream);
+					}
+
 				}
 			}
 			cout << "stopped reading line " << communitystream.tellg() << ", posstream " << posstream << endl;
@@ -287,6 +294,7 @@ void Ovnis::InitializeCrowdz() {
 		// start reading community stream
 		communitystream.seekg(communitystream.beg);
 		posstream = communitystream.tellg();
+		cout << "Initializing com stream , posstream " << posstream  << endl;
 	}
 }
 
@@ -708,6 +716,7 @@ void Ovnis::TrafficSimulationStep() {
 		DetectCommunities();
 
 		ReadCommunities(currentTime);
+		TIS::getInstance().communityStep = currentTime;
 
 		runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
 		cleanTemporaryArrays();
@@ -715,6 +724,9 @@ void Ovnis::TrafficSimulationStep() {
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 //		cout << " b " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
 
+//		MapMacVehId();
+//		DetectCommunities();
+		// update running vehicles
 		UpdateInOutVehicles();
 		UpdateVehiclesPositions();
 		StartApplications();
@@ -722,13 +734,14 @@ void Ovnis::TrafficSimulationStep() {
 		// real loop until stop time
 		// this is the second step (first is immediately called after the subscription
 		// in the first step, departed and arrived vehicles are aggregated from the beginning of running
+
 		if (currentTime < stopTime*SIMULATION_TIME_UNIT) {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
 			pclose(fp_com);
 			cout << "kill java " << kill(com_pid, SIGTERM) << endl;
-			cout << "kill sumo " << kill(sumo_pid, SIGKILL) << endl;
+			cout << " kill sumo " << kill(sumo_pid, SIGKILL) << endl;
 			DestroyNetworkDevices(runningVehicles);
 			Log::getInstance().summariseSimulation("simulation");
 			time_t stop = time(0);
@@ -741,7 +754,7 @@ void Ovnis::TrafficSimulationStep() {
 		}
 	}
 	catch (TraciException &e) {
-		cerr << "TrafficSimulationStep " << e.what();
+//		cerr << "TrafficSimulationStep " << e.what();
 	}
 }
 
@@ -761,6 +774,7 @@ void Ovnis::DetectCommunities() {
 	}
 	writeEdges(communityStream);
 	communityStream << endl;
+//	communityStream.flush();
 	cout << "Wrote dgs at step " << traci->GetCurrentTime() << endl;
 }
 
