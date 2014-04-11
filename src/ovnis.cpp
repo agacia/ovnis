@@ -31,6 +31,10 @@
 #include <cstdlib>
 #include <exception>
 #include <signal.h>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iterator>
 
 // ----- NS-3 related includes
 #include "ns3/core-module.h"
@@ -95,8 +99,6 @@ Ovnis::~Ovnis() {
 		traci->Close();
 //		communitystream.close();
 		pclose(fp_com);
-		kill(com_pid, SIGKILL);
-		kill(sumo_pid, SIGKILL);
 	}
 	catch (TraciException &e) {
 		cerr << "Traci closing " << e.what();
@@ -154,22 +156,88 @@ void Ovnis::DoInitialize(void) {
 	Object::DoInitialize();
 }
 
-void Ovnis::ReadCommunities(int step) {
+bool Ovnis::ReadCommunities(int step) {
+	step /= 1000;
 	string line;
-	if (!communitystream.is_open()) {
-		communitystream.open((scenarioFolder +  "/communities2.csv").c_str());
+	step -= 2; // adjust
+	bool readSteps = false;
+	bool waitForSteps = true;
+	cout << "ReadCommunities reading communities for step " << step << ", posstream " << posstream << " communitystream.tellg() " << communitystream.tellg() << endl;
+	if (step > 0) {
+		while (!communitystream.is_open()) {
+			communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+		}
+		if (communitystream.is_open()) {
+			if (posstream != -1) {
+				communitystream.seekg(posstream);
+			}
+			cout << "communitystream open  tellg " << communitystream.tellg() << ", posstream " << posstream << endl;
+			while (getline (communitystream,line) || !readSteps) {
+				vector<string> tokens = tokenizeString(line, "\t");
+				if (tokens.size() == 17) {
+					// correct line
+					if (tokens[0] == "step") {
+						// skip header
+					}
+					else {
+						int linestep = atoi(tokens[0].c_str());
+
+						if (linestep < step) {
+							// skip earlier steps
+							posstream = communitystream.tellg();
+						}
+						else if (linestep == step) {
+							cout << "read line: " << line << " " << communitystream.tellg() << ", posstream " << posstream << endl;
+							posstream = communitystream.tellg();
+						}
+						else {
+							readSteps = true;
+							break;
+						}
+					}
+				}
+				// end of file
+				if (communitystream.tellg() == -1 && readSteps == false) {
+					communitystream.close();
+					communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+					communitystream.seekg(posstream);
+				}
+			}
+			cout << "stopped reading line " << communitystream.tellg() << ", posstream " << posstream << endl;
+			communitystream.close();
+		}
+	}
+	return readSteps;
+}
+
+void Ovnis::ReadCommunities() {
+	string line;
+	while (!communitystream.is_open()) {
+		communitystream.open((scenarioFolder +  "/communities.csv").c_str());
 	}
 	if (communitystream.is_open()) {
-		communitystream.seekg (0, communitystream.end);
-		posstream = communitystream.tellg();
-		communitystream.seekg (0, communitystream.beg);
-		cout << "community stream open, read line.. tellg " << communitystream.tellg() << ", communitystream.beg " << communitystream.beg << " end " << communitystream.end << ", lenght: " << posstream << endl;
+		bool nextStep = true;
+		cout << "ReadCommunities reading communities for step " << currentTime << ", posstream " << posstream << endl;
+		while (true) {
+			cout << "checking tellg " << communitystream.tellg() << " posstream " << posstream << endl;
+			if (getline (communitystream,line) ) {
+				vector<string> tokens = tokenizeString(line, "\t");
 
-		if (getline (communitystream,line) ) {
-			posstream = communitystream.tellg();
-			cout <<  step << " " << line << ", tellg " << communitystream.tellg() << endl;
+				if (tokens[0] == "step") {
+					// skip read headers
+				} else {
+					int linestep = atoi(tokens[0].c_str());
+					if (tokens.size() == 11) {
+						cout << "good line line with step " << linestep << ": " << line << ", tellg " << communitystream.tellg() << endl;
+						posstream = communitystream.tellg();
+					}
+				}
+			}
+			else {
+				// return to the previous position
+				communitystream.seekg(communitystream.beg);
+			}
 		}
-//		cout <<  step << " no more getline, tellg " << communitystream.tellg() << ", setting to " << posstream << endl;
 	}
 	else {
 		cout << "Unable to open file";
@@ -177,9 +245,27 @@ void Ovnis::ReadCommunities(int step) {
 }
 
 
+vector<string> Ovnis::tokenizeString(string s, string delim) {
+	std::istringstream buf(s);
+	std::istream_iterator<std::string> beg(buf), end;
+	std::vector<std::string> tokens(beg, end); // done!
+//	for (vector<string>::iterator i = tokens.begin(); i != tokens.end(); ++i) {
+//	for (int i = 0; i < tokens.size(); ++i) {
+//		cout << "\t " << tokens[i] ;
+//	}
+//	cout << endl;
+	return tokens;
+}
+
 void Ovnis::InitializeCrowdz() {
 	cout << "InitializeCrowdz" << endl;
-	if ((com_pid = fork()) == 0) {
+	posstream = -1;
+	com_pid = fork();
+	if (com_pid == -1) {
+		std::cerr << "Uh-Oh! fork() failed.\n";
+		exit(1);
+	}
+	else if (com_pid == 0) {
 		char buff[512];
 		ofstream out;
 		out.open((scenarioFolder+"/crowdz_output.log").c_str());
@@ -187,7 +273,6 @@ void Ovnis::InitializeCrowdz() {
 		string jar = "/Users/agatagrzybek/workspace/crowds/crowdz-trafficEQ.jar";
 		string inputfile = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/vanet.dgs";
 		string call = "java -Xmx4096m -jar " + jar;
-
 		string algorithm="MobileSandSharc";
 		string congestion="CongestionMeasure";
 		int congestion_threshold=5;
@@ -196,22 +281,37 @@ void Ovnis::InitializeCrowdz() {
 		string args = " --inputFile \"" + inputfile + "\" --outputDir " + scenarioFolder+"/" +
 				" --startStep 0 --endStep 400 --algorithm MobileSandSharc --congestion CongestionMeasure --congestionSpeedThreshold 10 --speedHistoryLength 10 > "
 				+ scenarioFolder+"/crowds2log.txt";
-
 		cout << "call " << call << args << endl;
-		if ((fp_com = popen((call + args).c_str(), "r")) == NULL) {
-			cerr <<  "#Error: Crowdz processes cannot be created" << endl;
-			throw;
-		} else {
-			// start reading community stream
-			cout << "open file begin " <<communitystream.beg << " end " << communitystream.end << " tellg " << communitystream.tellg() << endl;
-			ReadCommunities(0);
-		}
-		while (fgets(buff, sizeof(buff), fp_com) != NULL) {
-			out << buff;
-			out.flush();
-		}
-		pclose(fp_com);
+//		int st = execl((call + args).c_str(), NULL); /* Execute the program */
+		system((call + args).c_str());
+		std::cerr << "Uh-Oh! execl() failed! " << endl; /* execl doesn't return unless there's an error */
+		exit(1);
+//		if ((fp_com = popen((call + args).c_str(), "r")) == NULL) {
+//			cerr <<  "#Error: Crowdz processes cannot be created" << endl;
+//			throw;
+//		} else {
+//			// start reading community stream
+//			communitystream.seekg(communitystream.beg);
+//			posstream = communitystream.tellg();
+////			ReadCommunities();
+//		}
+//		while (fgets(buff, sizeof(buff), fp_com) != NULL) {
+//			out << buff;
+//			out.flush();
+//		}
 		exit(0);
+	}
+	else {
+		// start reading community stream
+		communitystream.seekg(communitystream.beg);
+		posstream = communitystream.tellg();
+		std::cout << "Process created with pid " << com_pid << " posstream " << posstream << "\n";
+//		ReadCommunities();
+//		int status;
+//		while (!WIFEXITED(status)) {
+//			waitpid(com_pid, &status, 0); /* Wait for the process to complete */
+//		}
+//		std::cout << "Process exited with " << WEXITSTATUS(status) << "\n";
 	}
 }
 
@@ -372,21 +472,20 @@ void Ovnis::writeStep(ostream& out) {
 }
 
 void Ovnis::writeNewNode(ostream& out, string nodeId) {
-		Ptr<Node> n = Names::Find<Node>(nodeId);
-		if (n!=0 && isOvnisChannel) {
-			for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
-				ns3::Time curtime = Simulator::Now();
-				Ptr<Application> app = n->GetApplication(j);
-				try {
-					Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
-					Vehicle* vehicle = ovnisApp->getData();
-					vehicle->requestCurrentSpeed();
-					vehicle->requestCurrentPosition();
-					vehicle->requestCurrentAngle();
-					out << "an " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
-				}
-				catch (exception & e) {
-				}
+	Ptr<Node> n = Names::Find<Node>(nodeId);
+	if (n!=0 && isOvnisChannel) {
+		for (uint32_t j = 0; j < n->GetNApplications(); ++j) {
+			ns3::Time curtime = Simulator::Now();
+			Ptr<Application> app = n->GetApplication(j);
+			try {
+				Ptr<OvnisApplication> ovnisApp = DynamicCast<OvnisApplication>(app);
+				Vehicle* vehicle = ovnisApp->getData();
+				vehicle->requestCurrentSpeed();
+				vehicle->requestCurrentPosition();
+				vehicle->requestCurrentAngle();
+				out << "an " << vehicle->getId() << " x=" << vehicle->getCurrentPosition().x << " y=" << vehicle->getCurrentPosition().y << " vehicleSlope=" << 0 << " vehicleAngle=" << vehicle->getCurrentAngle() << " vehiclePos=" << 0 << " vehicleSpeed=" << vehicle->getCurrentSpeed() << " vehicleLane=" << (vehicle->getItinerary()).getCurrentEdge().getId() << endl; // an 0.0 x=16248.69 y=8138.77 vehicleSlope=0.0 vehicleAngle=-47.1 vehiclePos=7.6 vehicleSpeed=19.44 vehicleLane="56640729#0_0"
+			}
+			catch (exception & e) {
 			}
 		}
 	}
@@ -620,7 +719,6 @@ void Ovnis::TrafficSimulationStep() {
 
 	try {
 		currentTime = traci->GetCurrentTime();
-		ReadCommunities(currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_DEPARTURED, departedVehicles.size(), currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_CONNECTED, newConnectedVehiclesCount, currentTime);
 		ovnis::Log::getInstance().logIn(VEHICLES_ARRIVED, arrivedVehicles.size(), currentTime);
@@ -639,6 +737,8 @@ void Ovnis::TrafficSimulationStep() {
 
 		MapMacVehId();
 		DetectCommunities();
+
+		ReadCommunities(currentTime);
 
 		runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
 		cleanTemporaryArrays();
@@ -661,6 +761,9 @@ void Ovnis::TrafficSimulationStep() {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
+			pclose(fp_com);
+			cout << "kill java " << kill(com_pid, SIGTERM) << endl;
+			cout << " kill sumo " << kill(sumo_pid, SIGKILL) << endl;
 			DestroyNetworkDevices(runningVehicles);
 			Log::getInstance().summariseSimulation("simulation");
 			time_t stop = time(0);
@@ -692,7 +795,9 @@ void Ovnis::DetectCommunities() {
 		writeDeleteNode(communityStream, *i);
 	}
 	writeEdges(communityStream);
-
+	communityStream << endl;
+//	communityStream.flush();
+	cout << "Wrote dgs at step " << traci->GetCurrentTime() << endl;
 }
 
 void Ovnis::cleanTemporaryArrays() {
@@ -739,4 +844,5 @@ void Ovnis::ReadTravelTime(string edgeId) {
 //	}
 //}
 
-//}
+}
+

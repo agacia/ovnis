@@ -98,7 +98,9 @@ namespace ns3
     void writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out);
     void InitializeSumo();
     void InitializeCrowdz();
-    void ReadCommunities(int step);
+    bool ReadCommunities(int step);
+    void ReadCommunities();
+    vector<string> tokenizeString(string s, string delim);
 
     FILE * fp_com;
     pid_t com_pid;

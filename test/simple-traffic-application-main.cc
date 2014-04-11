@@ -70,7 +70,7 @@ int main(int argc, char ** argv) {
 	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/";
 	string sumoConfig = "scenario_eclipse.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
-	int stopTime = 400; // 25200; // 7h
+	int stopTime = 40; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
