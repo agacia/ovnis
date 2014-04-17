@@ -75,7 +75,7 @@ int main(int argc, char ** argv) {
 
 	// TrafficEQ (FceApplication) params
     string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
-    string routingStrategies = "noRouting shortest probabilistic hybrid";
+    string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
     string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";

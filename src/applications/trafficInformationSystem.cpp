@@ -31,6 +31,7 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 		double expectedTravelTime, double shortestExpectedTravelTime) {
 	// xxx only one entering on route - no need for subtract
 	++vehiclesOnRoute[newRouteId];
+	// time	vehicleId	currentEdgeId	currentRouteId	newEdgeId	newRouteId	originEdgeId	destinationEdgeId	isCheater	isCongested	expectedTravelTime	shortestExpectedTravelTime	vehiclesOnRoute[newRouteId]
 	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
 			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
 			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime << "\t" << vehiclesOnRoute[newRouteId];;

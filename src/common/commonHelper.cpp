@@ -30,6 +30,7 @@ const vector<string> CommonHelper::split(string input, char delimeter) {
 	std::string token;
 
 	while(std::getline(ss, token, delimeter)) {
+		//std::cout <<  token << ", del " << delimeter << endl;
 	    tokens.push_back(token);
 	}
 	return tokens;
