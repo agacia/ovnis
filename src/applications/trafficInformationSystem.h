@@ -72,6 +72,7 @@ public:
     std::map<std::string, RecordEntry> getPerfectTravelTimes();
 
     bool executeOnce;
+    int communities;
     //	void DetectJam(double currentSpeed, double maxSpeed, std::string currentEdge);
 private:
     TIS();

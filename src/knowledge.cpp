@@ -103,7 +103,11 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		delayOnRoutes[it->first] = 0;
 	}
 
-//	map<string, RecordEntry> perfectDB = TIS::getInstance().getPerfectTravelTimes();
+	if (usePerfectInformation) {
+		travelTimes = TIS::getInstance().getPerfectTravelTimes();
+	}
+//	cout << "travelTimes.size() " << travelTimes.size() << endl;
+//	cout << "perfectTravelTimes.size() " << TIS::getInstance().getPerfectTravelTimes().size() << endl;
 
 	for (map<string, RecordEntry>::iterator it = travelTimes.begin(); it != travelTimes.end(); ++it) {
 		RecordEntry recordEntry = it->second;
@@ -111,19 +115,19 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		double travelTime = recordEntry.getLatestValue();
 		double packetDate = recordEntry.getLatestTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
-//		double avgTravelTime = it->second.getAverageValue();
-//		double avgPacketDate = it->second.getAverageTime();
-//		travelTime = avgTravelTime;
-//		packetDate = avgPacketDate;
-
-		if (usePerfectInformation) {
-			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\tvanet\t" << travelTime << "\t" << packetAge;
-			travelTime = TIS::getInstance().getEdgePerfectCost(edgeId);
-			packetDate = Simulator::Now().GetSeconds();
-			packetAge = 0;
-			travelTimes[edgeId].add(0, "", packetDate, travelTime);
-			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\tperfect\t" << travelTime << "\t" << packetAge << endl;
-		}
+		// xxx average
+		double avgTravelTime = it->second.getAverageValue();
+		double avgPacketDate = it->second.getAverageTime();
+		travelTime = avgTravelTime;
+		packetDate = avgPacketDate;
+//		if (usePerfectInformation) {
+////			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\tvanet\t" << travelTime << "\t" << packetAge;
+//			travelTime = TIS::getInstance().getEdgePerfectCost(edgeId);
+//			packetDate = Simulator::Now().GetSeconds();
+//			packetAge = 0;
+//			travelTimes[edgeId].add(0, "", packetDate, travelTime);
+////			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\tperfect\t" << travelTime << "\t" << packetAge << endl;
+//		}
 		double staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
 		if (staticCost != 0) {
 			recordEntry.setCapacity(staticCost);
@@ -143,27 +147,27 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 					newTravelTimesOnRoutes[itRoutes->first] = newTravelTimesOnRoutes[itRoutes->first] - staticCost + travelTime;
 					++numberOfUpdatedEdges[itRoutes->first];
 					++totalNumberOfUpdatedEdges;
-					Log::getInstance().getStream("capacity") << Simulator::Now().GetSeconds() << "\t";
+//					Log::getInstance().getStream("capacity") << Simulator::Now().GetSeconds() << "\t";
 					if (travelTime != SIMULATION_STEP_INTERVAL || recordEntry.getExpectedValue() > SIMULATION_STEP_INTERVAL) { // sumo bug fix - travelTime > 1 means that it was recorded in sumo!
 						double delay = travelTime - recordEntry.getExpectedValue();
 						if (delay > 0) {
 							delayOnRoutes[itRoutes->first] += delay;
 							sumDelay += delay;
 						}
-						Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime  <<"," << recordEntry.getExpectedValue() << "\t";
-						Log::getInstance().getStream("delay") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << travelTime << "\t-\t" << recordEntry.getExpectedValue() << "\t=\t" << delay << "\t";
-						Log::getInstance().getStream("capacity") << edgeId << "," << recordEntry.getExpectedValue() << "," << travelTime << "," << recordEntry.getActualCapacity() << "\t";
+//						Log::getInstance().getStream("vanets_knowledge") << edgeId << "," << packetDate << "," << travelTime  <<"," << recordEntry.getExpectedValue() << "\t";
+//						Log::getInstance().getStream("delay") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << travelTime << "\t-\t" << recordEntry.getExpectedValue() << "\t=\t" << delay << "\t";
+//						Log::getInstance().getStream("capacity") << edgeId << "," << recordEntry.getExpectedValue() << "," << travelTime << "," << recordEntry.getActualCapacity() << "\t";
 						if (recordEntry.getActualCapacity() < congestionThreshold) {
 							congestedLength += edgeLength;
 							ifCongestedFlow = true;
 							double now = Simulator::Now().GetSeconds();
 							congestedLengthOnRoutes[itRoutes->first] += edgeLength;
-							Log::getInstance().getStream("congestion") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << recordEntry.getActualCapacity() << "<" << congestionThreshold << "\t" << travelTime << "\t" << recordEntry.getExpectedValue() << endl;
+//							Log::getInstance().getStream("congestion") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << recordEntry.getActualCapacity() << "<" << congestionThreshold << "\t" << travelTime << "\t" << recordEntry.getExpectedValue() << endl;
 						}
 						if (recordEntry.getActualCapacity() > congestionThreshold && recordEntry.getActualCapacity() < densityThreshold) {
 							ifDenseFlow = true;
 							denseLengthOnRoutes[itRoutes->first] += edgeLength;
-							Log::getInstance().getStream("dense") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << congestionThreshold << "<" << recordEntry.getActualCapacity() << "<" << densityThreshold << "\t" << travelTime << "\t" << recordEntry.getExpectedValue() << endl;
+//							Log::getInstance().getStream("dense") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\t" << congestionThreshold << "<" << recordEntry.getActualCapacity() << "<" << densityThreshold << "\t" << travelTime << "\t" << recordEntry.getExpectedValue() << endl;
 						}
 					}
 				}
@@ -183,13 +187,11 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	// print knowledge
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		packetAgesOnRoutes[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAgesOnRoutes[it->first] / numberOfUpdatedEdges[it->first];
-		//if (totalNumberOfUpdatedEdges > 0) {
-			Log::getInstance().getStream("vanets_knowledge") << it->first << "," << numberOfUpdatedEdges[it->first] << "," << it->second.countEdgesExcludedMargins(startEdgeId, endEdgeId) << "\t";
-		//}
+//		Log::getInstance().getStream("vanets_knowledge") << it->first << "," << numberOfUpdatedEdges[it->first] << "," << it->second.countEdgesExcludedMargins(startEdgeId, endEdgeId) << "\t";
 	}
-	Log::getInstance().getStream("vanets_knowledge") << endl;
+//	Log::getInstance().getStream("vanets_knowledge") << endl;
 //	for (map<string, double>::iterator it = newTravelTimesOnRoutes.begin(); it != newTravelTimesOnRoutes.end(); ++it) {
-////		cout << "route " << it->first << ", new travel time " << it->second << ", traveltime " << travelTimesOnRoutes[it->first] << ", number of updated edges: " << numberOfUpdatedEdges[it->first] << " / number of edges: " << numberOfEdges[it->first] << endl;
+//		cout << "route " << it->first << ", new travel time " << it->second << ", traveltime " << travelTimesOnRoutes[it->first] << ", number of updated edges: " << numberOfUpdatedEdges[it->first] << " / number of edges: " << numberOfEdges[it->first] << endl;
 //	}
 	travelTimesOnRoutes = newTravelTimesOnRoutes;
 }
@@ -212,15 +214,15 @@ map<string,map<string,vector<string> > > Knowledge::analyseCorrelation(map<strin
 	}
 	if (TIS::getInstance().executeOnce == false) {
 		for (map<string, map<string,vector<string> > >::iterator itCorrelated = correlated.begin(); itCorrelated != correlated.end(); ++itCorrelated) {
-			Log::getInstance().getStream("correlation") << itCorrelated->first << ":" << endl;
+//			Log::getInstance().getStream("correlation") << itCorrelated->first << ":" << endl;
 			for (map<string,vector<string> >::iterator itCorrelatedTo = itCorrelated->second.begin(); itCorrelatedTo != itCorrelated->second.end(); ++itCorrelatedTo) {
-				Log::getInstance().getStream("correlation") << itCorrelatedTo->first << "\t" << itCorrelatedTo->second.size() << ":\t";
+//				Log::getInstance().getStream("correlation") << itCorrelatedTo->first << "\t" << itCorrelatedTo->second.size() << ":\t";
 				for (vector<string>::iterator it = itCorrelatedTo->second.begin(); it != itCorrelatedTo->second.end(); ++it) {
-					Log::getInstance().getStream("correlation") << *it << "\t";
+//					Log::getInstance().getStream("correlation") << *it << "\t";
 				}
-				Log::getInstance().getStream("correlation") << endl;
+//				Log::getInstance().getStream("correlation") << endl;
 			}
-			Log::getInstance().getStream("correlation") << endl;
+//			Log::getInstance().getStream("correlation") << endl;
 		}
 		TIS::getInstance().executeOnce = true;
 	}

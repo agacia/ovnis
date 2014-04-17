@@ -70,19 +70,19 @@ int main(int argc, char ** argv) {
 	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/";
 	string sumoConfig = "scenario_eclipse.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
-	int stopTime = 40; // 25200; // 7h
+	int stopTime = 400; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
-    string networkId = "Highway"; // "Kirchberg, Luxembourg, Berkeley"
+    string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
     string routingStrategies = "noRouting shortest probabilistic hybrid";
-    string routingStrategiesProbabilities = "0,0,0,1"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
     string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
     string cheatersRatio = "0";
-    string accidentStartTime = "300";
+    string accidentStartTime = "0";
     string accidentStopTime = "1300";
 
 	CommandLine cmd;

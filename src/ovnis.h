@@ -45,6 +45,7 @@
 
 // ----- application related includes
 #include "helper/ovnis-wifi-helper.h"
+#include "applications/trafficInformationSystem.h"
 #include "devices/wifi/ovnis-wifi-channel.h"
 #include "traci/sumoTraciConnection.h"
 #include "vehicle.h"

@@ -153,8 +153,9 @@ string TIS::getEvent(map<string, double> probabilities) {
 	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
 		sortedProbabilities.push_back(pair<string,double>(it->first, it->second));
 	}
+	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds();
 	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-		Log::getInstance().getStream("probabilities") << "route: " << it->first << ", prob: " << it->second << "\t";
+		Log::getInstance().getStream("probabilities") << "\t" << it->first << "\t" << it->second << "\t";
 	}
 	Log::getInstance().getStream("probabilities") << endl;
 
@@ -257,7 +258,6 @@ string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, doub
 		return "";
 	}
 
-	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds() << "\t" << costsSize << "/" << costs.size() << "\t";
 	map<string, double> probabilities;
 	for (map<string, double>::iterator it = costs.begin(); it != costs.end(); ++it) {
 		double probability = 0;

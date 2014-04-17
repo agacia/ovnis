@@ -83,10 +83,6 @@ FceApplication::FceApplication() {
 	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
-	if (vehicle.getId() == "0.2") {
-		double curtime = Simulator::Now().GetSeconds();
-		cout << curtime << " FceApp: const " << vehicle.getId() << endl; // << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
-	}
 }
 
 void FceApplication::InitializeParams() {
@@ -306,7 +302,7 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnCentralised(double 
 }
 
 map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction) {
-	Vector position = mobilityModel->GetPosition();
+//	Vector position = mobilityModel->GetPosition();
 //	Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdgeId << "\t" << vehicle.getDestinationEdgeId() << "\t";
 	string endEdgeId = vehicle.getDestinationEdgeId();
 	// for shortest we need to reset (do dynamic value)
@@ -314,18 +310,15 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 	for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 		routeTTL[it->first] = PACKET_TTL;
 	}
-	if (m_params["routingStrategy"] == "shortest") {
-		for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
-			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdgeId, endEdgeId) * (1+ CONGESTION_THRESHOLD);
-//			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId);
-//			routeTTL[it->first] = 120;
-		}
-	}
+//	if (m_params["routingStrategy"] == "shortest") {
+//		for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
+//			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdgeId, endEdgeId) * (1+ CONGESTION_THRESHOLD);
+////			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId);
+////			routeTTL[it->first] = 120;
+//		}
+//	}
 	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, true);
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
-//	for (map<string, double>::iterator it = travelTimeCost.begin(); it != travelTimeCost.end(); ++it) {
-//		cout << "in fce read knowledge: route " << it->first << ", travel time " << it->second << endl;
-//	}
 	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
 	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
 	Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
@@ -358,9 +351,6 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	//	needProbabilistic = isAccident;
 	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
 
-//	cout << "Routing. Need probabilistic (iscCngested) " << needProbabilistic << " " <<  isCongested << endl;
-//	cout << "Routing. " << routingStrategy << " " << endl;
-
 	routeChoice = shortest_choice;
 	if (shortest_choice != "") {
 		routeChoice = shortest_choice;
@@ -382,7 +372,6 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 		isCheater = false;
 		Log::getInstance().couldCheat ++;
 		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * 100;
-//		cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
 		if (cheatersRatio > 0 && r < cheatersRatio) {
 			routeChoice = shortest_choice;
 			isCheater = true;
@@ -464,22 +453,22 @@ void FceApplication::CalculateError(string currentEdge) {
 
 	Log::getInstance().getStream("edges_sumo") << now << "\t";
 	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_sumo") << "\t"  << it->first << "," << it->second << "\t";
+		Log::getInstance().getStream("edges_sumo") << "\t"  << it->first << "\t" << it->second << "\t";
 	}
 	Log::getInstance().getStream("edges_sumo") << endl;
-	Log::getInstance().getStream("edges_vanet") << now << "\t";
-	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_vanet") << it->first << "," << it->second << "\t";
-	}
-	Log::getInstance().getStream("edges_vanet") << endl;
+//	Log::getInstance().getStream("edges_vanet") << now << "\t";
+//	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
+//		Log::getInstance().getStream("edges_vanet") << it->first << "," << it->second << "\t";
+//	}
+//	Log::getInstance().getStream("edges_vanet") << endl;
 
 
 	bool usePerfect = true;
 	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "," << usePerfect << "\n";
 	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), usePerfect); // refer to the last call of vanetsKnowledge.getCosts !
 	Log::getInstance().getStream("edges_perfect") << now << "\t";
-	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_perfect") << it->first << "," << it->second << "\t";
+	for (map<string, double>::iterator it=perfectEdgesCosts.begin(); it!=perfectEdgesCosts.end(); ++it) {
+		Log::getInstance().getStream("edges_perfect") << it->first << "\t" << it->second << "\t";
 	}
 	Log::getInstance().getStream("edges_perfect") << endl;
 
@@ -503,9 +492,6 @@ void FceApplication::CalculateError(string currentEdge) {
 void FceApplication::SendNeighborInformation(void) {
 	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
-//		if (vehicle.getId() == "1.7") {
-//			cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending neighbor packet" << endl;
-//		}
 		Ptr<Packet> p = OvnisPacket::BuildPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, STATE_PACKET_ID, vehicle.getItinerary().getCurrentEdge().getId(), vehicle.getCurrentSpeed());
 		SendPacket(p);
 		m_neighborInformationEvent = Simulator::Schedule(Seconds(NEIGHBOR_INFORMATION_SENDING_INTERVAL), &FceApplication::SendNeighborInformation, this);
@@ -516,12 +502,8 @@ void FceApplication::SendTrafficInformation(void) {
 	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
 		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
-//		cout << "records.size() " << records.size() << endl;
 		if (records.size() > 0) {
 			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
-//			if (vehicle.getId() == "1.7") {
-//				cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending traffic packet" << endl;
-//			}
 			SendPacket(p);
 		}
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
@@ -617,10 +599,6 @@ void FceApplication::NeighborLost(std::string context, Ptr<const Packet> packet,
 		vehicle.m_neighborListLost[addr] = 1;
 		myApp->m_neighborList.erase(i);
 	}
-	double curtime = Simulator::Now().GetSeconds();
-//	if (vehicle.getId() == "0.2") {
-//		std::cout << "fce lost neigh: " << curtime << " " << vehicle.getId() << "," <<  " lost number of neighbors: " << m_neighborList.size() << std::endl;
-//	}
 }
 
 /**
@@ -644,27 +622,13 @@ void FceApplication::NewNeighborFound(std::string context, Ptr<const Packet> pac
 		vehicle.m_neighborListDiscovered[addr] = 1;
 		double curtime = Simulator::Now().GetSeconds();
 		vehicle.lastStep = curtime;
-//		if (vehicle.getId() == "0.2") {
-//			cout << curtime << " FceApp: node " << node->GetId() << " found new neighbor addr : " <<  addr << " rxPwDbm: " << rxPwDbm << " num of neighbors discovered: " << vehicle.m_neighborListDiscovered.size() << " all  neigh " << myApp->m_neighborList.size() << endl;
-//		}
 	}
 	else {
 		i->second= rxPwDbm;
 	}
-//	if (vehicle.getId() == "0.5") {
-//	packet->Print(cout) ;
-//		std::cout << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", power: " << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
-//	}
-	double curtime = Simulator::Now().GetSeconds();
-//	if (vehicle.getId() == "0.2") {
-//		std::cout << "fce new neigh: " << curtime << " " << vehicle.getId() << "," <<  "  number of neighbors: " << m_neighborList.size()  << " " << addr << std::endl;
-//	}
-//	std::cout << "fce: " << curtime << " " << vehicle.getId() << "," <<  " discovered a neighbor: " << addr << ", context: " << context << " number of neighbors: " << m_neighborList.size() << ", packet.size: " << packet->GetSize() << ", packet.serializedSize: " << packet->GetSerializedSize()<< std::endl;
 }
 
-
 Vehicle* FceApplication::getData() {
-//    cout << "return vehicle " << vehicle.getId() << endl;
 	return &vehicle;
 }
 

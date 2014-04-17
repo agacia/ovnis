@@ -138,7 +138,7 @@ void Ovnis::DoInitialize(void) {
 
    InitializeSumo();
 
-   InitializeCrowdz();
+   //InitializeCrowdz();
 
    //application
 	m_application_factory.SetTypeId(m_ovnis_application);
@@ -713,16 +713,16 @@ void Ovnis::TrafficSimulationStep() {
 				<< Log::getInstance().getAvgDistance() << endl;
 
 		MapMacVehId();
-		DetectCommunities();
 
-		ReadCommunities(currentTime);
-		TIS::getInstance().communityStep = currentTime;
+//		DetectCommunities();
+//		ReadCommunities(currentTime);
+//		TIS::getInstance().communities = currentTime;
+//		cout << "step\t" << currentTime/1000 << "\trunningVehicles " << runningVehicles.size() << " \tdepartedVehicles " << departedVehicles.size() << " \tarrivedVehicles " << arrivedVehicles.size() << endl;
 
 		runningVehicles.insert(runningVehicles.end(), departedVehicles.begin(), departedVehicles.end());
 		cleanTemporaryArrays();
 
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
-//		cout << " b " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
 
 //		MapMacVehId();
 //		DetectCommunities();

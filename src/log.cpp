@@ -62,7 +62,7 @@ Log::~Log() {
 void Log::logMap(string name, double time, map<string,double> data, double sum) {
 	getStream(name) << time << "\t" << sum << "\t";
 	for (map<string, double>::iterator it = data.begin(); it != data.end(); ++it) {
-		getStream(name) << it->first << "," << it->second << "\t";
+		getStream(name) << it->first << "\t" << it->second << "\t";
 	}
 	getStream(name) << endl;
 }
@@ -86,15 +86,18 @@ ostream & Log::getStream(string name) {
 //	if (name=="") {
 		log = &cout;
 	}
-	else if (logFiles.count(name) > 0) {
-		log = (logFiles.find(name)->second);
-	}
 	else {
-		ofstream * logfile = new ofstream();
-		string fileName = outputFolder + "/" + name;
-		logfile->open(fileName.c_str());
-		logFiles[name] = logfile;
-		log = logfile;
+		name = "log_"+name;
+		if (logFiles.count(name) > 0) {
+			log = (logFiles.find(name)->second);
+		}
+		else {
+			ofstream * logfile = new ofstream();
+			string fileName = outputFolder + "/" + name;
+			logfile->open(fileName.c_str());
+			logFiles[name] = logfile;
+			log = logfile;
+		}
 	}
 	return *log;
 }

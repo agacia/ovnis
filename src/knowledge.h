@@ -69,7 +69,7 @@ public:
 protected:
     Ptr<ovnis::SumoTraciConnection> traci;
 	map<long,int> packets; // counter of packets
-	std::map<std::string, RecordEntry> travelTimes; // info about travel times on routes
+	std::map<std::string, RecordEntry> travelTimes; // info about travel times on edges
 	std::map<std::string, int> numberOfVehicles;
 	map<std::string,double> congestedLengthOnRoutes;
 	map<std::string,double> delayOnRoutes;
