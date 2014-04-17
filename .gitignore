@@ -11,6 +11,7 @@ ovnis2.0.config
 *.creator*
 ovnis2.0.files
 ovnis2.0.includes
+scenarios/*
 scenarios/Highway/*
 scenarios/Kirchberg/*
 gcc
