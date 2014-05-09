@@ -63,6 +63,8 @@ int main(int argc, char ** argv) {
 	string sumoHost = "localhost";
 	string sumoPath = "/opt/sumo/bin/sumo-gui";
 	sumoPath="/opt/sumo/bin/sumo";
+	sumoPath = "/home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
+
 	double communicationRange = MAX_COMMUNICATION_RANGE;
 //	string scenarioFolder = "scenarios/Highway/";
 //	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/";

@@ -23,6 +23,7 @@
  * @author Yoann Pigné <yoann@pigne.org>
  *
  */
+#include <unistd.h>
 #include "traci-client.h"
 #include <iostream>
 #include <iomanip>

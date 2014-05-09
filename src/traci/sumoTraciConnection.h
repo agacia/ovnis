@@ -9,7 +9,7 @@
 #define SUMOTRACICONNECTION_H_
 
 #include <iostream>
-
+#include <unistd.h>
 #define BUILD_TCPIP
 //#include <foreign/tcpip/storage.h>
 //#include <foreign/tcpip/socket.h>

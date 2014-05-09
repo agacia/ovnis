@@ -56,6 +56,7 @@ void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId
 	double delayTime = travelTime - computeStaticCostExcludingMargins(routeId, startEdgeId, endEdgeId);
 //	cout << "logging" << endl;
 	double now = Simulator::Now().GetSeconds();
+	//step	routeId	vehicleId	startReroute	travelTime	startEdgeId	endEdgeId	vehiclesOnRoute[routeId]	isCheater	selfishExpectedTravelTime	expectedTravelTime	wasCongested	delayTime	routing_end	routingStrategy	start	(now-start)
 	Log::getInstance().getStream("routing_end") << now << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
 			<< travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t"
 			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime;
