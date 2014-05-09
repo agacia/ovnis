@@ -723,6 +723,7 @@ void Ovnis::TrafficSimulationStep() {
 		cleanTemporaryArrays();
 
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
+//		cout << " b " << currentTime/1000 << " \t runningVehicles " << runningVehicles.size() << " \t departedVehicles " << departedVehicles.size() << " \t arrivedVehicles " << arrivedVehicles.size() << " \t lastdepartedVehicles " << lastdepartedVehicles.size() << " \t lastrunningVehicles " << lastrunningVehicles.size() << endl;
 
 //		MapMacVehId();
 //		DetectCommunities();
