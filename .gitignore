@@ -17,6 +17,9 @@ scenarios/Highway/*
 scenarios/Kirchberg/*
 src/applications/bindings/*
 gcc
+src/libovnis.la
+config.sub
+src/Makefile.in
 tests/.deps/*
 src/applications/bindings/*
 memcheck.txt
@@ -25,7 +28,9 @@ scenarios/Luxembourg/
 scenarios/Luxembourg/*
 memckeck.txt
 OUTPUT_FOLDER
+INSTALL
 config_cluster.txt
+*.orig
 g++
 src/.deps
 src/.libs

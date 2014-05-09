@@ -35,7 +35,7 @@
 #include "ovnisPacket.h"
 #include "traci/structs.h"
 #include "vehicle.h"
-#include "common/commonHelper.h";
+#include "common/commonHelper.h"
 #include <ctime>
 #include <time.h>
 
@@ -237,15 +237,6 @@ FceApplication::MacAddrMap FceApplication::getNeighborList() {
 	return m_neighborList;
 }
 
-	_neighbors = map<string,neighbor>();
-	_neighborCount = 0;
-//	for (MacAddrMapIterator i = m_neighborList.begin(); i != m_neighborList.end (); ++i) {
-//		std::cout << i->first << "," << i->second << "\t";
-//	}
-//	cout << endl;
-	return m_neighborList;
-}
-
 void FceApplication::SimulationRun(void) {
 	try {
 		if (running == true) {
@@ -367,6 +358,7 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	routeChoice = shortest_choice;
 	if (shortest_choice != "") {
 		routeChoice = shortest_choice;
+	}
 	if (routingStrategy == "probabilistic" && probabilistic_choice != "") {
 		  routeChoice = probabilistic_choice;
 	}
@@ -490,18 +482,6 @@ void FceApplication::CalculateError(string currentEdge) {
 	}
 	Log::getInstance().getStream("edges_perfect") << endl;
 
-
-
-	bool usePerfect = true;
-	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "," << usePerfect << "\n";
-	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), usePerfect); // refer to the last call of vanetsKnowledge.getCosts !
-	Log::getInstance().getStream("edges_perfect") << now << "\t";
-	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_perfect") << it->first << "," << it->second << "\t";
-	}
-	Log::getInstance().getStream("edges_perfect") << endl;
-
-
 	// error
 	double error = 0;
 	double sumSumo = 0;
@@ -515,7 +495,6 @@ void FceApplication::CalculateError(string currentEdge) {
 	}
 	double percent = (sumSumo + sumVanet) == 0 ? 0 : error / (sumSumo + sumVanet);
 	Log::getInstance().getStream("edges_error") << now << "\t" << error << "\t" << percent << "\t" << sumVanet << "\t" << sumSumo << "\t" << sumVanet-sumSumo << endl;
-
 }
 
 void FceApplication::SendNeighborInformation(void) {
@@ -527,9 +506,6 @@ void FceApplication::SendNeighborInformation(void) {
 	}
 }
 
-	}
-}
-
 void FceApplication::SendTrafficInformation(void) {
 	if (running == true) {
 		Vector position = mobilityModel->GetPosition();
@@ -537,9 +513,6 @@ void FceApplication::SendTrafficInformation(void) {
 //		cout << "records.size() " << records.size() << endl;
 		if (records.size() > 0) {
 			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
-//			if (vehicle.getId() == "1.7") {
-//				cout << Simulator::Now().GetSeconds() << " vehicle " << vehicle.getId() << " sending traffic packet" << endl;
-//			}
 			SendPacket(p);
 		}
 		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
@@ -668,11 +641,5 @@ Vehicle* FceApplication::getData() {
 	return &vehicle;
 }
 
-
-Vehicle FceApplication::getData() {
-	Object o;
-	cout << "v" << endl;
-	return vehicle;
-}
 
 }

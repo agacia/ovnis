@@ -77,18 +77,10 @@ void OvnisApplication::SetParams(std::map <string,string> params) {
 	_applicationParams = params;
 }
 
-void OvnisApplication::SetParams(std::map <string,string> params) {
-	_applicationParams = params;
-}
-
 void OvnisApplication::ReceiveData(Ptr<Socket> x) {
 }
 
 }
-
-
-}
-
 
 Vehicle* OvnisApplication::getData() {
 	Vehicle* v = new Vehicle();

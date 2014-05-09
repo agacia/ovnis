@@ -116,34 +116,16 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		double packetDate = recordEntry.getLatestTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average
+		double avgTravelTime = it->second.getAverageValue();
+		double avgPacketDate = it->second.getAverageTime();
 		travelTime = avgTravelTime;
 		packetDate = avgPacketDate;
-//		if (usePerfectInformation) {
-////			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\t" << edgeId << "\tvanet\t" << travelTime << "\t" << packetAge;
-//			travelTime = TIS::getInstance().getEdgePerfectCost(edgeId);
-//			packetDate = Simulator::Now().GetSeconds();
-//			packetAge = 0;
-//			travelTimes[edgeId].add(0, "", packetDate, travelTime);
-////			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\tperfect\t" << travelTime << "\t" << packetAge << endl;
-//		}
-		double staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
-		if (staticCost != 0) {
-			recordEntry.setCapacity(staticCost);
-		}
-		int vehs = numberOfVehicles[it->first];
-		// calculate travel times on routes
-			travelTime = TIS::getInstance().getEdgePerfectCost(edgeId);
-			packetDate = Simulator::Now().GetSeconds();
-			packetAge = 0;
-			travelTimes[edgeId].add(0, "", packetDate, travelTime);
-			Log::getInstance().getStream("perfect") << Simulator::Now().GetSeconds() << "\tperfect\t" << travelTime << "\t" << packetAge << endl;
-		}
-		double staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
-		if (staticCost != 0) {
-			recordEntry.setCapacity(staticCost);
-		}
-		int vehs = numberOfVehicles[it->first];
 
+		double staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
+		if (staticCost != 0) {
+			recordEntry.setCapacity(staticCost);
+		}
+		int vehs = numberOfVehicles[it->first];
 		// calculate travel times on routes
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)) { // if the edge belongs to the part of the future route
@@ -198,7 +180,8 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
 		packetAgesOnRoutes[it->first] = numberOfUpdatedEdges[it->first] == 0 ? 0 : packetAgesOnRoutes[it->first] / numberOfUpdatedEdges[it->first];
 //		Log::getInstance().getStream("vanets_knowledge") << it->first << "," << numberOfUpdatedEdges[it->first] << "," << it->second.countEdgesExcludedMargins(startEdgeId, endEdgeId) << "\t";
-//	Log::getInstance().getStream("vanets_knowledge") << endl;
+	}
+		//	Log::getInstance().getStream("vanets_knowledge") << endl;
 //	for (map<string, double>::iterator it = newTravelTimesOnRoutes.begin(); it != newTravelTimesOnRoutes.end(); ++it) {
 //		cout << "route " << it->first << ", new travel time " << it->second << ", traveltime " << travelTimesOnRoutes[it->first] << ", number of updated edges: " << numberOfUpdatedEdges[it->first] << " / number of edges: " << numberOfEdges[it->first] << endl;
 //	}
