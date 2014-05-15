@@ -49,15 +49,15 @@ public:
 	map<string,RecordEntry> & getRecords();
 
 	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, bool usePerfectInformation);
-	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeI);
+	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId);
 
-	map<std::string,double> getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, bool usePerfect);
 
 	map<std::string,double> getCongestedLengthOnRoutes();
 	map<std::string,double> getDenseLengthOnRoutes();
 	map<std::string,double> getTravelTimesOnRoutes();
 	map<std::string,double> getDelayOnRoutes();
-    map<std::string,double> getEdgesCosts(map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId);
+    map<std::string,double> getEdgesCosts(map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId, double ttl);
+	map<std::string,double> getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl, bool usePerfect);
     bool isCongestedFlow() const;
     bool isDenseFlow() const;
 

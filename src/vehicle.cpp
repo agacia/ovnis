@@ -207,6 +207,22 @@ namespace ovnis {
 			}
 
 		}
+//		if (routeAhead.size() < 15) {
+//			cerr << "currentRoute.getEdgeIds() " << currentRoute.getId() << " " << currentRoute.getEdgeIds().size() << ", current edge " << itinerary.getCurrentEdge().getId() << ", ahead " << routeAhead.size() << endl;
+//		}
+		// add edges from alternative routes
+//		for (map<string, Route>::iterator itRoutes = scenario.getAlternativeRoutes().begin(); itRoutes != scenario.getAlternativeRoutes().end(); ++itRoutes) {
+//			if (currentRoute.getId() != itRoutes->first) {
+//				for (vector<string>::iterator it = itRoutes->second.getEdgeIds().begin(); it != itRoutes->second.getEdgeIds().end(); ++it) {
+//					//cerr << "checking edge " << *it << endl;
+//					vector<string>::iterator edge = find (routeAhead.begin(), routeAhead.end(), *it);
+//					if (edge != routeAhead.end()) {
+//						routeAhead.push_back(*it);
+//						cerr << "addind " <<  *it << endl;
+//					}
+//				}
+//			}
+//		}
 		return routeAhead;
 	}
 

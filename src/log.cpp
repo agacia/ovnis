@@ -87,7 +87,7 @@ ostream & Log::getStream(string name) {
 		log = &cout;
 	}
 	else {
-		name = "log_"+name;
+		name = "output_log_"+name;
 		if (logFiles.count(name) > 0) {
 			log = (logFiles.find(name)->second);
 		}

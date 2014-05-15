@@ -35,7 +35,7 @@ public:
 	virtual ~SumoTraciConnection();
 
 	// simulation
-	void RunServer(std::string sumoConfig, std::string host, std::string sumoPath, int port, std::string outputFolder);
+	void RunServer(std::string sumoConfig, std::string host, std::string sumoPath, int port, std::string scenarioFolder, std::string outputFolder);
 	void SubscribeSimulation(int startTime, int stopTime);
 	void NextSimStep(std::vector<std::string> & departedVehicles, std::vector<std::string> & arrivedVehicles);
 	const int GetCurrentTime() const;
@@ -90,7 +90,7 @@ protected:
 
     SimStepQuery stepQuery;
 
-    int StartSumo(std::string config, std::string sumoPath, std::string outputFolder);
+    int StartSumo(std::string config, std::string sumoPath, std::string scenarioFolder, std::string outputFolder);
 
 };
 

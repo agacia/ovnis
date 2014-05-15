@@ -23,19 +23,48 @@ Dissemination::~Dissemination() {
 /**
  * Takes only the information about requested edges
  */
-vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges) {
+vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges, double ttl) {
 	vector<Data> trafficData;
 	if (knowledge.getRecords().size() > 0) {
+		double now =  Simulator::Now().GetSeconds();
 		for (vector<string>::iterator it = edges.begin(); it != edges.end(); ++it) {
 			if (knowledge.getRecords().find(*it) != knowledge.getRecords().end()) {
+				double packetDate =  knowledge.getRecords()[*it].getLatestTime();
+//				?if (packetDate == 0 or (now-packetDate) > ttl) {
+//					cerr << "Discarding packet about " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
+//					continue;
+//				}
+//				cerr << "Adding to packet information about edge " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
 				Data data;
 				data.edgeId = *it;
-				data.date = knowledge.getRecords()[*it].getLatestTime();
+				data.date = packetDate;
 				data.travelTime = knowledge.getRecords()[*it].getLatestValue();
 				trafficData.push_back(data);
 			}
 		}
+//		cerr << "Sending packet about " << trafficData.size() << " edges (of " << edges.size() << " requested) , knowledge " << knowledge.getRecords().size() << endl;
 	}
+	return trafficData;
+}
+
+vector<Data> Dissemination::getTrafficInformationToSend(map<string,RecordEntry> edges, double ttl) {
+	vector<Data> trafficData;
+	double now =  Simulator::Now().GetSeconds();
+	for (map<string, RecordEntry>::iterator it = edges.begin(); it != edges.end(); ++it) {
+		double packetDate =  it->second.getLatestTime();
+//		if (packetDate == 0 or (now-packetDate) > ttl) {
+//			cerr << "Discarding packet about " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << ", " << trafficData.size() << " (of " << edges.size() << " requested) " << endl;
+//			continue;
+//		}
+//		cerr << "Adding to packet information about edge " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
+		Data data;
+		data.edgeId = it->first;
+		data.date = packetDate;
+		data.travelTime = it->second.getLatestValue();
+		trafficData.push_back(data);
+	}
+//	cerr << "Sending packet about " << trafficData.size() << " edges (of " << edges.size() << " requested) " << endl;
+
 	return trafficData;
 }
 

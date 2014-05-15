@@ -1,0 +1,38 @@
+ovnisdir=~/Documents/workshop/ovnis
+
+export LD_LIBRARY_PATH=~/Documents/workshop/ns-3.18/build/
+$ovnisdir/test/ovnisSample_static
+
+strategyname=12052014/perfect/prob
+
+dir=$ovnisdir/scenarios/Kirchberg
+scriptdir=ovnisdir/python
+scriptdir2=ovnisdir/scripts
+# sumodir=/home/agata/Documents/workshop/sumo-0.18.0
+# mv $dir/output_sumo* $dir/$strategyname/
+dir=$dir/$strategyname
+
+# analyse mean travel time + plot
+# python $scriptdir2/analyse.py --inputFile "$dir/output_sumo_summary.xml" --outputFile "$dir/output_sumo_summary_analysis.txt" --outputDir "$dir/" --rootTagName summary --tagName step --startX 0 --endX 3600 --stepSize 1
+# convert tripinfo to csv
+# python $sumodir/tools/output/xml2csv.py $dir/output_sumo_tripinfo.xml
+# analyse tripinfo + plot
+# python $scriptdir/analyse.py --inputFile $dir/output_sumo_tripinfo.csv --outputDir $dir/
+# mv "${dir}/plot_Trip duration_lines.png" "${dir}/plot_Trip duration_lines_sumo.png.png"
+# mv "${dir}/plot_Trip duration_scatterplot.png" "${dir}/plot_Trip duration_scatterplot_sumo.png"
+
+printf "arrival\trouteId\tvehicleId\tstartReroute\ttravelTime\tstartEdgeId\tendEdgeId\tvehiclesOnRoute\tisCheater\tselfishExpectedTravelTime\texpectedTravelTime\twasCongested\tdelayTime\troutingStrategy\tstart\tduration\n$( cat $dir/output_log_routing_end )" > $dir/output_log_routing_end
+python $scriptdir/analyse.py --inputFile $dir/output_log_routing_end --outputDir $dir/
+
+
+
+####
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1112.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1113.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1114.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1115.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1116.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1117.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1118.sumocfg' 
+cp '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1111.sumocfg'  '/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/scenario_accident_const_1119.sumocfg' 
+

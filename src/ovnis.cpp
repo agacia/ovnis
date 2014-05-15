@@ -79,6 +79,7 @@ ns3::TypeId Ovnis::GetTypeId(void) {
 			AddAttribute("SumoConfig","The configuration file for running SUMO", StringValue("/Users/pigne/Documents/Projects/TrafficSimulation/SimpleTrafficApplication/kirchberg.sumo.cfg"),MakeStringAccessor(&Ovnis::sumoConfig), MakeStringChecker()).
 			AddAttribute("SumoHost", "The host machine on which SUMO will run",StringValue(SUMO_HOST),MakeStringAccessor(&Ovnis::sumoHost), MakeStringChecker()).
 //			AddAttribute("OutputFolder", "Output folder name", StringValue("outputFolder"), MakeStringAccessor(&Ovnis::outputFolder), MakeStringChecker()).
+//			AddAttribute("SumoPort", "The port on machine on which SUMO will run",IntegerValue(0),MakeIntegerAccessor(&Ovnis::sumoPort), MakeIntegerChecker<int>(0)).
 			AddAttribute("ScenarioFolder", "Scenario folder path", StringValue("scenarioFolder"), MakeStringAccessor(&Ovnis::scenarioFolder), MakeStringChecker()).
 			AddAttribute( "StartTime", "Start time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::startTime), MakeIntegerChecker<int>(0)).
 			AddAttribute("StopTime", "Stop time in the simulation scale (in seconds)", IntegerValue(0), MakeIntegerAccessor(&Ovnis::stopTime), MakeIntegerChecker<int>(0)).
@@ -124,12 +125,14 @@ void Ovnis::DoInitialize(void) {
 //	LogComponentEnable("OvnisWifiChannel", LOG_LEVEL_INFO);
 //	LogComponentEnable("OvnisWifiPhy", LOG_LEVEL_INFO);
 
+	sumoHost = "localhost";
     is80211p = true;
     isOvnisChannel = false;
 	currentTime = 0;
     Names::Add("Ovnis", this);
+    outputFolder = _params["outputFolder"];
 
-    Log::getInstance().setOutputFolder(scenarioFolder + "ovnisOutput");
+    Log::getInstance().setOutputFolder(outputFolder);
     map<string, string>::iterator it = _params.find("outputFolder");
     if (it != _params.end()) {
     	cout << "Setting output folder " << it->second << endl;
@@ -150,6 +153,7 @@ void Ovnis::DoInitialize(void) {
 	start =  time(0);
 	Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 	Log::getInstance().getStream("simulation") << "start\t" << start << endl;
+	Log::getInstance().getStream("simulation") << "communication range\t" << communicationRange << endl;
 	Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 	Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 
@@ -165,7 +169,7 @@ bool Ovnis::ReadCommunities(int step) {
 	cout << "ReadCommunities reading communities for step " << step << ", posstream " << posstream << " communitystream.tellg() " << communitystream.tellg() << endl;
 	if (step > 0) {
 		while (!communitystream.is_open()) {
-			communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+			communitystream.open((outputFolder +  "/communities.csv").c_str());
 		}
 		if (communitystream.is_open()) {
 			if (posstream != -1) {
@@ -201,7 +205,7 @@ bool Ovnis::ReadCommunities(int step) {
 				if (communitystream.tellg() == -1 && readSteps == false) {
 //					cout << "restart " << communitystream.tellg() << ", posstream " << posstream << endl;
 					communitystream.close();
-					communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+					communitystream.open((outputFolder +  "/communities.csv").c_str());
 					if (posstream == -1) {
 						communitystream.seekg(0);
 					} else {
@@ -220,7 +224,7 @@ bool Ovnis::ReadCommunities(int step) {
 void Ovnis::ReadCommunities() {
 	string line;
 	while (!communitystream.is_open()) {
-		communitystream.open((scenarioFolder +  "/communities.csv").c_str());
+		communitystream.open((outputFolder +  "/communities.csv").c_str());
 	}
 	if (communitystream.is_open()) {
 		bool nextStep = true;
@@ -270,7 +274,7 @@ void Ovnis::InitializeCrowdz() {
 	else if (com_pid == 0) {
 		char buff[512];
 		ofstream out;
-		out.open((scenarioFolder+"/crowdz_output.log").c_str());
+		out.open((outputFolder+"/crowdz_output.log").c_str());
 		out << "Output log file from crowdz's execution.";
 		string jar = "/Users/agatagrzybek/workspace/crowds/crowdz-trafficEQ.jar";
 		string inputfile = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/vanet.dgs";
@@ -282,9 +286,9 @@ void Ovnis::InitializeCrowdz() {
 		string speedType = "timemean";
 
 		std::stringstream str;
-		str << "java -Xmx4096m -jar " << jar << " --inputFile \"" << inputfile << "\" --outputDir " << scenarioFolder+"/" << " --startStep " << startTime <<
+		str << "java -Xmx4096m -jar " << jar << " --inputFile \"" << inputfile << "\" --outputDir " << outputFolder+"/" << " --startStep " << startTime <<
 				" --endStep " << stopTime << " --algorithm " << algorithm << " --congestion " << congestion << " --congestionSpeedThreshold " << congestion_threshold << " --speedHistoryLength " << history_length <<
-				" > " <<  scenarioFolder << "/crowds2log.txt";
+				" > " <<  outputFolder << "/crowds2log.txt";
 		string call = str.str();
 		cout << "call " << call << endl;
 		system((call).c_str());
@@ -301,7 +305,7 @@ void Ovnis::InitializeCrowdz() {
 void Ovnis::InitializeSumo() {
 	 try {
 		traci = CreateObject<SumoTraciConnection> ();
-		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder);
+		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder, outputFolder);
 		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
 		traci->NextSimStep(departedVehicles, arrivedVehicles);
 		vector<double> bounds = traci->GetSimulationBoundaries();
@@ -313,12 +317,12 @@ void Ovnis::InitializeSumo() {
 		sumo_pid = traci->pid;
 	}
 	catch (TraciException &e) {
-		cerr << "TrafficSimulationStep " << e.what();
+		Log::getInstance().getStream("sumo") << "Initialize sumo , error in traci connection " << e.what();
 	}
 	catch(exception & e) {
-		cerr << "#Error while connecting: " << e.what();
+		Log::getInstance().getStream("sumo") << "#Error while connecting: " << e.what();
 	}
-	cout << "after InitializeSumo" << endl;
+	Log::getInstance().getStream("sumo") << "after InitializeSumo" << endl;
 }
 
 void Ovnis::InitializeNetwork() {
@@ -450,7 +454,6 @@ void Ovnis::writeStep(ostream& out) {
 		out << "DGS004" << endl;
 		out << "vanet 0 0" << endl;
 	}
-//	cout << "st " << ((step)/1000) << endl;
 	out << "st " << ((step)/1000) << endl;
 }
 
@@ -526,7 +529,6 @@ void Ovnis::writeEdges(ostream& out) {
 					string n1 = vehicle->getId();
 					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
 						string n2 = macList[i->first];
-//						cout << "ae ? " << n1 << " " << n2 << " addedEdges " << addedEdges.size() << endl;
 						writeEdge("ae", n1, n2, addedEdges, out);
 					}
 					for (MacAddrMapIterator i =vehicle->m_neighborListDiscovered.begin(); i != vehicle->m_neighborListDiscovered.end (); ++i) {
@@ -546,7 +548,6 @@ void Ovnis::writeEdges(ostream& out) {
 void Ovnis::writeEdge(string cmd, string n1, string n2, map<string, string>& addedEdges, ostream& out) {
 	string edge1 = n1+"-"+n2;
 	string edge2 = n2+"-"+n1;
-//	cout << "Checkig edge " << edge1 << " and " << edge2 << " in added edges " << addedEdges.size() << endl;
 	map<string,string>::iterator it1 = addedEdges.find(edge1);
 	// an edge has not yet been added, add both edges
 	if (it1 == addedEdges.end()) {
@@ -596,7 +597,9 @@ void Ovnis::UpdateInOutVehicles() {
 	node_container.Create(departedVehicles.size());
 	int j = 0;
 	for (vector<string>::iterator i = departedVehicles.begin(); i != departedVehicles.end(); ++i) {
-		Names::Add("Nodes", (*i), node_container.Get(j));
+		Ptr<Node> nod = node_container.Get(j);
+		string vehicleId = Names::FindName(nod);
+		Names::Add("Nodes", (*i), nod);
 		++j;
 	}
 
@@ -740,9 +743,6 @@ void Ovnis::TrafficSimulationStep() {
 			Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 		}
 		else {
-			pclose(fp_com);
-			cout << "kill java " << kill(com_pid, SIGTERM) << endl;
-			cout << " kill sumo " << kill(sumo_pid, SIGKILL) << endl;
 			DestroyNetworkDevices(runningVehicles);
 			Log::getInstance().summariseSimulation("simulation");
 			time_t stop = time(0);
@@ -752,6 +752,15 @@ void Ovnis::TrafficSimulationStep() {
 			Log::getInstance().getStream("simulation") << "needed probabilistic (congestion detected)\t" << Log::getInstance().needProbabilistic << endl;
 			Log::getInstance().getStream("simulation") << "could cheat (the sugegsted trip != the shortest)\t" << Log::getInstance().cheaters << endl;
 			Log::getInstance().getStream("simulation") << "cheaters (actually cheatet)\t" << Log::getInstance().cheaters << endl;
+			try {
+				pclose(fp_com);
+				cout << "kill java " << kill(com_pid, SIGTERM) << endl;
+				cout << " kill sumo " << kill(sumo_pid, SIGTERM) << endl;
+			}
+			catch (exception &e) {
+				cerr << "Traci closing " << e.what();
+			}
+
 		}
 	}
 	catch (TraciException &e) {
@@ -760,7 +769,7 @@ void Ovnis::TrafficSimulationStep() {
 }
 
 void Ovnis::DetectCommunities() {
-	ostream & communityStream = Log::getInstance().getStream("vanet.dgs");
+	ostream & communityStream = Log::getInstance().getStream("crowdz_vanet.dgs");
 	communityStream.setf( std::ios::fixed, std:: ios::floatfield );
 	communityStream.precision(4);
 	writeStep(communityStream);

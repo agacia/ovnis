@@ -32,20 +32,23 @@ SumoTraciConnection::SumoTraciConnection()
 SumoTraciConnection::~SumoTraciConnection() {
 }
 
-void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "", string sumoPath = "", int port = 0, string outputFolder="") {
+void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "localhost", string sumoPath = "", int port = 0, string scenarioFolder="", string outputFolder="") {
 	currentTime = 0;
 	if (!host.empty()) {
 		this->host = host;
 	}
 	this->port = port;
 	if (!sumoConfig.empty()) {
-		this->port = StartSumo(sumoConfig, sumoPath, outputFolder);
+		this->port = StartSumo(sumoConfig, sumoPath, scenarioFolder, outputFolder);
+	}
+	if (port != 0) {
+		this->port = port;
 	}
 	socket = Socket(this->host, this->port);
 	sleep(2);
 	try {
 		socket.connect();
-		Log::getInstance().getStream("") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
+		Log::getInstance().getStream("sumo") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
 	}
 	catch (SocketException & e) {
 		cerr << e.what();
@@ -54,7 +57,7 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "", st
 	stepQuery = SimStepQuery(&socket, currentTime);
 }
 
-int SumoTraciConnection::StartSumo(string config, string sumoPath, string outputFolder) {
+int SumoTraciConnection::StartSumo(string config, string sumoPath, string scenarioFolder, string outputFolder) {
 	this->sumoPath = sumoPath;
 	this->config = config;
 	if (config.empty()) {
@@ -66,7 +69,7 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 	}
 	// retrieve SUMO network port number and simulation boundaries from config files
 	int sumoPort;
-	string configPath = outputFolder+config;
+	string configPath = scenarioFolder+config;
 	cout << "Reading config file " << configPath << endl;
 	XMLSumoConfParser::parseConfiguration(configPath, &sumoPort, boundaries);
 	this->port = sumoPort;
@@ -76,16 +79,17 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string output
 	if ((pid = fork()) == 0) {
 		char buff[512];
 		ofstream out;
-		out.open((outputFolder+"/sumo_output.log").c_str());
+		out.open((outputFolder+"/output_sumo.log").c_str());
 		out << "Output log file from sumo's execution.";
 		FILE * fp;
-		string args =  " --summary-output=" + outputFolder+"summary.xml "
+		string args = " "
+//				+ " --summary-output=" + outputFolder+"summary.xml "
 //				+ "--fcd-output=" + outputFolder + "fcd.xml "
 //				+ " --netstate="   + outputFolder + "netsate.xml"
-				+ "--tripinfo-output=" + outputFolder + "tripinfo.xml "
+//				+ "--tripinfo-output=" + outputFolder + "tripinfo.xml "
 //				+ "--full-output=" + outputFolder + "/full.xml";
 				;
-		if ((fp = popen((sumoPath + " -c " + outputFolder+"/"+config + " " + args + " 2>&1").c_str(), "r")) == NULL) {
+		if ((fp = popen((sumoPath + " -c " + configPath + " " + args + " 2>&1").c_str(), "r")) == NULL) {
 			cerr <<  "#Error: Sumo processes cannot be created" << endl;
 			throw;
 		}

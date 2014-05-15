@@ -144,7 +144,8 @@ namespace ns3
 
 	bool isVanet;
 	Knowledge vanetsKnowledge; // A local VANET's database containing traffic information ONLY heard from other vehicles
-    bool running;
+    double ttl;
+	bool running;
 	bool decisionTaken;
 	bool notificationSent;
 	double startReroute;

@@ -93,7 +93,7 @@ void FceApplication::InitializeParams() {
 	for (map<string, string>::iterator i = m_params.begin(); i != m_params.end(); ++i) {
 		Log::getInstance().getStream("scenarioSettings") << i->first << "\t" << i->second << endl;
 	}
-
+	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "\t" << m_params["usePerfect"] << "\n";
 	// select routing strategy
 	m_params["routingStrategy"] = "hybrid";
 	vector<string> routingStrategies = CommonHelper::split(m_params["routingStrategies"], ',');
@@ -111,6 +111,8 @@ void FceApplication::InitializeParams() {
 	Log::getInstance().getStream("scenarioSettings") << "\nSelected routing strategy " << m_params["routingStrategy"] << endl;
 	Log::getInstance().getStream("selectedStrategies") << m_params["routingStrategy"] << endl;
 	SetNetwork(m_params["networkId"]);
+	ttl =  atof(m_params["ttl"].c_str());
+	Log::getInstance().getStream("scenarioSettings") << ttl << endl;
 }
 
 /**
@@ -193,7 +195,6 @@ void FceApplication::StartApplication(void) {
 	m_trafficInformationEvent = Simulator::Schedule(Seconds(0), &FceApplication::SendTrafficInformation, this);
 //	m_neighborInformationEvent = Simulator::Schedule(Seconds(r<r2?r:r2), &FceApplication::SendNeighborInformation, this);
 	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
-	m_simulationEvent = Simulator::Schedule(Seconds(r<r2?r2:r), &FceApplication::SimulationRun, this);
 
 }
 
@@ -252,6 +253,9 @@ void FceApplication::SimulationRun(void) {
 			// if approaching an intersection take decision which route to take from current to destination edge
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdgeId) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
+
+//				cout << "vehicle " << vehicle.getId() << " makes decision, vanet records: " << vanetsKnowledge.getRecords().size() <<" " << TIS::getInstance().getPerfectTravelTimes().size() << endl;
+
 				isDense = false;
 				isCongested = false;
 				map<string, double> cost = EstimateTravelCostBasedOnCentralised(now, currentEdgeId);
@@ -286,15 +290,18 @@ void FceApplication::SimulationRun(void) {
  * Broadcast information about it and about travel time on the last edge
  */
 void FceApplication::OnEdgeChanged(double now, string currentEdgeId) {
-	Edge lastEdge = vehicle.getItinerary().getLastEdge();
-	double travelTimeOnLastEdge = lastEdge.getTravelTime();
-	string lastEdgeId = lastEdge.getId();
-	Vector position = mobilityModel->GetPosition();
-	Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
-	Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdgeId);
-	SendPacket(p);
-	TIS::getInstance().reportEndingEdge(vehicle.getId(), lastEdgeId,  travelTimeOnLastEdge);
-	//	Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
+	double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+	if (r <= 1.0) {
+		Edge lastEdge = vehicle.getItinerary().getLastEdge();
+		double travelTimeOnLastEdge = lastEdge.getTravelTime();
+		string lastEdgeId = lastEdge.getId();
+		Vector position = mobilityModel->GetPosition();
+		Log::getInstance().reportEdgePosition(lastEdge.getId(), position.x, position.y);
+		Ptr<Packet> p = OvnisPacket::BuildChangedEdgePacket(now, vehicle.getId(), position.x, position.y, CHANGED_EDGE_PACKET_ID, lastEdgeId, travelTimeOnLastEdge, currentEdgeId);
+		SendPacket(p);
+		TIS::getInstance().reportEndingEdge(vehicle.getId(), lastEdgeId,  travelTimeOnLastEdge);
+		//	Log::getInstance().getStream(lastEdgeId) << "vehicle: " << vehicle.getId() << "\t now:" << now << "\t travelTimeOnLastEdge: " << travelTimeOnLastEdge << "\t vehs on route: " <<  TIS::getInstance().getVehiclesOnRoute("main") << endl;
+	}
 }
 
 
@@ -310,24 +317,19 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 	// for shortest we need to reset (do dynamic value)
 	map<string,double> routeTTL;
 	for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
-		routeTTL[it->first] = PACKET_TTL;
+		routeTTL[it->first] = ttl;
 	}
-//	if (m_params["routingStrategy"] == "shortest") {
-//		for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
-//			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdgeId, endEdgeId) * (1+ CONGESTION_THRESHOLD);
-////			routeTTL[it->first] = TIS::getInstance().computeStaticCostExcludingMargins(it->first, currentEdge, endEdgeId);
-////			routeTTL[it->first] = 120;
-//		}
-//	}
-	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, true);
+
+	bool usePerfect = m_params["usePerfect"] == "true";
+	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, usePerfect);
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
 //		cout << "in fce read knowledge: route " << it->first << ", travel time " << it->second << endl;
 //	}
 	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
 	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
-	Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
-	Log::getInstance().logMap("congestion_scale", now, congestionLengthCost, 0);
-	Log::getInstance().logMap("travelTime_scale", now, travelTimeCost, 0);
+//	Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
+//	Log::getInstance().logMap("congestion_scale", now, congestionLengthCost, 0);
+//	Log::getInstance().logMap("travelTime_scale", now, travelTimeCost, 0);
 	map<string, double> cost = travelTimeCost;
 	if (costFunction == "congestionLength") {
 		cost = congestionLengthCost;
@@ -454,47 +456,43 @@ map<string, double> FceApplication::AnalyseRouteCorrelation() {
 }
 
 void FceApplication::CalculateError(string currentEdge) {
-
-//	string currentEdgeId = vehicle.getItinerary().getCurrentEdge().getId();
-	map<string, double> sumoEdgesCosts = vehicle.getSumoCosts(currentEdge);
-	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId()); // refer to the last call of vanetsKnowledge.getCosts !
-
 	double now = Simulator::Now().GetSeconds();
+	map<string, RecordEntry> vanetRecords = vanetsKnowledge.getRecords();
+	map<string, RecordEntry> perfectRecords = TIS::getInstance().getPerfectTravelTimes();
+//	Log::getInstance().getStream("edges_error") << now << "\t" << vehicle.getId() << "\tvanets:\t" << vanetRecords.size() << "\tperfect\t" << perfectRecords.size() << "\t";
+//	for (map<string, EdgeInfo>::iterator it = TIS::getInstance().getStaticRecords().begin(); it != TIS::getInstance().getStaticRecords().end(); ++it) {
+//		double vanetTT = vanetRecords.find(it->first) == vanetRecords.end() ? 0 : (vanetRecords[it->first]).getLatestValue();
+//		double perfectTT = perfectRecords.find(it->first) == perfectRecords.end() ? 0 : (perfectRecords[it->first]).getLatestValue();
+//		if (perfectTT != 0.0) {
+//			Log::getInstance().getStream("edges_error") << "\t"  << it->first << "\t" << it->second.getStaticCost() << "\t" << perfectTT << "\t" << vanetTT ;
+//		}
+//	}
+//	Log::getInstance().getStream("edges_error") << endl;
 
-	Log::getInstance().getStream("edges_sumo") << now << "\t";
-	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_sumo") << "\t"  << it->first << "\t" << it->second << "\t";
-	}
-	Log::getInstance().getStream("edges_sumo") << endl;
+	string currentEdgeId = vehicle.getItinerary().getCurrentEdge().getId();
+	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), ttl, false); // refer to the last call of vanetsKnowledge.getCosts !
+	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), ttl, true); // refer to the last call of vanetsKnowledge.getCosts !
 //	Log::getInstance().getStream("edges_vanet") << now << "\t";
 //	for (map<string, double>::iterator it=vanetEdgesCosts.begin(); it!=vanetEdgesCosts.end(); ++it) {
-//		Log::getInstance().getStream("edges_vanet") << it->first << "," << it->second << "\t";
+//		Log::getInstance().getStream("edges_vanet") << it->first << "\t" << it->second << "\t";
 //	}
 //	Log::getInstance().getStream("edges_vanet") << endl;
-
-
-	bool usePerfect = true;
-	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "," << usePerfect << "\n";
-	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId(), usePerfect); // refer to the last call of vanetsKnowledge.getCosts !
-	Log::getInstance().getStream("edges_perfect") << now << "\t";
-	for (map<string, double>::iterator it=perfectEdgesCosts.begin(); it!=perfectEdgesCosts.end(); ++it) {
-		Log::getInstance().getStream("edges_perfect") << it->first << "\t" << it->second << "\t";
-	}
-	Log::getInstance().getStream("edges_perfect") << endl;
-
+//	Log::getInstance().getStream("edges_perfect") << now << "\t";
+//	for (map<string, double>::iterator it=perfectEdgesCosts.begin(); it!=perfectEdgesCosts.end(); ++it) {
+//		Log::getInstance().getStream("edges_perfect") << it->first << "\t" << it->second << "\t";
+//	}
+//	Log::getInstance().getStream("edges_perfect") << endl;
 	// error
-	double error = 0;
-	double sumSumo = 0;
+	double error_vanet = 0;
 	double sumVanet = 0;
-	for (map<string, double>::iterator it=sumoEdgesCosts.begin(); it!=sumoEdgesCosts.end(); ++it) {
-//		if (it->second < 1000) {
-			error += abs(it->second - vanetEdgesCosts[it->first]);
-			sumSumo += it->second;
-			sumVanet += vanetEdgesCosts[it->first];
-//		}
+	double sumPerfect = 0;
+	for (map<string, double>::iterator it=perfectEdgesCosts.begin(); it!=perfectEdgesCosts.end(); ++it) {
+		error_vanet += abs(it->second - vanetEdgesCosts[it->first]);
+		sumPerfect += it->second;
+		sumVanet += vanetEdgesCosts[it->first];
 	}
-	double percent = (sumSumo + sumVanet) == 0 ? 0 : error / (sumSumo + sumVanet);
-	Log::getInstance().getStream("edges_error") << now << "\t" << error << "\t" << percent << "\t" << sumVanet << "\t" << sumSumo << "\t" << sumVanet-sumSumo << endl;
+//	time	vehicleid	vanets	perfect	error_vanet	sumPerfect	sumVanet	sumVanet-sumPerfect
+	Log::getInstance().getStream("edges_error") << now << "\t" << vehicle.getId() << "\t" << vanetRecords.size() << "\t" << perfectRecords.size() << "\t" << error_vanet << "\t" << sumPerfect << "\t" << sumVanet << "\t" << sumVanet-sumPerfect << endl;
 }
 
 void FceApplication::SendNeighborInformation(void) {
@@ -508,14 +506,35 @@ void FceApplication::SendNeighborInformation(void) {
 
 void FceApplication::SendTrafficInformation(void) {
 	if (running == true) {
-		Vector position = mobilityModel->GetPosition();
-		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead());
-//		cout << "records.size() " << records.size() << endl;
-		if (records.size() > 0) {
-			Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
-			SendPacket(p);
+		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
+//		if (vehicle.getId() == "2.9") {
+		if (r <= 1.0) {
+			double now = Simulator::Now().GetSeconds();
+			Vector position = mobilityModel->GetPosition();
+	//		vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge.getRecords(), 120);
+			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead(), ttl);
+	//		for (vector<Data>::iterator it = records.begin(); it < records.end(); ++it) {
+	//			if (it->edgeId == "56640728#3") {
+	//				cerr << now << " Vehicle " << vehicle.getId() << " on edge " << vehicle.getItinerary().getCurrentEdge().getId() << " will send information with accident " << it->edgeId << " " << it->date << " " << it->travelTime << endl;
+	//			}
+	//		}
+	//		if (vehicle.getId() == "2.9") {
+	//			for (vector<Data>::iterator it = records.begin(); it < records.end(); ++it) {
+	//				if (it->edgeId == "56640728#3") {
+	//					cerr << now << " Vehicle " << vehicle.getId() << " " << vehicle.getItinerary().getCurrentEdge().getId() << " will send information on edge with accident " << it->edgeId << " " << it->date << " " << it->travelTime << endl;
+	//				}
+	//			}
+	//		}
+			//		cout << "vehicle " << vehicle.getId() << ", vanet knowledge " << vanetsKnowledge.getRecords().size() << " " << " records.size() " << records.size() << endl;
+			if (records.size() > 0) {
+//				vector<Data> recordstemp;
+//				recordstemp.push_back(records[0]);
+				Ptr<Packet> p = OvnisPacket::BuildTrafficInfoPacket(Simulator::Now().GetSeconds(), vehicle.getId(), position.x, position.y, TRAFFICINFO_PACKET_ID, records.size(), records);
+				SendPacket(p);
+			}
+			//TRAFFIC_INFORMATION_SENDING_INTERVAL
+			m_trafficInformationEvent = Simulator::Schedule(Seconds(2+r), &FceApplication::SendTrafficInformation, this);
 		}
-		m_trafficInformationEvent = Simulator::Schedule(Seconds(TRAFFIC_INFORMATION_SENDING_INTERVAL), &FceApplication::SendTrafficInformation, this);
 	}
 }
 
@@ -524,14 +543,17 @@ void FceApplication::SendPacket(Ptr<Packet> packet) {
 		return;
 	}
 	try {
-		if (m_socket->Send(packet) == -1) {
-//		if (m_socket->SendTo(packet, 0, realTo) == -1) {
-			cerr << "CrashTestApplication : error while sending packet : " << m_socket->GetErrno() << "" << Socket::ERROR_OPNOTSUPP << endl;
-			exit(-1);
-		}
-		else {
-			Log::getInstance().packetSent(); // moved to beaconing-adhoc-wifi-mac.cpp
-			Log::getInstance().nextPacketId();
+		Ptr<Ipv4> ipv4 = GetNode()->GetObject<Ipv4>();
+		if (ipv4->IsUp(0)) {
+			if (m_socket->Send(packet) == -1) {
+	//		if (m_socket->SendTo(packet, 0, realTo) == -1) {
+				cerr << "CrashTestApplication : error while sending packet : " << m_socket->GetErrno() << "" << Socket::ERROR_OPNOTSUPP << endl;
+				exit(-1);
+			}
+			else {
+				Log::getInstance().packetSent(); // moved to beaconing-adhoc-wifi-mac.cpp
+				Log::getInstance().nextPacketId();
+			}
 		}
 	}
 	catch (exception & e) {
@@ -553,7 +575,7 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 		double packetAge = Simulator::Now().GetSeconds() - packetDate;
 		string senderId = ovnisPacket.getSenderId();
 //		long packetId = ovnisPacket.getPacketId();
-
+		int oldKnowledgeSize = vanetsKnowledge.getRecords().size();
 		if (ovnisPacket.getPacketType() == CHANGED_EDGE_PACKET_ID) {
 			string lastEdge = ovnisPacket.readString();
 			double travelTime = ovnisPacket.readDouble();
@@ -565,11 +587,31 @@ void FceApplication::ReceivePacket(Ptr<Socket> socket) {
 			data.edgeId = lastEdge;
 			data.travelTime = travelTime;
 			vanetsKnowledge.record(data);
-
+//			if (lastEdge == "56640728#3") {
+//				cerr << "Vehicle " << vehicle.getId() << " received information on edge with accident " << lastEdge << " " << packetDate << " " << travelTime << endl;
+//			}
 		}
 		if (ovnisPacket.getPacketType() == TRAFFICINFO_PACKET_ID) {
 			vector<Data> data = ovnisPacket.ReadTrafficInfoPacket();
+			double now = Simulator::Now().GetSeconds();
+			int oldsize = vanetsKnowledge.getRecords().size();
 			vanetsKnowledge.record(data);
+//			if (vehicle.getId() == "2.9") {
+//				cerr << now << " Vehicle " << vehicle.getId() << " on edge " << vehicle.getItinerary().getCurrentEdge().getId() << " received information about edges: ";
+//				for (vector<Data>::iterator it = data.begin(); it != data.end(); ++it) {
+//					cerr << it->edgeId << " " << it->date << " " << it->travelTime << "\t";
+//				}
+//				cerr << ",  old knowledge size " << oldsize << ", knowledge.size " << vanetsKnowledge.getRecords().size() << ": " ;
+//				for (map<string,RecordEntry>::iterator it = vanetsKnowledge.getRecords().begin(); it != vanetsKnowledge.getRecords().end(); ++it) {
+//					cerr << "\t" << it->first << "," << it->second.getLatestValue() << "," << it->second.getLatestTime() << "\t";
+//				}
+//				cerr << endl;
+//			}
+//			for (vector<Data>::iterator it = data.begin(); it != data.end(); ++it) {
+//				if (it->edgeId == "56640728#3" && !decisionTaken) {
+//					cerr << now << " Vehicle " << vehicle.getId() << " on edge " << vehicle.getItinerary().getCurrentEdge().getId() << " received information about edge " << it->edgeId << " " << it->date << " " << it->travelTime << " old knowledge size " << oldsize << ", knowledge.size " << vanetsKnowledge.getRecords().size() << endl;
+//				}
+//			}
 		}
 
 //		_neighborCount ++;

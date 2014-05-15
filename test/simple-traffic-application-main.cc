@@ -61,24 +61,24 @@ int main(int argc, char ** argv) {
 	// ovnis params
 	bool startSumo = true;
 	string sumoHost = "localhost";
+	double communicationRange = MAX_COMMUNICATION_RANGE;
+	int sumoPort = 1234;
+
 	string sumoPath = "/opt/sumo/bin/sumo-gui";
 	sumoPath="/opt/sumo/bin/sumo";
 	sumoPath = "/home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
-
-	double communicationRange = MAX_COMMUNICATION_RANGE;
-//	string scenarioFolder = "scenarios/Highway/";
-//	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Highway/";
-	string scenarioFolder = "scenarios/Kirchberg/";
-	string outputFolder = "/Users/agatagrzybek/workspace/ovnis/scenarios/Kirchberg/";
-	string sumoConfig = "scenario_eclipse.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
+	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/";
+	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/12052014";
+	string sumoConfig = "scenario_accident_const.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
-	int stopTime = 400; // 25200; // 7h
+	int stopTime = 700; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
     string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
+    string usePerfect = "true";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
@@ -86,10 +86,12 @@ int main(int argc, char ** argv) {
     string cheatersRatio = "0";
     string accidentStartTime = "0";
     string accidentStopTime = "1300";
+    string ttl = "120";
 
 	CommandLine cmd;
 	// ovnis
 	cmd.AddValue("sumoConfig", "The SUMO xml config file", sumoConfig);
+	cmd.AddValue("sumoPort", "Name of the port on machine hosting SUMO", sumoPort);
 	cmd.AddValue("sumoHost", "Name of the machine hosting SUMO", sumoHost);
 	cmd.AddValue("startTime","Date at which the network simulation starts. Before that, SUMO runs on its own. (Seconds)",startTime);
 	cmd.AddValue("stopTime", "Date at which the simulation stops. (Seconds)",stopTime);
@@ -103,7 +105,9 @@ int main(int argc, char ** argv) {
 	cmd.AddValue("networkId", "Network name", networkId);
 	cmd.AddValue("routingStrategies","Names of routing strategies",routingStrategies);
 	cmd.AddValue("routingStrategiesProbabilities","Probabilities of routing strategies",routingStrategiesProbabilities);
+	cmd.AddValue("usePerfect", "Use perfect real-time information (recorded by a vehicle)", usePerfect);
 	cmd.AddValue("cheatersRatio","cheatersRatio", cheatersRatio);
+	cmd.AddValue("ttl","ttl", ttl);
 	cmd.AddValue("vanetKnowlegePenetrationRate","vanetKnowlegePenetrationRate", vanetKnowlegePenetrationRate);
 	cmd.AddValue("vanetDisseminationPenetrationRate","vanetDisseminationPenetrationRate", vanetDisseminationPenetrationRate);
 	cmd.AddValue("accidentStartTime","accidentStartTime", accidentStartTime);
@@ -116,10 +120,18 @@ int main(int argc, char ** argv) {
 	// reset seed to generate different numbers every time
 	srand(time(0));
 	cout << "Start time\t" << time(0) << endl;
+	cout << "config\t" << sumoConfig << endl;
+	cout << "scenarioFolder\t" << scenarioFolder << endl;
+	cout << "outputFolder\t" << outputFolder << endl;
+	cout << "startTime\t" << startTime << endl;
+	cout << "stopTime\t" << stopTime << endl;
+	cout << "routingStrategiesProbabilities\t" << routingStrategiesProbabilities << endl;
+	cout << "ttl\t" << ttl << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
 			"SumoPath", StringValue(sumoPath),
+//			"SumoPort", IntegerValue(sumoPort),
 			"SumoHost", StringValue(sumoHost),
 			"StartTime", IntegerValue(startTime),
 			"StopTime", IntegerValue(stopTime),
@@ -142,6 +154,8 @@ int main(int argc, char ** argv) {
 	fceParams["vanetDisseminationPenetrationRate"] = vanetDisseminationPenetrationRate;
 	fceParams["accidentStartTime"] = accidentStartTime;
 	fceParams["accidentStopTime"] = accidentStopTime;
+	fceParams["usePerfect"] = usePerfect;
+	fceParams["ttl"] = ttl;
 	fceParams["costFunctions"] = costFunctions;
 	fceParams["costFunctionProbabilities"] = costFunctionProbabilities;
 

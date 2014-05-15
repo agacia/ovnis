@@ -53,16 +53,9 @@ bool Knowledge::record(Data data) {
 	if (travelTimes.find(data.edgeId) == travelTimes.end() ||
 			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getLatestTime() < data.date)) {
 		travelTimes[data.edgeId].add(0, "", data.date, data.travelTime);
+//		cout << "Record in ttdb\t" << data.edgeId << "\t" << data.date << "\t" << data.travelTime  << "\tvanetTTDB\t" << travelTimes.size() << endl;
 		return true;
 	}
-	// ?????
-//	// record if travel time is longer than last heard
-//	if (travelTimes.find(data.edgeId) == travelTimes.end() ||
-//			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getLatestValue() < data.travelTime)) {
-//		travelTimes[data.edgeId].add(0, "", data.date, data.travelTime);
-//		return true;
-//	}
-
 	return false;
 }
 
@@ -103,23 +96,25 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		delayOnRoutes[it->first] = 0;
 	}
 
+	map<string, RecordEntry> ttdb = travelTimes;
 	if (usePerfectInformation) {
-		travelTimes = TIS::getInstance().getPerfectTravelTimes();
+		ttdb = TIS::getInstance().getPerfectTravelTimes();
+//		cout << "use perfect " << ttdb.size() << "\tlocal\t" << travelTimes.size() << endl;
 	}
 //	cout << "travelTimes.size() " << travelTimes.size() << endl;
 //	cout << "perfectTravelTimes.size() " << TIS::getInstance().getPerfectTravelTimes().size() << endl;
 
-	for (map<string, RecordEntry>::iterator it = travelTimes.begin(); it != travelTimes.end(); ++it) {
+	for (map<string, RecordEntry>::iterator it = ttdb.begin(); it != ttdb.end(); ++it) {
 		RecordEntry recordEntry = it->second;
 		string edgeId = it->first;
 		double travelTime = recordEntry.getLatestValue();
 		double packetDate = recordEntry.getLatestTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average
-		double avgTravelTime = it->second.getAverageValue();
-		double avgPacketDate = it->second.getAverageTime();
-		travelTime = avgTravelTime;
-		packetDate = avgPacketDate;
+//		double avgTravelTime = it->second.getAverageValue();
+//		double avgPacketDate = it->second.getAverageTime();
+//		travelTime = avgTravelTime;
+//		packetDate = avgPacketDate;
 
 		double staticCost = TIS::getInstance().getEdgeStaticCost(edgeId);
 		if (staticCost != 0) {
@@ -129,8 +124,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		// calculate travel times on routes
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
 			if (itRoutes->second.containsEdgeExcludedMargins(edgeId, startEdgeId, endEdgeId)) { // if the edge belongs to the part of the future route
-//				maxInformationAge = routeTTL[itRoutes->first];
-				maxInformationAge = 120;
+				maxInformationAge = routeTTL[itRoutes->first];
 				double edgeLength = TIS::getInstance().getEdgeLength(edgeId);
 				sumLength += edgeLength;
 				++numberOfEdges[itRoutes->first];
@@ -163,8 +157,9 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 						}
 					}
 				}
-				else if (travelTime > 0 && packetAge < maxInformationAge) { // information was recorded but it's older than the allowed treshold
+				else if (travelTime > 0 && packetAge > maxInformationAge) { // information was recorded but it's older than the allowed treshold
 					// reset packet age
+//					Log::getInstance().getStream("information_coverage") << edgeId << "\t" << itRoutes->first << "\tage\t" << packetAge << "\t" << packetDate << "\t" << travelTime << "\t" << ttdb.size() << "\t" << travelTimes.size() << endl;
 					packetAge = 0;
 				}
 				packetAgesOnRoutes[itRoutes->first] += packetAge;
@@ -253,7 +248,7 @@ double Knowledge::getSumLength() {
 	return sumLength;
 }
 
-map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, bool usePerfect)
+map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl, bool usePerfect)
 {
 	map<string, RecordEntry> ttdb = travelTimes;
 	if (usePerfect) {
@@ -266,7 +261,7 @@ map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, stri
 				if (edgesCosts.find(it->first) == edgesCosts.end()) {
 					double travelTime = ttdb[it->first].getLatestValue();
 					double packetAge = ttdb[it->first].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[it->first].getLatestTime();
-					if (travelTime > 0 && packetAge < maxInformationAge) { // if the information is fresh enough
+					if (travelTime > 0 && packetAge < ttl) { // if the information is fresh enough
 						edgesCosts[it->first] = travelTime;
 					}
 					else {
@@ -279,9 +274,9 @@ map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, stri
     return edgesCosts;
 }
 
-map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId)
+map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl)
 {
-	return getEdgesCosts(routes, startEdgeId, endEdgeId, false);
+	return getEdgesCosts(routes, startEdgeId, endEdgeId, ttl, false);
 }
 
     bool Knowledge::isCongestedFlow() const

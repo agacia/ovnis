@@ -32,14 +32,15 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 	// xxx only one entering on route - no need for subtract
 	++vehiclesOnRoute[newRouteId];
 	// time	vehicleId	currentEdgeId	currentRouteId	newEdgeId	newRouteId	originEdgeId	destinationEdgeId	isCheater	isCongested	expectedTravelTime	shortestExpectedTravelTime	vehiclesOnRoute[newRouteId]
-	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
-			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
-			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime << "\t" << vehiclesOnRoute[newRouteId];;
-	Log::getInstance().getStream("routing_start") << endl;
+//	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
+//			<< currentRouteId << "\t"<< newEdgeId << "\t"<< newRouteId << "\t"<< originEdgeId << "\t" << destinationEdgeId << "\t"
+//			<< isCheater << "\t" << isCongested << "\t" << "\t" << expectedTravelTime << "\t" << shortestExpectedTravelTime << "\t" << vehiclesOnRoute[newRouteId];;
+//	Log::getInstance().getStream("routing_start") << endl;
 }
 
 void TIS::reportEndingEdge(string vehicleId, string edgeId, double travelTime) {
 	perfectTravelTimes[edgeId].add(0, "", Simulator::Now().GetSeconds(), travelTime);
+//	cout << "Perfect ttdb\t" << edgeId << "\t" << Simulator::Now().GetSeconds() << "\t" << travelTime << "\tperfectTTDB\t" << perfectTravelTimes.size() << endl;
 }
 
 std::map<std::string, RecordEntry> TIS::getPerfectTravelTimes() {
@@ -56,11 +57,11 @@ void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId
 	double delayTime = travelTime - computeStaticCostExcludingMargins(routeId, startEdgeId, endEdgeId);
 //	cout << "logging" << endl;
 	double now = Simulator::Now().GetSeconds();
-	//step	routeId	vehicleId	startReroute	travelTime	startEdgeId	endEdgeId	vehiclesOnRoute[routeId]	isCheater	selfishExpectedTravelTime	expectedTravelTime	wasCongested	delayTime	routing_end	routingStrategy	start	(now-start)
+	//step	routeId	vehicleId	startReroute	travelTime	startEdgeId	endEdgeId	vehiclesOnRoute[routeId]	isCheater	selfishExpectedTravelTime	expectedTravelTime	wasCongested	delayTime	routingStrategy	start	(now-start)
 	Log::getInstance().getStream("routing_end") << now << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
 			<< travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t"
-			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime;
-	Log::getInstance().getStream("routing_end") << "\t" << routingStrategy << "\t" << start << "\t" << (now-start) << endl;
+			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime
+			<< "\t" << routingStrategy << "\t" << start << "\t" << (now-start) << endl;
 }
 
 int TIS::getVehiclesOnRoute(string routeId) {
@@ -88,7 +89,7 @@ void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
 			// print route to file
 			Log::getInstance().getStream("routes_info") << it->first << "\t";
 			for (vector<EdgeInfo>::iterator edges_it = it->second.getEdgeInfos().begin(); edges_it != it->second.getEdgeInfos().end(); ++edges_it) {
-				Log::getInstance().getStream("routes_info") << edges_it->getId() << "," << edges_it->getLength() << "," << edges_it->getMaxSpeed() << "\t";
+				Log::getInstance().getStream("routes_info") << edges_it->getId() << "\t" << edges_it->getLength() << "\t" << edges_it->getMaxSpeed() << "\t";
 			}
 			Log::getInstance().getStream("routes_info") << endl;
 		};
@@ -141,11 +142,11 @@ map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId,
 		}
 		packetAges[it->first] = informationAge;
 	}
-	Log::getInstance().getStream("global_costs") << now << "\t";
-	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
-		Log::getInstance().getStream("global_costs") << it->first << "," << costs[it->first] << "," << packetAges[it->first] << "," << vehiclesOnRoute[it->first] << "\t";
-	}
-	Log::getInstance().getStream("global_costs") << endl;
+//	Log::getInstance().getStream("global_costs") << now << "\t";
+//	for (map<string, Route>::iterator it = routes.begin(); it != routes.end(); ++it) {
+//		Log::getInstance().getStream("global_costs") << it->first << "," << costs[it->first] << "," << packetAges[it->first] << "," << vehiclesOnRoute[it->first] << "\t";
+//	}
+//	Log::getInstance().getStream("global_costs") << endl;
 	return costs;
 }
 
@@ -155,11 +156,11 @@ string TIS::getEvent(map<string, double> probabilities) {
 	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
 		sortedProbabilities.push_back(pair<string,double>(it->first, it->second));
 	}
-	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds();
-	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-		Log::getInstance().getStream("probabilities") << "\t" << it->first << "\t" << it->second << "\t";
-	}
-	Log::getInstance().getStream("probabilities") << endl;
+//	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds();
+//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
+//		Log::getInstance().getStream("probabilities") << "\t" << it->first << "\t" << it->second << "\t";
+//	}
+//	Log::getInstance().getStream("probabilities") << endl;
 
 	double shifting_weight = 0;
     double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
@@ -317,7 +318,7 @@ bool TIS::isCongestion()
 void TIS::setCongestion(bool congestion, bool ifDense, bool ifCongested)
 {
 	if (this->congestion != congestion) {
-		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
+//		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
 		this->congestion = congestion;
 	}
 }
