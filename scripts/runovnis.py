@@ -47,6 +47,8 @@ def main():
   parser.add_option('--cheatersRatio', help=("cheatersRatio"), type="int", dest='cheatersRatio')
   parser.add_option('--usePerfect', help=("usePerfect"), type="string", dest='usePerfect')
   parser.add_option('--ttl', help=("ttl"), type="int", dest='ttl')
+  parser.add_option('--timeEstimationMethod', help=("timeEstimationMethod"), type="string", dest='timeEstimationMethod')
+  parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
   
   (options, args) = parser.parse_args()
   print options
@@ -72,14 +74,33 @@ def main():
   startTime = options.startTime or 0
   stopTime = options.stopTime or 10
   ttl = options.ttl or 60
+  timeEstimationMethod = options.timeEstimationMethod or "last"
+  decayFactor = options.decayFactor or 0.5
 
-      
-  args = " --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d" % (sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl)
+  # run ovnis   
+  args = " --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%d" % (sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
   call = ovnisapp + args
-  print call
-  
+  print "running ", call
   os.system(call)
 
+  # add headers to the output file
+  filename = "output_log_routing_end"
+  routing_end_filepath = os.path.join(outputFolder, filename)
+  headers = "arrival\trouteId\tvehicleId\tstartReroute\ttravelTime\tstartEdgeId\tendEdgeId\tvehiclesOnRoute\tisCheater\tselfishExpectedTravelTime\texpectedTravelTime\twasCongested\tdelayTime\troutingStrategy\tstart\tduration\tstaticCost\n"
+  output_file = open(routing_end_filepath)
+  first_line = output_file.readline()
+  if first_line != headers:
+    call = "printf \"%s$( cat %s )\" > %s" % (headers, routing_end_filepath, routing_end_filepath)
+    print "running ", call 
+    os.system(call)
+  else:
+    print "header line already is there" 
+  
+  # analyse output file
+  script_filepath = os.path.join(ovnisdir, "python", "analyse.py")
+  call = "python %s --inputFile %s --outputDir %s" %(script_filepath, routing_end_filepath, outputFolder+"/")
+  print "running ", call
+  os.system(call)
 
 # This is the standard boilerplate that calls the main() function.
 if __name__ == '__main__':

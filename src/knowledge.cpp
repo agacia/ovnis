@@ -107,7 +107,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	for (map<string, RecordEntry>::iterator it = ttdb.begin(); it != ttdb.end(); ++it) {
 		RecordEntry recordEntry = it->second;
 		string edgeId = it->first;
-		double travelTime = recordEntry.getLatestValue();
+		double travelTime = recordEntry.getValue();
 		double packetDate = recordEntry.getLatestTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average
@@ -248,35 +248,94 @@ double Knowledge::getSumLength() {
 	return sumLength;
 }
 
-map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl, bool usePerfect)
-{
-	map<string, RecordEntry> ttdb = travelTimes;
-	if (usePerfect) {
-		ttdb = TIS::getInstance().getPerfectTravelTimes();
+//map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl, string knowledgeType = "vanet")
+//{
+//	map<string, RecordEntry> ttdb = travelTimes;
+//	if (knowledgeType == "perfect") {
+//		ttdb = TIS::getInstance().getPerfectTravelTimes();
+//	}
+//	// todo ttdb with delay 5 mins (as in Lueven)
+//	map<std::string, double> edgesCosts;//edgesCosts = map<string, double> ();
+//	for (map<string, EdgeInfo>::iterator it = TIS::getInstance().getStaticRecords().begin(); it != TIS::getInstance().getStaticRecords().end(); ++it) {
+//		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
+//			if (itRoutes->second.containsEdgeExcludedMargins(it->first, startEdgeId, endEdgeId)) {
+//				if (knowledgeType == "static") {
+//					edgesCosts[it->first] = it->second.getStaticCost();
+//				}
+//				else if (edgesCosts.find(it->first) == edgesCosts.end()) {
+//					double travelTime = ttdb[it->first].getLatestValue();
+//					double packetAge = ttdb[it->first].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[it->first].getLatestTime();
+//					if (travelTime > 0 && packetAge < ttl) { // if the information is fresh enough
+//						edgesCosts[it->first] = travelTime;
+//					}
+//					else {
+//						edgesCosts[it->first] = it->second.getStaticCost();
+//					}
+//				}
+//			}
+//		}
+//	}
+//    return edgesCosts;
+//}
+
+vector<string> Knowledge::getEdgesList(Route route, string startEdgeId, string endEdgeId) {
+	map<std::string, int> edgesMap;//edgesCosts = map<string, double> ();
+	for (map<string, EdgeInfo>::iterator it = TIS::getInstance().getStaticRecords().begin(); it != TIS::getInstance().getStaticRecords().end(); ++it) {
+		if (route.containsEdgeExcludedMargins(it->first, startEdgeId, endEdgeId) && edgesMap.find(it->first) == edgesMap.end()) {
+			edgesMap[it->first] = 1;
+		}
 	}
-	map<std::string, double> edgesCosts;//edgesCosts = map<string, double> ();
+	vector<string> edgesList;
+	for (map<string, int>::iterator it = edgesMap.begin(); it != edgesMap.end(); ++it) {
+		edgesList.push_back(it->first);
+	}
+	std::sort(edgesList.begin(), edgesList.end());
+	return edgesList;
+}
+
+
+vector<string> Knowledge::getEdgesList(map<string, Route> routes, string startEdgeId, string endEdgeId) {
+	map<std::string, int> edgesMap;//edgesCosts = map<string, double> ();
 	for (map<string, EdgeInfo>::iterator it = TIS::getInstance().getStaticRecords().begin(); it != TIS::getInstance().getStaticRecords().end(); ++it) {
 		for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
-			if (itRoutes->second.containsEdgeExcludedMargins(it->first, startEdgeId, endEdgeId)) {
-				if (edgesCosts.find(it->first) == edgesCosts.end()) {
-					double travelTime = ttdb[it->first].getLatestValue();
-					double packetAge = ttdb[it->first].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[it->first].getLatestTime();
-					if (travelTime > 0 && packetAge < ttl) { // if the information is fresh enough
-						edgesCosts[it->first] = travelTime;
-					}
-					else {
-						edgesCosts[it->first] = it->second.getStaticCost();
-					}
-				}
+			if (itRoutes->second.containsEdgeExcludedMargins(it->first, startEdgeId, endEdgeId) && edgesMap.find(it->first) == edgesMap.end()) {
+				edgesMap[it->first] = 1;
+			}
+		}
+	}
+	vector<string> edgesList;
+	for (map<string, int>::iterator it = edgesMap.begin(); it != edgesMap.end(); ++it) {
+		edgesList.push_back(it->first);
+	}
+	std::sort(edgesList.begin(), edgesList.end());
+	return edgesList;
+}
+
+map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, double ttl, string knowledgeType = "vanet")
+{
+	map<string, RecordEntry> ttdb = travelTimes;
+	if (knowledgeType == "perfect") {
+		ttdb = TIS::getInstance().getPerfectTravelTimes();
+	}
+	// todo ttdb with delay 5 mins (as in Lueven)
+	map<std::string, double> edgesCosts;//edgesCosts = map<string, double> ();
+
+	for (vector<string>::iterator it = edgesList.begin(); it != edgesList.end(); ++it) {
+		if (knowledgeType == "static") {
+			edgesCosts[*it] = TIS::getInstance().getStaticRecords()[*it].getStaticCost();
+		}
+		else {
+			double travelTime = ttdb[*it].getValue();
+			double packetAge = ttdb[*it].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[*it].getLatestTime();
+			if (travelTime > 0 && packetAge < ttl) { // if the information is fresh enough
+				edgesCosts[*it] = travelTime;
+			}
+			else {
+				edgesCosts[*it] = TIS::getInstance().getStaticRecords()[*it].getStaticCost();
 			}
 		}
 	}
     return edgesCosts;
-}
-
-map<std::string,double> Knowledge::getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl)
-{
-	return getEdgesCosts(routes, startEdgeId, endEdgeId, ttl, false);
 }
 
     bool Knowledge::isCongestedFlow() const

@@ -131,13 +131,16 @@ void Ovnis::DoInitialize(void) {
 	currentTime = 0;
     Names::Add("Ovnis", this);
     outputFolder = _params["outputFolder"];
-
     Log::getInstance().setOutputFolder(outputFolder);
     map<string, string>::iterator it = _params.find("outputFolder");
     if (it != _params.end()) {
     	cout << "Setting output folder " << it->second << endl;
     	Log::getInstance().setOutputFolder(it->second);
     }
+
+   TIS::getInstance().setTimeEstimationMethod(_params["timeEstimationMethod"]);
+   double decayFactor =  atof(_params["decayFactor"].c_str());
+   TIS::getInstance().setDecayFactor(decayFactor);
 
    InitializeSumo();
 

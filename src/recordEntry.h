@@ -22,7 +22,6 @@
 #include "ns3/ptr.h"
 #include "ovnis-constants.h"
 
-
 namespace ovnis {
 
 class RecordEntry {
@@ -32,19 +31,28 @@ public:
 	void add(long packetId, std::string senderId, double time, double value);
 	void printValues();
 //	double computeAverageValue();
-	double getLatestValue();
+
+	double getValue();
+	double getValue(std::string estimationMethod);
 	double getLatestTime();
-	double getAverageValue();
 	double getAverageTime();
 	double setCapacity(double expectedValue);
 	double getActualCapacity();
 	double getExpectedValue();
+	double getAlfa();
+	void setAlfa(double alfa);
 	std::string getLatestSenderId();
 	long getLatestPacketId();
 	void reset();
 
 private:
+	double getLatestValue();
+	double getAverageValue();
+	double getDecayValue();
 	std::string id;
+	double decayValue;
+	double decayTime;
+	double alfa;
 	int count;
 	double times[LOCAL_MEMORY_SIZE];
 	double values[LOCAL_MEMORY_SIZE];

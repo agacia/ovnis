@@ -44,7 +44,7 @@ public:
 			double expectedTravelTime, double shortestExpectedTravelTime);
 	void reportEndingRoute(string vehicleId, std::string routeId, std::string startEdgeId, std::string endEdgeId,
 			double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested,
-			string routingStrategy, double start);
+			string routingStrategy, double start, double staticCost);
 	void reportEndingEdge(string vehicleId, string edgeId, double travelTime);
 
     int getVehiclesOnRoute(std::string routeId);
@@ -62,6 +62,10 @@ public:
 	double getEdgeStaticCost(std::string edgeId);
 	bool isCongestion();
 	void setCongestion(bool congestion, bool ifDense, bool ifCongested);
+	std::string getTimeEstimationMethod();
+	void setTimeEstimationMethod(std::string method);
+	double getDecayFactor();
+	void setDecayFactor(double factor);
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
 	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
@@ -80,7 +84,8 @@ private:
     void operator =(const TIS& ); // Don't implement
     static TIS *instance;
     Ptr<ovnis::SumoTraciConnection> traci;
-
+    string timeEstimationMethod;
+    double decayFactor;
     std::map<std::string,EdgeInfo> staticRecords; // info about expected travel times on routes (whith max speed)
 
     std::map<std::string,Route> staticRoutes;

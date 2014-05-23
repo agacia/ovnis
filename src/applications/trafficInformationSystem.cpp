@@ -19,12 +19,28 @@ TIS & TIS::getInstance() {
 
 TIS::TIS() {
 	congestion = false;
+	timeEstimationMethod = "last";
 	traci = Names::Find<ovnis::SumoTraciConnection>("SumoTraci");
 }
 
 TIS::~TIS() {
 }
 
+std::string TIS::getTimeEstimationMethod() {
+	return timeEstimationMethod;
+}
+
+void TIS::setTimeEstimationMethod(string method) {
+	timeEstimationMethod = method;
+}
+
+double TIS::getDecayFactor() {
+	return decayFactor;
+}
+
+void TIS::setDecayFactor(double factor) {
+	decayFactor = factor;
+}
 
 void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string currentRouteId, string newEdgeId, string newRouteId,
 		string originEdgeId, string destinationEdgeId, bool isCheater, bool isCongested,
@@ -49,7 +65,7 @@ std::map<std::string, RecordEntry> TIS::getPerfectTravelTimes() {
 
 void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId, string endEdgeId,
 		double startReroute, double travelTime, bool isCheater, double selfishExpectedTravelTime, double expectedTravelTime, bool wasCongested,
-		string routingStrategy, double start) {
+		string routingStrategy, double start, double staticCost) {
 	--vehiclesOnRoute[routeId];
 	travelTimeDateOnRoute[routeId] = Simulator::Now().GetSeconds();
 	travelTimesOnRoute[routeId] = travelTime;
@@ -61,7 +77,7 @@ void TIS::reportEndingRoute(string vehicleId, string routeId, string startEdgeId
 	Log::getInstance().getStream("routing_end") << now << "\t" << routeId << "\t" << vehicleId << "\t" << startReroute << "\t"
 			<< travelTime << "\t" << startEdgeId << "\t" << endEdgeId << "\t" << vehiclesOnRoute[routeId] << "\t" << isCheater << "\t"
 			<< selfishExpectedTravelTime << "\t" << expectedTravelTime << "\t" << wasCongested << "\t" << delayTime
-			<< "\t" << routingStrategy << "\t" << start << "\t" << (now-start) << endl;
+			<< "\t" << routingStrategy << "\t" << start << "\t" << (now-start) << "\t" << staticCost<< endl;
 }
 
 int TIS::getVehiclesOnRoute(string routeId) {

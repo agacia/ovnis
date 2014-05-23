@@ -35,8 +35,8 @@ public:
 	Dissemination();
 	virtual ~Dissemination();
 
-	std::vector<Data> getTrafficInformationToSend(Knowledge &knowledge, std::vector<std::string> edges, double ttl);
-	std::vector<Data> getTrafficInformationToSend(std::map<std::string,RecordEntry> edges, double ttl);
+//	std::vector<Data> getTrafficInformationToSend(Knowledge &knowledge, std::vector<std::string> edges, double ttl);
+	std::vector<Data> getTrafficInformationToSend(std::map<std::string,RecordEntry> edges, double ttl, double valueTh);
 	void TryRebroadcast(OvnisPacket packet, double packetDate, std::string vehicleId);
 };
 }

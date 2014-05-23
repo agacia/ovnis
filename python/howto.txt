@@ -6,8 +6,8 @@ $ovnisdir/test/ovnisSample_static
 strategyname=12052014/perfect/prob
 
 dir=$ovnisdir/scenarios/Kirchberg
-scriptdir=ovnisdir/python
-scriptdir2=ovnisdir/scripts
+scriptdir=$ovnisdir/python
+scriptdir2=$ovnisdir/scripts
 # sumodir=/home/agata/Documents/workshop/sumo-0.18.0
 # mv $dir/output_sumo* $dir/$strategyname/
 dir=$dir/$strategyname
@@ -21,6 +21,10 @@ dir=$dir/$strategyname
 # mv "${dir}/plot_Trip duration_lines.png" "${dir}/plot_Trip duration_lines_sumo.png.png"
 # mv "${dir}/plot_Trip duration_scatterplot.png" "${dir}/plot_Trip duration_scatterplot_sumo.png"
 
+ovnisdir=~/Documents/workshop/ovnis
+scenario=1111
+scriptdir=$ovnisdir/python
+dir=$ovnisdir/scenarios/Kirchberg/$scenario
 printf "arrival\trouteId\tvehicleId\tstartReroute\ttravelTime\tstartEdgeId\tendEdgeId\tvehiclesOnRoute\tisCheater\tselfishExpectedTravelTime\texpectedTravelTime\twasCongested\tdelayTime\troutingStrategy\tstart\tduration\n$( cat $dir/output_log_routing_end )" > $dir/output_log_routing_end
 python $scriptdir/analyse.py --inputFile $dir/output_log_routing_end --outputDir $dir/
 

@@ -14,7 +14,7 @@ from matplotlib.mlab import csv2rec
 import math
 from math import exp, pow
 import pandas as pd
-from optparse import OptionParser 
+from optparse import OptionParser
 
 linestyles = ['-.', '-', '--', ':']
 colors = ('b', 'g', 'r', 'm', 'c', 'y', 'k')
@@ -44,26 +44,27 @@ def main():
   (options, args) = parser.parse_args()
   print options
 
-  args = {} 
+  args = {}
   args["startX"] = options.startX
   args["endX"] = options.endX
   args['stepSize'] = options.stepSize
   args['xLabel'] = 'time'
-  
+
   if options.inputFile:
     filename = options.inputFile
-    df = pd.read_csv(filename, sep="\t")   
+    df = pd.read_csv(filename, sep="\t")
 
     if "communities.csv" in filename:
       title="Average speed"
       plt.figure(1)
       plt.scatter(df['step'], df['timeMeanSpeed'])
       outputfile = options.outputDir + "plot_" + title + ".png"
-      plt.savefig(outputfile) 
+      plt.savefig(outputfile)
 
     if "tripinfo" in filename or "output_log_routing_end" in filename:
       route_names = {"2069.63":"Kennedy", "2598.22": "Adenauer", "2460.76": "Thuengen", "1262.43":"Kennedy", "1791.02":"Adenauer", "1653.56":"Thuengen", "routedist#0":"Kennedy", "routedist#1":"Adenauer", "routedist#2":"Thuengen"}
       print route_names
+      # tripinfo
       # arrival waitSteps vType depart  routeLength vaporized duration  arrivalSpeed  devices departPos departDelay departLane  departSpeed arrivalPos  rerouteNo id  arrivalLane
       xlabel="arrival"
       ylabel="duration"
@@ -74,18 +75,20 @@ def main():
         groupby_col = "routeLength"
         df[groupby_col] = df[groupby_col].map(lambda x: '%.2f' % x)
       else:
-        groupby_col = "routeId"   
+        groupby_col = "routeId"
       plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, options.outputDir)
       plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, options.outputDir)
       write_stats(df, groupby_col, xlabel, ylabel, route_names, options.outputDir)
-    return
+
+  return
 
 
 def write_stats(df, groupby_col, xlabel, ylabel, route_names, outputdir):
   filename = os.path.join(outputdir, "tripstats.txt")
   outfile = open(filename, 'w')
   grouped = df.groupby(groupby_col)
-  routes = grouped.aggregate({ylabel:[np.size, np.mean, np.std, np.amin, np.amax]}).reset_index()
+  ylabel2 = "staticCost"
+  routes = grouped.aggregate({ylabel:[np.size, np.mean, np.std, np.amin, np.amax], ylabel2:[np.mean, np.std]}).reset_index()
   routes.to_csv(outfile, sep='\t')
 
 def get_axes_ranges(grouped, xlabel, ylabel):
@@ -115,26 +118,24 @@ def plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_nam
   for i,value in enumerate(grouped):
     name,group = value
     color = colors[i%len(colors)]
-    print i, name, color
+    #print i, name, color
     x = group[xlabel]
     y = group[ylabel]
     # if len(axes) > 0:
-    #   axes.append(fig.add_subplot(1,num_groups,i+1, sharex=axes[0], sharey=axes[0], axisbg='white', autoscale_on=False)) # height, width, chart # 
+    #   axes.append(fig.add_subplot(1,num_groups,i+1, sharex=axes[0], sharey=axes[0], axisbg='white', autoscale_on=False)) # height, width, chart #
     # else:
     #   axes.append(fig.add_subplot(1, num_groups, i+1, axisbg='white')) # height, width, chart #
-    axes.append(fig.add_subplot(1, num_groups, i+1, axisbg='white')) # height, width, chart # 
+    axes.append(fig.add_subplot(1, num_groups, i+1, axisbg='white')) # height, width, chart #
     axes[i].set_ylim([ymin,ymax])
     axes[i].set_xlim([xmin,xmax])
     axes[i].locator_params(nbins=4)
-    axes[i].plot(x, y, color, linewidth=1, label=route_names[name])  
+    axes[i].plot(x, y, color, linewidth=1, label=route_names[name])
     axes[i].legend(loc='lower center')
     axes[i].set_xlabel(xtitle)
-  
+
   axes[0].set_ylabel(ytitle)
   outputfile = outputdir + "plot_" + title + "_lines" + ".png"
-  plt.savefig(outputfile) 
-
-
+  plt.savefig(outputfile)
 
 def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, outputdir):
   colors = ['c','b','r','y','g','m']
@@ -145,7 +146,7 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, rou
   for i,value in enumerate(grouped):
     name,group = value
     color = colors[i%len(colors)]
-    print "group\t", i, name, color
+    print "plotting group\t", i, name, color
     plt.scatter(group[xlabel], group[ylabel], s=20, c=color, marker='.', label=route_names[name], lw = 0)
   [xmin, xmax, ymin, ymax] = get_axes_ranges(grouped, xlabel, ylabel)
   plt.xlim([xmin,xmax])
@@ -153,7 +154,8 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, rou
   plt.ylabel(ytitle)
   plt.legend(loc='lower right')
   outputfile = outputdir + "plot_" + title + "_scatterplot" + ".png"
-  plt.savefig(outputfile) 
+  print "saving ", outputfile
+  plt.savefig(outputfile)
 
 
 

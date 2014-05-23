@@ -19,6 +19,7 @@
 #include "ns3/ptr.h"
 #include "ovnis-constants.h"
 #include "recordEntry.h"
+#include "applications/trafficInformationSystem.h"
 
 using namespace std;
 
@@ -35,18 +36,45 @@ void RecordEntry::reset() {
 		values[i] = 0;
 	}
 	count = 0;
+	alfa = TIS::getInstance().getDecayFactor();
+	decayValue = -1.0;
+	decayTime = 0.0;
+}
+
+
+double RecordEntry::getAlfa() {
+	return alfa;
+}
+void RecordEntry::setAlfa(double a) {
+	alfa = a;
 }
 
 void RecordEntry::add(long packetId, string senderId, double time, double value) {
-	times[count%LOCAL_MEMORY_SIZE] = time;
-	if (value == -1) {
-		value = values[(count-1)%LOCAL_MEMORY_SIZE];
+	// add only newer or first!
+	if (getLatestTime() < time || count < 1) {
+		times[count%LOCAL_MEMORY_SIZE] = time;
+		if (value == -1) {
+			cerr << "what is this? " << packetId << " " << senderId << " " << time << " " << value << endl;
+			value = values[(count-1)%LOCAL_MEMORY_SIZE];
+		}
+		values[count%LOCAL_MEMORY_SIZE] = value;
+		senders[count%LOCAL_MEMORY_SIZE] = senderId;
+		packetIds[count%LOCAL_MEMORY_SIZE] = packetId;
+		if (time > 0) {
+			++count;
+		}
 	}
-	values[count%LOCAL_MEMORY_SIZE] = value;
-	senders[count%LOCAL_MEMORY_SIZE] = senderId;
-	packetIds[count%LOCAL_MEMORY_SIZE] = packetId;
-	if (time > 0) {
-		++count;
+
+	if (decayValue < 0) {
+		decayValue = value;
+		decayTime = time;
+	}
+	else if (time > decayTime) { // newer than the last timestamp in db 0.8historical + 0.2received
+		decayValue = alfa*decayValue + (1-alfa)*value;
+		decayTime = time;
+	}
+	else if (time < decayTime ){ // older than existing value in db
+		decayValue = (1-alfa)*decayValue + alfa*value;
 	}
 }
 
@@ -56,6 +84,37 @@ void RecordEntry::printValues() {
 		cout << times[i] << "," << values[i] << "," << senders[i] << " ";
 	}
 	cout << "]";
+}
+
+
+double RecordEntry::getValue() {
+	string estimationMethod = TIS::getInstance().getTimeEstimationMethod();
+	if (estimationMethod == "last") {
+		return getLatestValue();
+	}
+	if (estimationMethod == "decay") {
+		return getDecayValue();
+	}
+	if (estimationMethod == "average") {
+		return getAverageValue();
+	}
+}
+
+double RecordEntry::getValue(string estimationMethod) {
+	if (estimationMethod == "last") {
+		return getLatestValue();
+	}
+	if (estimationMethod == "decay") {
+		return getDecayValue();
+	}
+	if (estimationMethod == "average") {
+		return getAverageValue();
+	}
+}
+
+
+double RecordEntry::getDecayValue() {
+	return decayValue;
 }
 
 double RecordEntry::getLatestValue() {

@@ -87,6 +87,8 @@ int main(int argc, char ** argv) {
     string accidentStartTime = "0";
     string accidentStopTime = "1300";
     string ttl = "120";
+    string timeEstimationMethod = "last";
+    string decayFactor = "0.5";
 
 	CommandLine cmd;
 	// ovnis
@@ -108,6 +110,8 @@ int main(int argc, char ** argv) {
 	cmd.AddValue("usePerfect", "Use perfect real-time information (recorded by a vehicle)", usePerfect);
 	cmd.AddValue("cheatersRatio","cheatersRatio", cheatersRatio);
 	cmd.AddValue("ttl","ttl", ttl);
+	cmd.AddValue("timeEstimationMethod","timeEstimationMethod", timeEstimationMethod);
+	cmd.AddValue("decayFactor","decayFactor", decayFactor);
 	cmd.AddValue("vanetKnowlegePenetrationRate","vanetKnowlegePenetrationRate", vanetKnowlegePenetrationRate);
 	cmd.AddValue("vanetDisseminationPenetrationRate","vanetDisseminationPenetrationRate", vanetDisseminationPenetrationRate);
 	cmd.AddValue("accidentStartTime","accidentStartTime", accidentStartTime);
@@ -127,6 +131,7 @@ int main(int argc, char ** argv) {
 	cout << "stopTime\t" << stopTime << endl;
 	cout << "routingStrategiesProbabilities\t" << routingStrategiesProbabilities << endl;
 	cout << "ttl\t" << ttl << endl;
+	cout << "timeEstimationMethod\t" << timeEstimationMethod << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
@@ -143,6 +148,8 @@ int main(int argc, char ** argv) {
 	std::map <string,string> ovnisParams;
 	ovnisParams["penetrationRate"] = penetrationRate;
 	ovnisParams["outputFolder"] = outputFolder;
+	ovnisParams["timeEstimationMethod"] = timeEstimationMethod;
+	ovnisParams["decayFactor"] = decayFactor;
 	expe->SetOvnisParams(ovnisParams);
 
 	std::map <string,string> fceParams;

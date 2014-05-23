@@ -56,8 +56,9 @@ public:
 	map<std::string,double> getDenseLengthOnRoutes();
 	map<std::string,double> getTravelTimesOnRoutes();
 	map<std::string,double> getDelayOnRoutes();
-    map<std::string,double> getEdgesCosts(map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId, double ttl);
-	map<std::string,double> getEdgesCosts(map<string, Route> routes, string startEdgeId, string endEdgeId, double ttl, bool usePerfect);
+	vector<string> getEdgesList(Route route, string startEdgeId, string endEdgeId);
+	std::vector<std::string> getEdgesList(std::map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId);
+	map<std::string,double> getEdgesCosts(std::vector<std::string> edgesList, double ttl, string knowledgeType);
     bool isCongestedFlow() const;
     bool isDenseFlow() const;
 
