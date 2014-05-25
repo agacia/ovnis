@@ -51,7 +51,7 @@ int Knowledge::substractNumberOfVehicles(std::string edgeId) {
 bool Knowledge::record(Data data) {
 	// record only information that is fresher than the last heard
 	if (travelTimes.find(data.edgeId) == travelTimes.end() ||
-			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getLatestTime() < data.date)) {
+			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getTime() < data.date)) {
 		travelTimes[data.edgeId].add(0, "", data.date, data.travelTime);
 //		cout << "Record in ttdb\t" << data.edgeId << "\t" << data.date << "\t" << data.travelTime  << "\tvanetTTDB\t" << travelTimes.size() << endl;
 		return true;
@@ -108,7 +108,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 		RecordEntry recordEntry = it->second;
 		string edgeId = it->first;
 		double travelTime = recordEntry.getValue();
-		double packetDate = recordEntry.getLatestTime();
+		double packetDate = recordEntry.getTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average
 //		double avgTravelTime = it->second.getAverageValue();
@@ -326,8 +326,13 @@ map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, doubl
 		}
 		else {
 			double travelTime = ttdb[*it].getValue();
-			double packetAge = ttdb[*it].getLatestTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[*it].getLatestTime();
-			if (travelTime > 0 && packetAge < ttl) { // if the information is fresh enough
+
+			if (knowledgeType == "vanet") {
+				Log::getInstance().getStream("aaa") << travelTime << " " << TIS::getInstance().getTimeEstimationMethod() << endl;
+			}
+
+			double packetAge = ttdb[*it].getTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[*it].getTime();
+			if (travelTime > 0) {// && packetAge < ttl) { // if the information is fresh enough
 				edgesCosts[*it] = travelTime;
 			}
 			else {

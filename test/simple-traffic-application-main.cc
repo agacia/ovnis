@@ -132,6 +132,7 @@ int main(int argc, char ** argv) {
 	cout << "routingStrategiesProbabilities\t" << routingStrategiesProbabilities << endl;
 	cout << "ttl\t" << ttl << endl;
 	cout << "timeEstimationMethod\t" << timeEstimationMethod << endl;
+	cout << "decayFactor\t" << decayFactor << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),

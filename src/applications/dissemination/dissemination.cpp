@@ -24,55 +24,65 @@ Dissemination::~Dissemination() {
 /**
  * Takes only the information about requested edges
  */
-//vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges, double ttl) {
-//	vector<Data> trafficData;
-//	if (knowledge.getRecords().size() > 0) {
-//		double now =  Simulator::Now().GetSeconds();
-//		for (vector<string>::iterator it = edges.begin(); it != edges.end(); ++it) {
-//			if (knowledge.getRecords().find(*it) != knowledge.getRecords().end()) {
-//				double packetDate =  knowledge.getRecords()[*it].getLatestTime();
-////				?if (packetDate == 0 or (now-packetDate) > ttl) {
-////					cerr << "Discarding packet about " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
-////					continue;
-////				}
-////				cerr << "Adding to packet information about edge " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
-//				Data data;
-//				data.edgeId = *it;
-//				data.date = packetDate;
-//				data.travelTime = knowledge.getRecords()[*it].getLatestValue();
-//				trafficData.push_back(data);
-//			}
-//		}
-////		cerr << "Sending packet about " << trafficData.size() << " edges (of " << edges.size() << " requested) , knowledge " << knowledge.getRecords().size() << endl;
-//	}
-//	return trafficData;
+vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges, double ttl, double valueTh) {
+	vector<Data> trafficData;
+	if (knowledge.getRecords().size() > 0) {
+		double now =  Simulator::Now().GetSeconds();
+		for (vector<string>::iterator it = edges.begin(); it != edges.end(); ++it) {
+			if (knowledge.getRecords().find(*it) != knowledge.getRecords().end()) {
+				double packetDate =  knowledge.getRecords()[*it].getTime();
+				if (packetDate == 0) {
+//					if ((now-packetDate) > ttl) {
+//						cerr << "Discarding packet about " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
+//						continue;
+//					}
+				}
+
+				double packetValue = knowledge.getRecords()[*it].getValue();
+//				double staticValue = TIS::getInstance().getStaticRecords()[*it].getStaticCost();
+
+//				Log::getInstance().getStream("aaa") <<  packetValue  << "-" << staticValue << "= " <<packetValue - staticValue  << " , valueTh " << valueTh << endl;
+				// with a significant change in value
+//				double diff = abs(packetValue - staticValue);
+//				if ( diff < 1 ||  diff < valueTh*staticValue) {
+//					//Log::getInstance().getStream("aaa") <<  "discard  " << abs(packetValue - staticValue) << endl;
+//					continue;
+//				}
+//				cerr << "Adding to packet information about edge " <<*it << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
+				Data data;
+				data.edgeId = *it;
+				data.date = packetDate;
+				data.travelTime = packetValue;
+				trafficData.push_back(data);
+			}
+		}
+//		cerr << "Sending packet about " << trafficData.size() << " edges (of " << edges.size() << " requested) , knowledge " << knowledge.getRecords().size() << endl;
+	}
+	return trafficData;
 }
 
 vector<Data> Dissemination::getTrafficInformationToSend(map<string,RecordEntry> edges, double ttl, double valueTh) {
 	vector<Data> trafficData;
 	double now =  Simulator::Now().GetSeconds();
 	for (map<string, RecordEntry>::iterator it = edges.begin(); it != edges.end(); ++it) {
-		double packetDate =  it->second.getLatestTime();
+		double packetDate =  it->second.getTime();
 		// fresher than ttl
-		if (packetDate == 0 or (now-packetDate) > ttl) {
-//			cerr << "Discarding packet about " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << ", " << trafficData.size() << " (of " << edges.size() << " requested) " << endl;
-			continue;
-		}
+//		if (packetDate == 0 or (now-packetDate) > ttl) {
+////			cerr << "Discarding packet about " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << ", " << trafficData.size() << " (of " << edges.size() << " requested) " << endl;
+//			continue;
+//		}
 		double packetValue = it->second.getValue();
 		double staticValue = TIS::getInstance().getStaticRecords()[it->first].getStaticCost();
 		// with a significant change in value
-		if (packetValue - staticValue < valueTh) {
+		if (packetValue - staticValue > valueTh*staticValue) {
 			continue;
 		}
-//		cerr << "Adding to packet information about edge " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << endl;
 		Data data;
 		data.edgeId = it->first;
 		data.date = packetDate;
 		data.travelTime = packetValue;
 		trafficData.push_back(data);
-
-//	cerr << "Sending packet about " << trafficData.size() << " edges (of " << edges.size() << " requested) " << endl;
-
+	}
 	return trafficData;
 }
 

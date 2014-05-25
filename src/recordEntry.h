@@ -33,9 +33,8 @@ public:
 //	double computeAverageValue();
 
 	double getValue();
+	double getTime();
 	double getValue(std::string estimationMethod);
-	double getLatestTime();
-	double getAverageTime();
 	double setCapacity(double expectedValue);
 	double getActualCapacity();
 	double getExpectedValue();
@@ -49,6 +48,9 @@ private:
 	double getLatestValue();
 	double getAverageValue();
 	double getDecayValue();
+	double getLatestTime();
+	double getAverageTime();
+	double getDecayTime();
 	std::string id;
 	double decayValue;
 	double decayTime;

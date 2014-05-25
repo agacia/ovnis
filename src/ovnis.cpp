@@ -137,7 +137,6 @@ void Ovnis::DoInitialize(void) {
     	cout << "Setting output folder " << it->second << endl;
     	Log::getInstance().setOutputFolder(it->second);
     }
-
    TIS::getInstance().setTimeEstimationMethod(_params["timeEstimationMethod"]);
    double decayFactor =  atof(_params["decayFactor"].c_str());
    TIS::getInstance().setDecayFactor(decayFactor);
@@ -157,6 +156,8 @@ void Ovnis::DoInitialize(void) {
 	Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 	Log::getInstance().getStream("simulation") << "start\t" << start << endl;
 	Log::getInstance().getStream("simulation") << "communication range\t" << communicationRange << endl;
+	Log::getInstance().getStream("simulation") << "decayFactor\t" << TIS::getInstance().getDecayFactor() << endl;
+	Log::getInstance().getStream("simulation") << "time estimation method\t" << TIS::getInstance().getTimeEstimationMethod() << endl;
 	Simulator::Schedule(Seconds(SIMULATION_STEP_INTERVAL), &Ovnis::TrafficSimulationStep, this);
 	Log::getInstance().getStream("simulation") << "time \t running \t connected \t departed \t arrived \t nodes \t sent \t received \t dropped Switching/TX/RX \t distance \n";
 

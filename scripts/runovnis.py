@@ -66,6 +66,8 @@ def main():
   scenarioFolder = ovnisdir+"/scenarios/Kirchberg/"
   outputFolder = scenarioFolder+"1111"
 
+  print "!! options.decayFactor " , options.decayFactor
+
   # overwrite with command line options
   sumoConfig = options.sumoConfig or sumoConfig
   scenarioFolder = options.scenarioFolder or scenarioFolder
@@ -78,7 +80,7 @@ def main():
   decayFactor = options.decayFactor or 0.5
 
   # run ovnis   
-  args = " --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%d" % (sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
+  args = " --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f" % (sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
   call = ovnisapp + args
   print "running ", call
   os.system(call)

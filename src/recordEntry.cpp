@@ -51,7 +51,8 @@ void RecordEntry::setAlfa(double a) {
 
 void RecordEntry::add(long packetId, string senderId, double time, double value) {
 	// add only newer or first!
-	if (getLatestTime() < time || count < 1) {
+//	if (getLatestTime() < time || count < 1) {
+	if (true) {
 		times[count%LOCAL_MEMORY_SIZE] = time;
 		if (value == -1) {
 			cerr << "what is this? " << packetId << " " << senderId << " " << time << " " << value << endl;
@@ -73,9 +74,9 @@ void RecordEntry::add(long packetId, string senderId, double time, double value)
 		decayValue = alfa*decayValue + (1-alfa)*value;
 		decayTime = time;
 	}
-	else if (time < decayTime ){ // older than existing value in db
-		decayValue = (1-alfa)*decayValue + alfa*value;
-	}
+//	else if (time < decayTime ){ // older than existing value in db
+//		decayValue = (1-alfa)*decayValue + alfa*value;
+//	}
 }
 
 void RecordEntry::printValues() {
@@ -89,15 +90,36 @@ void RecordEntry::printValues() {
 
 double RecordEntry::getValue() {
 	string estimationMethod = TIS::getInstance().getTimeEstimationMethod();
+	double value = 0;
 	if (estimationMethod == "last") {
-		return getLatestValue();
+		value= getLatestValue();
 	}
 	if (estimationMethod == "decay") {
-		return getDecayValue();
+		value = getDecayValue();
 	}
 	if (estimationMethod == "average") {
-		return getAverageValue();
+		value = getAverageValue();
 	}
+	return value;
+}
+
+double RecordEntry::getTime() {
+	string estimationMethod = TIS::getInstance().getTimeEstimationMethod();
+	double value = 0;
+	if (estimationMethod == "last") {
+		value= getLatestTime();
+	}
+	if (estimationMethod == "decay") {
+		value = getDecayTime();
+	}
+	if (estimationMethod == "average") {
+		value = getAverageTime();
+	}
+	return value;
+}
+
+double RecordEntry::getDecayTime() {
+	return decayTime;
 }
 
 double RecordEntry::getValue(string estimationMethod) {

@@ -524,9 +524,9 @@ void FceApplication::SendTrafficInformation(void) {
 			double now = Simulator::Now().GetSeconds();
 			Vector position = mobilityModel->GetPosition();
 			// todo get value threshold
-			double valueTh = 0.5;
-			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge.getRecords(), ttl, valueTh);
-//			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead(), ttl);
+			double valueTh = 0;
+//			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge.getRecords(), ttl, valueTh);
+			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead(), ttl, valueTh);
 	//		for (vector<Data>::iterator it = records.begin(); it < records.end(); ++it) {
 	//			if (it->edgeId == "56640728#3") {
 	//				cerr << now << " Vehicle " << vehicle.getId() << " on edge " << vehicle.getItinerary().getCurrentEdge().getId() << " will send information with accident " << it->edgeId << " " << it->date << " " << it->travelTime << endl;
