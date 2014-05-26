@@ -49,7 +49,7 @@ def main():
   parser.add_option('--ttl', help=("ttl"), type="int", dest='ttl')
   parser.add_option('--timeEstimationMethod', help=("timeEstimationMethod"), type="string", dest='timeEstimationMethod')
   parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
-  parser.add_option('--cluster', help=("cluster"), type="bool", dest='cluster')
+  parser.add_option('--cluster', help=("cluster"), action="store_false", dest='cluster')
   
   (options, args) = parser.parse_args()
   print options
