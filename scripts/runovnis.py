@@ -63,12 +63,15 @@ def main():
     ns3dir="/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
     ovnisdir="/home/users/agrzybek/ovnis/ovnis/"
 
+
   ovnisapp = ovnisdir+"/test/ovnisSample_static"
   sumoConfig = "scenario_accident_const.sumocfg"
   scenarioFolder = ovnisdir+"/scenarios/Kirchberg/"
   outputFolder = scenarioFolder+"1111"
 
-  print "!! options.decayFactor " , options.decayFactor
+  print "cluster? ", cluster
+  print "ns3 dir " , ns3dir
+  print "ovnis dir", ocnisdir
 
   # overwrite with command line options
   sumoConfig = options.sumoConfig or sumoConfig
