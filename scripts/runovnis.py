@@ -68,7 +68,7 @@ def main():
   sumoConfig = "scenario_accident_const.sumocfg"
   scenarioFolder = ovnisdir+"/scenarios/Kirchberg/"
   outputFolder = scenarioFolder+"1111"
-
+  sumoPath = os.path.join(sumodir, "sumo")
   print "cluster? ", cluster
   print "ns3 dir " , ns3dir
   print "ovnis dir", ovnisdir
@@ -85,7 +85,7 @@ def main():
   decayFactor = options.decayFactor or 0.5
 
   # run ovnis   
-  args = " --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f" % (sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
+  args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
   call = ovnisapp + args
   print "running ", call
   os.system(call)
