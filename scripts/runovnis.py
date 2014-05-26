@@ -62,7 +62,7 @@ def main():
   if cluster: 
     ns3dir="/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
     ovnisdir="/home/users/agrzybek/ovnis/ovnis/"
-
+    sumodir = "/home/users/agrzybek/ovnis/repos/sumo-0.18.0/bin/"
 
   ovnisapp = ovnisdir+"/test/ovnisSample_static"
   sumoConfig = "scenario_accident_const.sumocfg"
