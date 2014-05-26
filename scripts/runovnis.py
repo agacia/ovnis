@@ -71,7 +71,7 @@ def main():
 
   print "cluster? ", cluster
   print "ns3 dir " , ns3dir
-  print "ovnis dir", ocnisdir
+  print "ovnis dir", ovnisdir
 
   # overwrite with command line options
   sumoConfig = options.sumoConfig or sumoConfig
