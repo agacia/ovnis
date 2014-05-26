@@ -49,6 +49,7 @@ def main():
   parser.add_option('--ttl', help=("ttl"), type="int", dest='ttl')
   parser.add_option('--timeEstimationMethod', help=("timeEstimationMethod"), type="string", dest='timeEstimationMethod')
   parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
+  parser.add_option('--cluster', help=("cluster"), type="bool", dest='cluster')
   
   (options, args) = parser.parse_args()
   print options
@@ -57,9 +58,10 @@ def main():
   ns3dir = "~/Documents/workshop/ns-3.18/build/"
   ovnisdir = "~/Documents/workshop/ovnis"
   sumodir = "~/Documents/workshop/sumo-0.18.0/bin/"
-  cluster = False
+  cluster = options.cluster or False
   if cluster: 
-    ns3dir= "/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
+    ns3dir="/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
+    ovnisdir="/home/users/agrzybek/ovnis/ovnis/"
 
   ovnisapp = ovnisdir+"/test/ovnisSample_static"
   sumoConfig = "scenario_accident_const.sumocfg"
