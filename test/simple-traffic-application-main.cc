@@ -47,7 +47,7 @@ NS_LOG_COMPONENT_DEFINE("MainTA");
 int main(int argc, char ** argv) {
 
 //  LogComponentEnableAll(LOG_LEVEL_ALL);
-//  LogComponentEnable("OvnisApplication", LOG_LEVEL_ALL);
+//  LogComponentEnable("FceApplication", LOG_LEVEL_ALL);
 //  LogComponentEnable("MyApplication", LOG_LEVEL_ALL);
 //  LogComponentEnable("Main", LOG_LEVEL_ALL);
 //  LogComponentEnable("SubdividedWifiChannel", LOG_LEVEL_ALL);
@@ -68,8 +68,8 @@ int main(int argc, char ** argv) {
 	sumoPath="/opt/sumo/bin/sumo";
 	sumoPath = "/home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
 	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/";
-	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/12052014";
-	string sumoConfig = "scenario_accident_const.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
+	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/test2";
+	string sumoConfig = "scenario_accident_const_1111.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
 	int stopTime = 700; // 25200; // 7h
     string penetrationRate = "1";

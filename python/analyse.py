@@ -5,6 +5,7 @@ Try running this program from the command line:
   python analyse.py
 """
 import os
+import csv
 import matplotlib
 matplotlib.use('Agg') # headless mode
 import matplotlib.pyplot as plt
@@ -52,6 +53,22 @@ def main():
 
   if options.inputFile:
     filename = options.inputFile
+    clean_filename = filename+'_clean'
+    number_of_columns = 0
+    f_out = open(clean_filename, 'w')
+    with open(filename, 'r') as f:
+      header_line = next(f)
+      number_of_columns = len(header_line.split('\t'))
+      f_out.write(header_line)
+      skipped_lines = 0
+      for data_line in f:
+        if len(data_line.split('\t'))!=number_of_columns:
+          skipped_lines += 1
+          continue
+        f_out.write(data_line)  
+    filename = clean_filename
+    print "skipped_lines: ", skipped_lines
+
     df = pd.read_csv(filename, sep="\t")
 
     if "communities.csv" in filename:
@@ -118,7 +135,7 @@ def plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_nam
   for i,value in enumerate(grouped):
     name,group = value
     color = colors[i%len(colors)]
-    #print i, name, color
+    print i, name, color
     x = group[xlabel]
     y = group[ylabel]
     # if len(axes) > 0:
@@ -146,8 +163,13 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, rou
   for i,value in enumerate(grouped):
     name,group = value
     color = colors[i%len(colors)]
-    print "plotting group\t", i, name, color
-    plt.scatter(group[xlabel], group[ylabel], s=20, c=color, marker='.', label=route_names[name], lw = 0)
+    print "group\t", i, name, color
+  for i,value in enumerate(grouped):
+    name,group = value
+    if name in route_names:
+      color = colors[i%len(colors)]
+      print "plotting group\t", i, name, color
+      plt.scatter(group[xlabel], group[ylabel], s=20, c=color, marker='.', label=route_names[name], lw = 0)
   [xmin, xmax, ymin, ymax] = get_axes_ranges(grouped, xlabel, ylabel)
   plt.xlim([xmin,xmax])
   plt.xlabel(xtitle)

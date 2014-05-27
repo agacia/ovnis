@@ -50,6 +50,7 @@ def main():
   parser.add_option('--timeEstimationMethod', help=("timeEstimationMethod"), type="string", dest='timeEstimationMethod')
   parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
   parser.add_option('-c', '--cluster', help=("cluster"), action="store_true", dest='cluster', default=False)
+  parser.add_option('--runOvnis', help=("run ovnis"), action="store_true", dest='runOvnis', default=False)
   
   (options, args) = parser.parse_args()
   print options
@@ -83,12 +84,19 @@ def main():
   ttl = options.ttl or 60
   timeEstimationMethod = options.timeEstimationMethod or "last"
   decayFactor = options.decayFactor or 0.5
+  usePerfect = options.usePerfect or False
+  if usePerfect:
+   usePerfect = "true"
+  else:
+    usePerfect = "false"
+  runOvnis = options.runOvnis or False
 
   # run ovnis   
-  args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor)
-  call = ovnisapp + args
-  print "running ", call
-  os.system(call)
+  if runOvnis:
+    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --usePerfect=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, usePerfect)
+    call = ovnisapp + args
+    print "running ", call
+    os.system(call)
 
   # add headers to the output file
   filename = "output_log_routing_end"

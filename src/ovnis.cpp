@@ -581,7 +581,7 @@ void Ovnis::writeEdge(string cmd, string n1, string n2, map<string, string>& add
 
 void Ovnis::UpdateInOutVehicles() {
 
-	NS_LOG_FUNCTION_NOARGS();
+//	NS_LOG_FUNCTION_NOARGS();
 	// remove the eventually removed vehicles while added in the inserted list (especially a the beginning)
 	vector<string>::iterator i = arrivedVehicles.begin();
 	while (i != arrivedVehicles.end()) {

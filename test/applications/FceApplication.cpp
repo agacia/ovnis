@@ -434,6 +434,9 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 				<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
 				<< travelTime2 << "\t"
 				<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
+		NS_LOG_INFO ("Fce on reporting");
+
+		 NS_LOG_FUNCTION (this);
 		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId,
 				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, neededProbabilistic,
 				m_params["routingStrategy"], vehicle.getStart(), staticCost);

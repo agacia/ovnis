@@ -327,9 +327,9 @@ map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, doubl
 		else {
 			double travelTime = ttdb[*it].getValue();
 
-			if (knowledgeType == "vanet") {
-				Log::getInstance().getStream("aaa") << travelTime << " " << TIS::getInstance().getTimeEstimationMethod() << endl;
-			}
+//			if (knowledgeType == "vanet") {
+//				Log::getInstance().getStream("aaa") << travelTime << " " << TIS::getInstance().getTimeEstimationMethod() << endl;
+//			}
 
 			double packetAge = ttdb[*it].getTime() == 0 ? 0 : Simulator::Now().GetSeconds() - ttdb[*it].getTime();
 			if (travelTime > 0) {// && packetAge < ttl) { // if the information is fresh enough
