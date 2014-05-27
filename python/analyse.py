@@ -53,32 +53,66 @@ def main():
 
   if options.inputFile:
     filename = options.inputFile
-    clean_filename = filename+'_clean'
-    number_of_columns = 0
-    f_out = open(clean_filename, 'w')
-    with open(filename, 'r') as f:
-      header_line = next(f)
-      number_of_columns = len(header_line.split('\t'))
-      f_out.write(header_line)
-      skipped_lines = 0
-      for data_line in f:
-        if len(data_line.split('\t'))!=number_of_columns:
-          skipped_lines += 1
-          continue
-        f_out.write(data_line)  
-    filename = clean_filename
-    print "skipped_lines: ", skipped_lines
+    
 
-    df = pd.read_csv(filename, sep="\t")
+    
 
     if "communities.csv" in filename:
+      df = pd.read_csv(filename, sep="\t")
       title="Average speed"
       plt.figure(1)
       plt.scatter(df['step'], df['timeMeanSpeed'])
       outputfile = options.outputDir + "plot_" + title + ".png"
       plt.savefig(outputfile)
 
+    if "edges_error" in filename:
+      new_header = "Time\tVehicle Id\tSize Vanet\tSize Perfect\tError\tPerfect\tVanet\tDiff\tStatic\troute Kennedy\tKennedy\tKennedy Error\tKennedy Perfect\tKennedy Vanet\tKennedy Diff\tKennedy Static\troute Adenauer\tAdenauer\tAdenauer Error\tAdenauer Perfect\tAdenauer Vanet\tAdenauer Diff\tAdenauer Static\troute Thuengen\tThuengen\tThuengen Error\tThuengen Perfect\tThuengen Vanet\tThuengen Diff\tThuengen Static"
+      filename, skipped_lines = clean_file(filename, False, new_header)
+      df = pd.read_csv(filename, sep="\t")
+      xlabel="Time"
+      
+      xtitle = 'Time (seconds)'
+      ytitle = 'Duration (seconds)'
+      title = "Total travel times"
+      ylabels=["Perfect","Vanet"]
+      ylabel = "Diff"
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+      write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
+
+      title = "Kennedy travel times"
+      ylabels=["Kennedy Perfect","Kennedy Vanet"]
+      ylabel = "Kennedy Diff"
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+      write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
+
+      title = "Adenauer travel times"
+      ylabels=["Adenauer Perfect","Adenauer Vanet"]
+      ylabel = "Adenauer Diff"
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+      write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
+      
+      title = "Thuengen travel times"
+      ylabels=["Thuengen Perfect","Thuengen Vanet"]
+      ylabel = "Thuengen Diff"
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+      write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
+
+
+      title = "Error Travel times"
+      ylabels=["Kennedy Diff", "Adenauer Diff", "Thuengen Diff"]
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+
+      title = "Perfect Travel times"
+      ylabels=["Kennedy Perfect", "Adenauer Perfect", "Thuengen Perfect"]
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+
+      title = "Vanet Travel times"
+      ylabels=["Kennedy Vanet", "Adenauer Vanet","Thuengen Vanet"]
+      plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
+
     if "tripinfo" in filename or "output_log_routing_end" in filename:
+      filename, skipped_lines = clean_file(filename, True, None)
+      df = pd.read_csv(filename, sep="\t")
       route_names = {"2069.63":"Kennedy", "2598.22": "Adenauer", "2460.76": "Thuengen", "1262.43":"Kennedy", "1791.02":"Adenauer", "1653.56":"Thuengen", "routedist#0":"Kennedy", "routedist#1":"Adenauer", "routedist#2":"Thuengen"}
       print route_names
       # tripinfo
@@ -94,21 +128,66 @@ def main():
       else:
         groupby_col = "routeId"
       plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, options.outputDir)
-      plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, options.outputDir)
-      write_stats(df, groupby_col, xlabel, ylabel, route_names, options.outputDir)
+      plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, options.outputDir)
+      write_group_stats(df, groupby_col, xlabel, ylabel, route_names, options.outputDir, skipped_lines)
 
   return
 
+def clean_file(filename, is_header = False, new_header=None):
+  clean_filename = filename+'_clean'
+  number_of_columns = 0
+  skipped_lines = 0
+  f_out = open(clean_filename, 'w')
+  with open(filename, 'r') as f:
+    if is_header:
+      header_line = next(f)
+    if new_header:
+      header_line = new_header
+    number_of_columns = len(header_line.split('\t'))
+    f_out.write(header_line)
+    for data_line in f:
+      if len(data_line.strip().split('\t'))!=number_of_columns:
+        skipped_lines += 1
+        continue
+      f_out.write(data_line)  
+    return clean_filename, skipped_lines
 
-def write_stats(df, groupby_col, xlabel, ylabel, route_names, outputdir):
+def write_group_stats(df, groupby_col, xlabel, ylabel, route_names, outputdir, skipped_lines):
   filename = os.path.join(outputdir, "tripstats.txt")
   outfile = open(filename, 'w')
+  outfile.write("skipped_lines\t%d\n"%skipped_lines)
+  meanTT = np.mean(df[ylabel])
+  sumTT = np.sum(df[ylabel])
+  stdTT = np.std(df[ylabel])
+  minTT = np.min(df[ylabel])
+  maxTT = np.max(df[ylabel])
+  outfile.write("Mean TT\t%.2f\n"%meanTT)
+  outfile.write("Sum TT\t%.2f\n"%sumTT)
+  outfile.write("Std TT\t%.2f\n"%stdTT)
+  outfile.write("Min TT\t%.2f\n"%minTT)
+  outfile.write("Max TT\t%.2f\n"%maxTT)
   grouped = df.groupby(groupby_col)
   ylabel2 = "staticCost"
   routes = grouped.aggregate({ylabel:[np.size, np.mean, np.std, np.amin, np.amax], ylabel2:[np.mean, np.std]}).reset_index()
   routes.to_csv(outfile, sep='\t')
 
-def get_axes_ranges(grouped, xlabel, ylabel):
+def write_stats(df, xlabel, ylabel, outputdir, skipped_lines):
+  filename = os.path.join(outputdir, "tripstats_error.txt")
+  outfile = open(filename, 'w')
+  outfile.write("skipped_lines\t%d\n"%skipped_lines)
+  meanTT = np.mean(df[ylabel])
+  sumTT = np.sum(df[ylabel])
+  stdTT = np.std(df[ylabel])
+  minTT = np.min(df[ylabel])
+  maxTT = np.max(df[ylabel])
+  outfile.write("Mean TT\t%.2f\n"%meanTT)
+  outfile.write("Sum TT\t%.2f\n"%sumTT)
+  outfile.write("Std TT\t%.2f\n"%stdTT)
+  outfile.write("Min TT\t%.2f\n"%minTT)
+  outfile.write("Max TT\t%.2f\n"%maxTT)
+  outfile.close()
+
+def get_group_axes_ranges(grouped, xlabel, ylabel):
   xmin = 0
   ymin = 0
   xmax = 0
@@ -122,7 +201,49 @@ def get_axes_ranges(grouped, xlabel, ylabel):
       ymax = y
   return [xmin, xmax, ymin, ymax]
 
-def plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, outputdir):
+def get_axes_ranges(df, xlabel, ylabels):
+  xmin = 0
+  ymin = 0
+  xmax = 0
+  ymax = 0
+  x = max(df[xlabel])
+  if x > xmax:
+    xmax = x
+  for ylabel in ylabels:
+    y = max(df[ylabel])
+    if y > ymax:
+      ymax = y
+  return [xmin, xmax, ymin, ymax]
+
+def plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, outputdir):
+  colors = ['c','b','r','y','g','m']
+  fig = plt.figure()
+  num_lines = len(ylabels)
+  print "xlabel", xlabel, ", ylabels", ylabels
+  print "num of lines:",num_lines
+  # find axes range
+  [xmin, xmax, ymin, ymax] = get_axes_ranges(df, xlabel, ylabels)
+  axes = []
+  subplots = 1
+  for j in range(subplots):
+    axes.append(fig.add_subplot(1, subplots, j+1, axisbg='white')) # height, width, chart #
+    axes[j].set_ylim([ymin,ymax])
+    axes[j].set_xlim([xmin,xmax])
+    axes[j].locator_params(nbins=4)
+    for i,ylabel in enumerate(ylabels):
+      color = colors[i%len(colors)]
+      print i, ylabel, color
+      x = df[xlabel]
+      y = df[ylabel]
+      axes[j].plot(x, y, color, linewidth=1, label=ylabel)
+      axes[j].legend(loc='lower center')
+      axes[j].set_xlabel(xtitle)
+
+  axes[0].set_ylabel(ytitle)
+  outputfile = outputdir + "plot_" + title + "_lines" + ".png"
+  plt.savefig(outputfile)
+
+def plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, outputdir):
 
   colors = ['c','b','r','y','g','m']
   grouped = df.groupby(groupby_col)
@@ -130,7 +251,7 @@ def plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_nam
   num_groups = len(grouped)
   print "num of groups:",num_groups
   # find axes range
-  [xmin, xmax, ymin, ymax] = get_axes_ranges(grouped, xlabel, ylabel)
+  [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel)
   axes = []
   for i,value in enumerate(grouped):
     name,group = value
@@ -151,7 +272,7 @@ def plot_lines(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_nam
     axes[i].set_xlabel(xtitle)
 
   axes[0].set_ylabel(ytitle)
-  outputfile = outputdir + "plot_" + title + "_lines" + ".png"
+  outputfile = outputdir + "plot_groups_" + title + "_lines" + ".png"
   plt.savefig(outputfile)
 
 def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, route_names, outputdir):
@@ -170,7 +291,7 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, rou
       color = colors[i%len(colors)]
       print "plotting group\t", i, name, color
       plt.scatter(group[xlabel], group[ylabel], s=20, c=color, marker='.', label=route_names[name], lw = 0)
-  [xmin, xmax, ymin, ymax] = get_axes_ranges(grouped, xlabel, ylabel)
+  [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel)
   plt.xlim([xmin,xmax])
   plt.xlabel(xtitle)
   plt.ylabel(ytitle)

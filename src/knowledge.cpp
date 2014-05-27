@@ -70,7 +70,7 @@ map<string,RecordEntry> & Knowledge::getRecords()
 	return travelTimes;
 }
 
-void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, bool usePerfectInformation) {
+void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeType) {
 	ifCongestedFlow = false;
 	ifDenseFlow = false;
 	sumLength = 0;
@@ -97,7 +97,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	}
 
 	map<string, RecordEntry> ttdb = travelTimes;
-	if (usePerfectInformation) {
+	if (knowledgeType == "perfect") {
 		ttdb = TIS::getInstance().getPerfectTravelTimes();
 //		cout << "use perfect " << ttdb.size() << "\tlocal\t" << travelTimes.size() << endl;
 	}
@@ -183,7 +183,9 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	travelTimesOnRoutes = newTravelTimesOnRoutes;
 }
 
-
+/*
+ * correlated[route] = map<another_route, vector<common edges>>
+ */
 map<string,map<string,vector<string> > > Knowledge::analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	map<string,map<string,vector<string> > > correlated;
 	for (map<string, Route>::iterator itRoutes = routes.begin(); itRoutes != routes.end(); ++itRoutes) {
@@ -199,17 +201,19 @@ map<string,map<string,vector<string> > > Knowledge::analyseCorrelation(map<strin
 			}
 		}
 	}
+	// print correlation
+	// route	correlated_route	num_common_edges	list_of_edges	correlated_route2	num_common_edges_2 list_of_edges
 	if (TIS::getInstance().executeOnce == false) {
 		for (map<string, map<string,vector<string> > >::iterator itCorrelated = correlated.begin(); itCorrelated != correlated.end(); ++itCorrelated) {
-//			Log::getInstance().getStream("correlation") << itCorrelated->first << ":" << endl;
+			Log::getInstance().getStream("correlation") << itCorrelated->first << ":" << endl;
 			for (map<string,vector<string> >::iterator itCorrelatedTo = itCorrelated->second.begin(); itCorrelatedTo != itCorrelated->second.end(); ++itCorrelatedTo) {
-//				Log::getInstance().getStream("correlation") << itCorrelatedTo->first << "\t" << itCorrelatedTo->second.size() << ":\t";
+				Log::getInstance().getStream("correlation") << itCorrelatedTo->first << "\t" << itCorrelatedTo->second.size() << ":\t";
 				for (vector<string>::iterator it = itCorrelatedTo->second.begin(); it != itCorrelatedTo->second.end(); ++it) {
-//					Log::getInstance().getStream("correlation") << *it << "\t";
+					Log::getInstance().getStream("correlation") << *it << "\t";
 				}
-//				Log::getInstance().getStream("correlation") << endl;
+				Log::getInstance().getStream("correlation") << endl;
 			}
-//			Log::getInstance().getStream("correlation") << endl;
+			Log::getInstance().getStream("correlation") << endl;
 		}
 		TIS::getInstance().executeOnce = true;
 	}

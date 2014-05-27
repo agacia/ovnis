@@ -68,7 +68,7 @@ int main(int argc, char ** argv) {
 	sumoPath="/opt/sumo/bin/sumo";
 	sumoPath = "/home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
 	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/";
-	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/test2";
+	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/test";
 	string sumoConfig = "scenario_accident_const_1111.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
 	int stopTime = 700; // 25200; // 7h
@@ -76,9 +76,9 @@ int main(int argc, char ** argv) {
 
 	// TrafficEQ (FceApplication) params
     string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
-    string usePerfect = "true";
+    string knowledgeType = "vanet";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
@@ -107,7 +107,7 @@ int main(int argc, char ** argv) {
 	cmd.AddValue("networkId", "Network name", networkId);
 	cmd.AddValue("routingStrategies","Names of routing strategies",routingStrategies);
 	cmd.AddValue("routingStrategiesProbabilities","Probabilities of routing strategies",routingStrategiesProbabilities);
-	cmd.AddValue("usePerfect", "Use perfect real-time information (recorded by a vehicle)", usePerfect);
+	cmd.AddValue("knowledgeType", "Use perfect real-time information (recorded by a vehicle) or vanet disseminated", knowledgeType);
 	cmd.AddValue("cheatersRatio","cheatersRatio", cheatersRatio);
 	cmd.AddValue("ttl","ttl", ttl);
 	cmd.AddValue("timeEstimationMethod","timeEstimationMethod", timeEstimationMethod);
@@ -133,6 +133,7 @@ int main(int argc, char ** argv) {
 	cout << "ttl\t" << ttl << endl;
 	cout << "timeEstimationMethod\t" << timeEstimationMethod << endl;
 	cout << "decayFactor\t" << decayFactor << endl;
+	cout << "knowledge type\t" << knowledgeType << endl;
 
 	Ptr<Ovnis> expe = CreateObjectWithAttributes<Ovnis>(
 			"SumoConfig", StringValue(sumoConfig),
@@ -162,7 +163,7 @@ int main(int argc, char ** argv) {
 	fceParams["vanetDisseminationPenetrationRate"] = vanetDisseminationPenetrationRate;
 	fceParams["accidentStartTime"] = accidentStartTime;
 	fceParams["accidentStopTime"] = accidentStopTime;
-	fceParams["usePerfect"] = usePerfect;
+	fceParams["knowledgeType"] = knowledgeType;
 	fceParams["ttl"] = ttl;
 	fceParams["costFunctions"] = costFunctions;
 	fceParams["costFunctionProbabilities"] = costFunctionProbabilities;

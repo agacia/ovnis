@@ -45,7 +45,7 @@ def main():
   parser.add_option('--knowledgePenetrationRate', help=("knowledgePenetrationRate"), type="int", dest='knowledgePenetrationRate')
   parser.add_option('--vanetDisseminationPenetrationRate', help=("vanetDisseminationPenetrationRate"), type="int", dest='vanetDisseminationPenetrationRate')
   parser.add_option('--cheatersRatio', help=("cheatersRatio"), type="int", dest='cheatersRatio')
-  parser.add_option('--usePerfect', help=("usePerfect"), type="string", dest='usePerfect')
+  parser.add_option('--knowledgeType', help=("knowledgeType"), type="string", dest='knowledgeType')
   parser.add_option('--ttl', help=("ttl"), type="int", dest='ttl')
   parser.add_option('--timeEstimationMethod', help=("timeEstimationMethod"), type="string", dest='timeEstimationMethod')
   parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
@@ -84,16 +84,12 @@ def main():
   ttl = options.ttl or 60
   timeEstimationMethod = options.timeEstimationMethod or "last"
   decayFactor = options.decayFactor or 0.5
-  usePerfect = options.usePerfect or False
-  if usePerfect:
-   usePerfect = "true"
-  else:
-    usePerfect = "false"
+  knowledgeType = options.knowledgeType or "perfect"
   runOvnis = options.runOvnis or False
 
   # run ovnis   
   if runOvnis:
-    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --usePerfect=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, usePerfect)
+    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType)
     call = ovnisapp + args
     print "running ", call
     os.system(call)
@@ -112,6 +108,14 @@ def main():
     print "header line already is there" 
   
   # analyse output file
+  script_filepath = os.path.join(ovnisdir, "python", "analyse.py")
+  call = "python %s --inputFile %s --outputDir %s" %(script_filepath, routing_end_filepath, outputFolder+"/")
+  print "running ", call
+  os.system(call)
+
+  # analyse error file 
+  filename = "output_log_edges_error"
+  routing_end_filepath = os.path.join(outputFolder, filename)
   script_filepath = os.path.join(ovnisdir, "python", "analyse.py")
   call = "python %s --inputFile %s --outputDir %s" %(script_filepath, routing_end_filepath, outputFolder+"/")
   print "running ", call

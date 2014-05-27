@@ -153,14 +153,14 @@ namespace ns3
     double expectedTravelTime;
     double selfishExpectedTravelTime;
     bool neededProbabilistic;
-	string routeChoice;
+//	string routeChoice;
 	bool isDense;
 	bool isCongested;
 	string decisionEdgeId;
 	void CalculateError(string currentEdgeId);
 	void OnEdgeChanged(double now, string currentEdgeId);
 	map<string, double> EstimateTravelCostBasedOnCentralised(double now, string currentEdgeId);
-	map<string, double> EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction);
+	map<string, double> EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction, string knowledgeType);
 	string ChooseRoute(double now, string currentEdgeId, map<string, double> routeCost, string routingStrategy, double cheatersRatio);
 	map<string, double> AnalyseRouteCorrelation();
 	void OnReporting(double now, string currentEdgeId);

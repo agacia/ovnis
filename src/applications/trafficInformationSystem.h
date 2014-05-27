@@ -68,8 +68,9 @@ public:
 	void setDecayFactor(double factor);
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
-	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
-	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs, std::map<std::string, double> correlated);
+	map<string, double> getProbabilities(map<string,double> costs, map<string, double> correlated);
+//	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
+//	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs, std::map<std::string, double> correlated);
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();
 	std::string getEvent(std::map<std::string, double> probabilities);

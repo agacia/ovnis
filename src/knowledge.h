@@ -48,7 +48,7 @@ public:
 	void record(vector<Data> data);
 	map<string,RecordEntry> & getRecords();
 
-	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, bool usePerfectInformation);
+	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeType);
 	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId);
 
 

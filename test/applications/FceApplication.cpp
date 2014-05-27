@@ -93,7 +93,7 @@ void FceApplication::InitializeParams() {
 	for (map<string, string>::iterator i = m_params.begin(); i != m_params.end(); ++i) {
 		Log::getInstance().getStream("scenarioSettings") << i->first << "\t" << i->second << endl;
 	}
-	Log::getInstance().getStream("scenarioSettings") << "usePerfect" << "\t" << m_params["usePerfect"] << "\n";
+	Log::getInstance().getStream("scenarioSettings") << "knowledgeType" << "\t" << m_params["knowledgeType"] << "\n";
 	// select routing strategy
 	m_params["routingStrategy"] = "hybrid";
 	vector<string> routingStrategies = CommonHelper::split(m_params["routingStrategies"], ',');
@@ -109,7 +109,6 @@ void FceApplication::InitializeParams() {
 	}
 	m_params["routingStrategy"] = TIS::getInstance().getEvent(probabilities);
 	Log::getInstance().getStream("scenarioSettings") << "\nSelected routing strategy " << m_params["routingStrategy"] << endl;
-	Log::getInstance().getStream("selectedStrategies") << m_params["routingStrategy"] << endl;
 	SetNetwork(m_params["networkId"]);
 	ttl =  atof(m_params["ttl"].c_str());
 	Log::getInstance().getStream("scenarioSettings") << ttl << endl;
@@ -254,9 +253,6 @@ void FceApplication::SimulationRun(void) {
 			// if approaching an intersection take decision which route to take from current to destination edge
 			bool isDecisionPoint = find(vehicle.getScenario().getDecisionEdges().begin(), vehicle.getScenario().getDecisionEdges().end(), currentEdgeId) != vehicle.getScenario().getDecisionEdges().end();
 			if (isDecisionPoint && !decisionTaken) {
-
-//				cout << "vehicle " << vehicle.getId() << " makes decision, vanet records: " << vanetsKnowledge.getRecords().size() <<" " << TIS::getInstance().getPerfectTravelTimes().size() << endl;
-
 				isDense = false;
 				isCongested = false;
 				map<string, double> cost = EstimateTravelCostBasedOnCentralised(now, currentEdgeId);
@@ -265,11 +261,21 @@ void FceApplication::SimulationRun(void) {
 				double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
 				isVanet =  r < vanetKnowledgeRatio;
 				if (isVanet) {
-					cost = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"]);
+					cost = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"], m_params["knowledgeType"]);
+					CalculateError(currentEdgeId);
 				}
 				double cheatersRatio = atof(m_params["cheatersRatio"].c_str());
-				routeChoice = ChooseRoute(now, currentEdgeId, cost, m_params["routingStrategy"], cheatersRatio);
+				string routeChoice = ChooseRoute(now, currentEdgeId, cost, m_params["routingStrategy"], cheatersRatio);
 				vehicle.reroute(routeChoice);
+
+				map<string, double> cost2 = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"], "perfect");
+				string routeChoice2 = ChooseRoute(now, currentEdgeId, cost2, m_params["routingStrategy"], cheatersRatio);
+				Log::getInstance().getStream("decision") << now << "\t" << m_params["knowledgeType"] << "\t" << routeChoice << "\t" << routeChoice2 << "\t" << (routeChoice==routeChoice2);
+				for (map<string, double>::iterator it = cost2.begin(); it != cost2.end(); ++it) {
+					Log::getInstance().getStream("decision") << "\t" << it->first << "\t" << (it->second-cost[it->first]) << "\t";
+				}
+				Log::getInstance().getStream("decision") << endl;
+
 			}
 
 			// if approaching the point that we want to evaluate
@@ -311,54 +317,44 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnCentralised(double 
 	return globalCosts;
 }
 
-map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction) {
-//	Vector position = mobilityModel->GetPosition();
-//	Log::getInstance().getStream("vanets_knowledge") << now << "\t" << position.x << "\t" << position.y << "\t" << currentEdgeId << "\t" << vehicle.getDestinationEdgeId() << "\t";
+map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, string currentEdgeId, string costFunction, string knowledgeType) {
 	string endEdgeId = vehicle.getDestinationEdgeId();
-	// for shortest we need to reset (do dynamic value)
 	map<string,double> routeTTL;
 	for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 		routeTTL[it->first] = ttl;
 	}
-
-	bool usePerfect = m_params["usePerfect"] == "true";
-	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, usePerfect);
+	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, knowledgeType);
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
-//		cout << "in fce read knowledge: route " << it->first << ", travel time " << it->second << endl;
-//	}
-	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
-	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
+//	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
+//	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
 //	Log::getInstance().logMap("delay_scale", now, delayTimeCost, 0);
 //	Log::getInstance().logMap("congestion_scale", now, congestionLengthCost, 0);
 //	Log::getInstance().logMap("travelTime_scale", now, travelTimeCost, 0);
 	map<string, double> cost = travelTimeCost;
-	if (costFunction == "congestionLength") {
-		cost = congestionLengthCost;
-	}
-	if (costFunction == "delayTime") {
-		cost = delayTimeCost;
-	}
-
+//	if (costFunction == "congestionLength") {
+//		cost = congestionLengthCost;
+//	}
+//	if (costFunction == "delayTime") {
+//		cost = delayTimeCost;
+//	}
 	isDense = vanetsKnowledge.isDenseFlow();
 	isCongested = vanetsKnowledge.isCongestedFlow();
-
-	CalculateError(currentEdgeId);
-
 	return cost;
 }
 
 string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string, double> routeCost, string routingStrategy, double cheatersRatio) {
 	string shortest_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
 	map<string, double> correlatedValues = AnalyseRouteCorrelation();
-	string probabilistic_choice =  TIS::getInstance().chooseProbTravelTimeRoute(routeCost, correlatedValues);
-	bool needProbabilistic = isCongested;
-	//	needProbabilistic = isCongested || isDense;
+	map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
+	string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
+
+	bool needProbabilistic = isCongested; //|| isDense;
 	//	needProbabilistic = vanetsKnowledge.getSumDelay() > 0;
 	//	bool isAccident = now > m_params["accidentStartTime"] && now < m_params["accidentStopTime"];
 	//	needProbabilistic = isAccident;
 	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
 
-	routeChoice = shortest_choice;
+	string routeChoice = shortest_choice;
 	if (shortest_choice != "") {
 		routeChoice = shortest_choice;
 	}
@@ -406,9 +402,15 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	decisionEdgeId = currentEdgeId;
 	decisionTaken = true;
 
-	Log::getInstance().getStream("scenarioSettings") << "chosen routingStrategy\t" << routingStrategy << endl;
-	Log::getInstance().getStream("scenarioSettings") << "needProbabilistic\t" << needProbabilistic << endl;
-	Log::getInstance().getStream("scenarioSettings") << "routeChoice\t" << routeChoice << endl;
+//	Log::getInstance().getStream("probabilities3") << Simulator::Now().GetSeconds();
+//	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
+//		Log::getInstance().getStream("probabilities3") << "\t" << it->first << "\t" << it->second << "\t";
+//	}
+//	Log::getInstance().getStream("probabilities3") << probabilistic_choice << "\t" << routeChoice << endl;
+
+//	Log::getInstance().getStream("scenarioSettings") << "chosen routingStrategy\t" << routingStrategy << endl;
+//	Log::getInstance().getStream("scenarioSettings") << "needProbabilistic\t" << needProbabilistic << endl;
+//	Log::getInstance().getStream("scenarioSettings") << "routeChoice\t" << routeChoice << endl;
 	// todo get newEdgeId (pointer to the next edge)
 	TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdgeId, vehicle.getItinerary().getId(), currentEdgeId,
 			routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
@@ -452,12 +454,12 @@ map<string, double> FceApplication::AnalyseRouteCorrelation() {
 	map<string, double> correlatedValues;
 	string defaultRoute = vehicle.getItinerary().getId();
 	correlatedValues[defaultRoute] = 0;
-	Log::getInstance().getStream("scenarioSettings") << "correlation of default route " << defaultRoute << "\t";
+//	Log::getInstance().getStream("correlation") << now << "\t" << defaultRoute << "\t";
 	for (map<string,vector<string> >::iterator itCorrelatedTo = correlated[defaultRoute].begin(); itCorrelatedTo != correlated[defaultRoute].end(); ++itCorrelatedTo) {
 		correlatedValues[itCorrelatedTo->first] = itCorrelatedTo->second.size()*2;
-		Log::getInstance().getStream("scenarioSettings") << itCorrelatedTo->first << "," << correlatedValues[itCorrelatedTo->first] << "\t";
+//		Log::getInstance().getStream("correlation") << itCorrelatedTo->first << "," << correlatedValues[itCorrelatedTo->first] << "\t";
 	}
-	Log::getInstance().getStream("scenarioSettings") << endl;
+//	Log::getInstance().getStream("correlation") << endl;
 	return correlatedValues;
 }
 
