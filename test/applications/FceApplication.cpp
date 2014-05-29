@@ -95,15 +95,12 @@ void FceApplication::InitializeParams() {
 	}
 	Log::getInstance().getStream("scenarioSettings") << "knowledgeType" << "\t" << m_params["knowledgeType"] << "\n";
 	// select routing strategy
-	m_params["routingStrategy"] = "hybrid";
 	vector<string> routingStrategies = CommonHelper::split(m_params["routingStrategies"], ',');
 	vector<string> routingStrategiesProbabilities = CommonHelper::split(m_params["routingStrategiesProbabilities"], ',');
 	int i = 0;
 	map<string, double> probabilities;
 	for (vector<string>::iterator it =  routingStrategies.begin(); it != routingStrategies.end(); ++it) {
 		probabilities[*it] = atof(routingStrategiesProbabilities[i].c_str());
-//		string routingStrategy = *it;
-//		probabilities[routingStrategy] = 1.0;
 		Log::getInstance().getStream("scenarioSettings") << " strategy: " << *it << ",probability: " << probabilities[*it] << "\t";
 		++i;
 	}
@@ -351,11 +348,11 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	isDense = vanetsKnowledge.isDenseFlow();
 	isCongested = vanetsKnowledge.isCongestedFlow();
 
-	bool needProbabilistic = isCongested; //|| isDense;
-	//	needProbabilistic = vanetsKnowledge.getSumDelay() > 0;
+	neededProbabilistic = isCongested; //|| isDense;
+	//	neededProbabilistic = vanetsKnowledge.getSumDelay() > 0;
 	bool isAccident = now > accidentStartTime && now < accidentStopTime;
-	needProbabilistic = isAccident;
-	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
+	neededProbabilistic = isAccident;
+	TIS::getInstance().setCongestion(neededProbabilistic, isDense, isCongested);
 
 	string routeChoice = shortest_choice;
 	if (shortest_choice != "") {
@@ -365,12 +362,12 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 		  routeChoice = probabilistic_choice;
 	}
 	// hybrid - probabilistic only if 'needed'
-	if (routingStrategy == "hybrid" && needProbabilistic && probabilistic_choice != "") {
+	if (routingStrategy == "hybrid" && neededProbabilistic && probabilistic_choice != "") {
 		routeChoice = probabilistic_choice;
 		Log::getInstance().needProbabilistic ++;
 	}
 	// hybrid - probabilistic only if 'needed'
-	if (routingStrategy == "hybrid" && needProbabilistic && probabilistic_choice != "") {
+	if (routingStrategy == "hybrid" && neededProbabilistic && probabilistic_choice != "") {
 		routeChoice = probabilistic_choice;
 		Log::getInstance().needProbabilistic ++;
 	}
@@ -417,7 +414,7 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	// todo get newEdgeId (pointer to the next edge)
 	TIS::getInstance().reportStartingRoute(vehicle.getId(), currentEdgeId, vehicle.getItinerary().getId(), currentEdgeId,
 			routeChoice, vehicle.getOriginEdgeId(), vehicle.getDestinationEdgeId(), isCheater,
-			needProbabilistic, expectedTravelTime, selfishExpectedTravelTime);
+			neededProbabilistic, expectedTravelTime, selfishExpectedTravelTime);
 
 	return routeChoice;
 }
@@ -433,15 +430,12 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 		double travelTime2 = vehicle.getItinerary().computeTravelTime(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId);
 		double staticCost = vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId);
 //		double staticCostR1 =vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static")
-		cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t"
+		cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t"  << neededProbabilistic << "\t "
 				<< decisionEdgeId << "-" << currentEdgeId << "\t" << travelTime << "\t"
 				<< vehicle.getItinerary().computeStaticCostExcludingMargins(decisionEdgeId, currentEdgeId) << "\t" << vehicle.getItinerary().computeLength(decisionEdgeId, currentEdgeId) << "[m]\t"
 				<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
 				<< travelTime2 << "\t"
 				<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
-		NS_LOG_INFO ("Fce on reporting");
-
-		 NS_LOG_FUNCTION (this);
 		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId,
 				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, neededProbabilistic,
 				m_params["routingStrategy"], vehicle.getStart(), staticCost);

@@ -353,7 +353,7 @@ bool TIS::isCongestion()
 void TIS::setCongestion(bool congestion, bool ifDense, bool ifCongested)
 {
 	if (this->congestion != congestion) {
-//		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
+		Log::getInstance().getStream("congestion_changes") <<  Simulator::Now().GetSeconds() << "\t" << this->congestion << "\t->\t" << congestion <<  "\t" << ifDense << "\t" << ifCongested << endl;
 		this->congestion = congestion;
 	}
 }
