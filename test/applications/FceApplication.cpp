@@ -76,11 +76,11 @@ FceApplication::FceApplication() {
 	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
 	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
-	m_params["accidentStartTime"] = "0"; // ACCIDENT_START_TIME;
+	m_params["accidentStartTime"] = "600"; // ACCIDENT_START_TIME;
 	m_params["accidentStopTime"] = "1800"; // ACCIDENT_END_TIME;
 	m_params["networkId"] = "Kirchberg";
 	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
-	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
+	m_params["routingStrategiesProbabilities"] = "0,0,0,1"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
 }
@@ -111,6 +111,8 @@ void FceApplication::InitializeParams() {
 	Log::getInstance().getStream("scenarioSettings") << "\nSelected routing strategy " << m_params["routingStrategy"] << endl;
 	SetNetwork(m_params["networkId"]);
 	ttl =  atof(m_params["ttl"].c_str());
+	accidentStartTime = atof(m_params["accidentStartTime"].c_str());
+	accidentStopTime = atof(m_params["accidentStopTime"].c_str());
 	Log::getInstance().getStream("scenarioSettings") << ttl << endl;
 
 }
@@ -337,8 +339,6 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 //	if (costFunction == "delayTime") {
 //		cost = delayTimeCost;
 //	}
-	isDense = vanetsKnowledge.isDenseFlow();
-	isCongested = vanetsKnowledge.isCongestedFlow();
 	return cost;
 }
 
@@ -348,10 +348,13 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
 	string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
 
+	isDense = vanetsKnowledge.isDenseFlow();
+	isCongested = vanetsKnowledge.isCongestedFlow();
+
 	bool needProbabilistic = isCongested; //|| isDense;
 	//	needProbabilistic = vanetsKnowledge.getSumDelay() > 0;
-	//	bool isAccident = now > m_params["accidentStartTime"] && now < m_params["accidentStopTime"];
-	//	needProbabilistic = isAccident;
+	bool isAccident = now > accidentStartTime && now < accidentStopTime;
+	needProbabilistic = isAccident;
 	TIS::getInstance().setCongestion(needProbabilistic, isDense, isCongested);
 
 	string routeChoice = shortest_choice;

@@ -12,9 +12,6 @@ ovnis2.0.config
 tests/.deps/*
 ovnis2.0.files
 ovnis2.0.includes
-scenarios/*
-scenarios/Highway/*
-scenarios/Kirchberg/*
 src/applications/bindings/*
 gcc
 src/libovnis.la
@@ -24,8 +21,7 @@ tests/.deps/*
 src/applications/bindings/*
 memcheck.txt
 OUTPUT_FOLDER
-scenarios/Luxembourg/
-scenarios/Luxembourg/*
+scenarios/*
 memckeck.txt
 OUTPUT_FOLDER
 INSTALL

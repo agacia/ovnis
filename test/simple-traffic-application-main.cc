@@ -78,14 +78,14 @@ int main(int argc, char ** argv) {
     string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
     string knowledgeType = "vanet";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,0,0,1"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
     string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
     string cheatersRatio = "0";
-    string accidentStartTime = "0";
-    string accidentStopTime = "1300";
+    string accidentStartTime = "600";
+    string accidentStopTime = "1800";
     string ttl = "120";
     string timeEstimationMethod = "last";
     string decayFactor = "0.5";

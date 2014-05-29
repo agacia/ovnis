@@ -153,6 +153,8 @@ namespace ns3
     double expectedTravelTime;
     double selfishExpectedTravelTime;
     bool neededProbabilistic;
+    double accidentStartTime;
+    double accidentStopTime;
 //	string routeChoice;
 	bool isDense;
 	bool isCongested;

@@ -34,6 +34,7 @@ styles = [
 def main():
   # print sys.argv
   parser = OptionParser()
+  parser.add_option('--inputDir', help=("inputDir."), type="string", dest="inputDir")
   parser.add_option('--inputFile', help=("inputFile."), type="string", dest="inputFile")
   parser.add_option('--inputFiles', help=("inputFiles."), type="string", dest="inputFiles")
   parser.add_option('--labels', help=("Label titles"), type="string", dest='labelTitles')
@@ -51,11 +52,67 @@ def main():
   args['stepSize'] = options.stepSize
   args['xLabel'] = 'time'
 
+  if options.inputDir:
+    filepattern = "tripstats.txt"
+    outfilepath = os.path.join(options.inputDir, "average.txt")
+    outf = open(outfilepath, 'w')
+    averages = {}
+    stats = ["mean", "sum", "std", "min", "max", "count"]
+    routes= ["routedist#0", "routedist#1","routedist#2"]
+    averages = { name:list() for name in stats}
+    routes = { name: { name:list() for name in stats} for name in routes }
+    for root, dirs, files in os.walk(options.inputDir):
+        for filename in files:
+            if filepattern in filename:
+                filepath = os.path.join(root, filename)
+                print "read %s"%filepath
+                with open(filepath) as f:
+                    f.readline() # skip
+                    data = f.readline().strip().lower().split("\t")
+                    averages["mean"].append(float(data[1]))
+                    data = f.readline().strip().lower().split("\t")
+                    averages["sum"].append(float(data[1]))
+                    data = f.readline().strip().lower().split("\t")
+                    averages["std"].append(float(data[1]))
+                    data = f.readline().strip().lower().split("\t")
+                    averages["min"].append(float(data[1]))
+                    data = f.readline().strip().lower().split("\t")
+                    averages["max"].append(float(data[1]))
+                    data = f.readline().strip().lower().split("\t")
+                    averages["count"].append(float(data[1]))
+                    header_line = f.readline()
+                    header_line2 = f.readline()
+                    f.readline() # skip empty
+                    for line in f:
+                        route_data = line.strip().lower().split("\t")
+                        route_name = route_data[1]
+                        routes[route_name]["count"].append(float(route_data[2]))
+                        routes[route_name]["mean"].append(float(route_data[3]))
+                        routes[route_name]["sum"].append(float(route_data[4]))
+                        routes[route_name]["std"].append(float(route_data[5]))
+                        routes[route_name]["min"].append(float(route_data[6]))
+                        routes[route_name]["max"].append(float(route_data[7]))
+
+    # total averages
+    outf.write("total\n")
+    outf.write("statistic\tmean\tstd\tmin\tmax\n")
+    for name in stats:
+        outf.write("%s\t%.2f\t%.2f\t%.2f\t%.2f\n"
+                   %(name, np.mean(averages[name]), np.std(averages[name]),
+                     np.amin(averages[name]), np.amax(averages[name])))
+
+    # route averages
+    for route,route_stats in routes.items():
+        outf.write("%s\n"%route)
+        for name in stats:
+            outf.write("%s\t%.2f\t%.2f\t%.2f\t%.2f\n"
+                   %(name, np.mean(route_stats[name]), np.std(route_stats[name]),
+                     np.amin(route_stats[name]), np.amax(route_stats[name])))
+
+
+
   if options.inputFile:
     filename = options.inputFile
-    
-
-    
 
     if "communities.csv" in filename:
       df = pd.read_csv(filename, sep="\t")
@@ -70,7 +127,7 @@ def main():
       filename, skipped_lines = clean_file(filename, False, new_header)
       df = pd.read_csv(filename, sep="\t")
       xlabel="Time"
-      
+
       xtitle = 'Time (seconds)'
       ytitle = 'Duration (seconds)'
       title = "Total travel times"
@@ -90,13 +147,12 @@ def main():
       ylabel = "Adenauer Diff"
       plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
       write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
-      
+
       title = "Thuengen travel times"
       ylabels=["Thuengen Perfect","Thuengen Vanet"]
       ylabel = "Thuengen Diff"
       plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, options.outputDir)
       write_stats(df, xlabel, ylabel, options.outputDir, skipped_lines)
-
 
       title = "Error Travel times"
       ylabels=["Kennedy Diff", "Adenauer Diff", "Thuengen Diff"]
@@ -114,7 +170,6 @@ def main():
       filename, skipped_lines = clean_file(filename, True, None)
       df = pd.read_csv(filename, sep="\t")
       route_names = {"2069.63":"Kennedy", "2598.22": "Adenauer", "2460.76": "Thuengen", "1262.43":"Kennedy", "1791.02":"Adenauer", "1653.56":"Thuengen", "routedist#0":"Kennedy", "routedist#1":"Adenauer", "routedist#2":"Thuengen"}
-      print route_names
       # tripinfo
       # arrival waitSteps vType depart  routeLength vaporized duration  arrivalSpeed  devices departPos departDelay departLane  departSpeed arrivalPos  rerouteNo id  arrivalLane
       xlabel="arrival"
@@ -149,7 +204,7 @@ def clean_file(filename, is_header = False, new_header=None):
       if len(data_line.strip().split('\t'))!=number_of_columns:
         skipped_lines += 1
         continue
-      f_out.write(data_line)  
+      f_out.write(data_line)
     return clean_filename, skipped_lines
 
 def write_group_stats(df, groupby_col, xlabel, ylabel, route_names, outputdir, skipped_lines):
@@ -161,14 +216,17 @@ def write_group_stats(df, groupby_col, xlabel, ylabel, route_names, outputdir, s
   stdTT = np.std(df[ylabel])
   minTT = np.min(df[ylabel])
   maxTT = np.max(df[ylabel])
+  count = len(df[ylabel])
   outfile.write("Mean TT\t%.2f\n"%meanTT)
   outfile.write("Sum TT\t%.2f\n"%sumTT)
   outfile.write("Std TT\t%.2f\n"%stdTT)
   outfile.write("Min TT\t%.2f\n"%minTT)
   outfile.write("Max TT\t%.2f\n"%maxTT)
+  outfile.write("Count\t%.2f\n"%count)
   grouped = df.groupby(groupby_col)
   ylabel2 = "staticCost"
-  routes = grouped.aggregate({ylabel:[np.size, np.mean, np.std, np.amin, np.amax], ylabel2:[np.mean, np.std]}).reset_index()
+  routes = grouped.aggregate({ylabel:[np.size, sum, np.mean, np.std, np.amin, np.amax], ylabel2:[np.mean, np.sum, np.std]}).reset_index()
+  print "Writing to file %s"%outfile
   routes.to_csv(outfile, sep='\t')
 
 def write_stats(df, xlabel, ylabel, outputdir, skipped_lines):
@@ -281,10 +339,6 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle, rou
   fig = plt.figure()
   plt.figure(1)
   print "num of groups:",len(grouped)
-  for i,value in enumerate(grouped):
-    name,group = value
-    color = colors[i%len(colors)]
-    print "group\t", i, name, color
   for i,value in enumerate(grouped):
     name,group = value
     if name in route_names:
