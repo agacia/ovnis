@@ -267,13 +267,13 @@ void FceApplication::SimulationRun(void) {
 				string routeChoice = ChooseRoute(now, currentEdgeId, cost, m_params["routingStrategy"], cheatersRatio);
 				vehicle.reroute(routeChoice);
 
-				map<string, double> cost2 = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"], "perfect");
-				string routeChoice2 = ChooseRoute(now, currentEdgeId, cost2, m_params["routingStrategy"], cheatersRatio);
-				Log::getInstance().getStream("decision") << now << "\t" << m_params["knowledgeType"] << "\t" << routeChoice << "\t" << routeChoice2 << "\t" << (routeChoice==routeChoice2);
-				for (map<string, double>::iterator it = cost2.begin(); it != cost2.end(); ++it) {
-					Log::getInstance().getStream("decision") << "\t" << it->first << "\t" << (it->second-cost[it->first]) << "\t";
-				}
-				Log::getInstance().getStream("decision") << endl;
+//				map<string, double> cost2 = EstimateTravelCostBasedOnVanets(now, currentEdgeId, m_params["costFunction"], "perfect");
+//				string routeChoice2 = ChooseRoute(now, currentEdgeId, cost2, m_params["routingStrategy"], cheatersRatio);
+//				Log::getInstance().getStream("decision") << now << "\t" << m_params["knowledgeType"] << "\t" << routeChoice << "\t" << routeChoice2 << "\t" << (routeChoice==routeChoice2);
+//				for (map<string, double>::iterator it = cost2.begin(); it != cost2.end(); ++it) {
+//					Log::getInstance().getStream("decision") << "\t" << it->first << "\t" << (it->second-cost[it->first]) << "\t";
+//				}
+//				Log::getInstance().getStream("decision") << endl;
 
 			}
 
@@ -366,11 +366,6 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 		routeChoice = probabilistic_choice;
 		Log::getInstance().needProbabilistic ++;
 	}
-	// hybrid - probabilistic only if 'needed'
-	if (routingStrategy == "hybrid" && neededProbabilistic && probabilistic_choice != "") {
-		routeChoice = probabilistic_choice;
-		Log::getInstance().needProbabilistic ++;
-	}
 	// no routing
 	if (routingStrategy == "noRouting") {
 		routeChoice = vehicle.getItinerary().getId();
@@ -426,19 +421,21 @@ void FceApplication::OnReporting(double now, string currentEdgeId) {
 	// to fix a bug if a vehicle didn't visited the decision edge because of teleportation
 	if (startReroute > vehicle.getItinerary().getStartTime()) {
 		string routeId = vehicle.getItinerary().getId();
+		string startEdge = vehicle.getItinerary().getEdgeIds()[0];
+		string endEdge =  vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1];
 		double travelTime = vehicle.getItinerary().computeTravelTime(decisionEdgeId, currentEdgeId);
-		double travelTime2 = vehicle.getItinerary().computeTravelTime(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId);
-		double staticCost = vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId);
-//		double staticCostR1 =vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static")
-		cout << Simulator::Now().GetSeconds() << "\t" << routeId << "\t"  << neededProbabilistic << "\t "
-				<< decisionEdgeId << "-" << currentEdgeId << "\t" << travelTime << "\t"
-				<< vehicle.getItinerary().computeStaticCostExcludingMargins(decisionEdgeId, currentEdgeId) << "\t" << vehicle.getItinerary().computeLength(decisionEdgeId, currentEdgeId) << "[m]\t"
-				<< vehicle.getItinerary().getEdgeIds()[0] << "-" << vehicle.getItinerary().getEdgeIds()[vehicle.getItinerary().getEdgeIds().size()-1] << "\t"
-				<< travelTime2 << "\t"
-				<< vehicle.getItinerary().computeStaticCostExcludingMargins(vehicle.getItinerary().getEdgeIds()[0], currentEdgeId) << "\t" << vehicle.getItinerary().computeLength() << "[m]" << endl;
+		double travelTime2 = vehicle.getItinerary().computeTravelTime(startEdge, currentEdgeId);
+		double staticCost = vehicle.getItinerary().computeStaticCostExcludingMargins(decisionEdgeId, currentEdgeId);
+		double staticCost2 = vehicle.getItinerary().computeStaticCostExcludingMargins(startEdge, currentEdgeId);
+		double routeLength = vehicle.getItinerary().computeLength(decisionEdgeId, currentEdgeId);
+		double routeLength2 = vehicle.getItinerary().computeLength(startEdge, currentEdgeId);
+		cout << now << "\t" << routeId << "\t"
+				<< travelTime << "\t" << travelTime2 << "\t"
+				<< staticCost << "\t" << staticCost2 << "\t"
+				<< routeLength << "\t" << routeLength2 << "\t" << vehicle.getItinerary().computeLength() << endl;
 		TIS::getInstance().reportEndingRoute(vehicle.getId(), routeId, decisionEdgeId, currentEdgeId,
 				startReroute, travelTime, isCheater, selfishExpectedTravelTime, expectedTravelTime, neededProbabilistic,
-				m_params["routingStrategy"], vehicle.getStart(), staticCost);
+				m_params["routingStrategy"], vehicle.getStart(), staticCost2);
 		notificationSent = true;
 	}
 }

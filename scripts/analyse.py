@@ -1,10 +1,4 @@
 #!/usr/bin/python -tt
-# Copyright 2010 Google Inc.
-# Licensed under the Apache License, Version 2.0
-# http://www.apache.org/licenses/LICENSE-2.0
-
-# Google's Python Class
-# http://code.google.com/edu/languages/google-python-class/
 
 """A Python program to analyse Sumo and OVNIS outpuy.
 Try running this program from the command line:
@@ -15,7 +9,7 @@ import sys
 from lxml import etree
 from xml.sax.saxutils import XMLGenerator
 from xml.sax.xmlreader import AttributesNSImpl
-from optparse import OptionParser 
+from optparse import OptionParser
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -23,7 +17,7 @@ from matplotlib.mlab import csv2rec
 import re
 from pylab import *
 import numpy as np
-from numpy import * 
+from numpy import *
 import operator
 from operator import itemgetter, attrgetter
 from matplotlib.finance import candlestick
@@ -62,7 +56,7 @@ def main():
   (options, args) = parser.parse_args()
   print options
 
-  args = {} 
+  args = {}
   args["startX"] = options.startX
   args["endX"] = options.endX
   args['tagName'] = options.tagName
@@ -73,25 +67,25 @@ def main():
   args['data'] = {}
   delimiterStr = "\t"
   avg_output_file = options.outputDir + "avg.txt"
-  routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId', 
+  routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId',
       'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime',
       'routingStrategy', 'startTravelTime', 'totalTravelTime']
-  routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId', 
+  routing_names = ['time', 'routeId', 'vehicleId', 'startReroute', 'travelTime', 'startEdgeId', 'endEdgeId',
       'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 'wasCongested', 'delayTime']
-  
-  num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 
+
+  num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime',
   'wasCongested', 'delayTime', 'totalTravelTime' ]
-  num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime', 
+  num_names = [ 'travelTime', 'vehiclesOnRoute', 'isCheater', 'selfishExpectedTravelTime', 'expectedTravelTime',
   'wasCongested', 'delayTime' ]
   clusterIndexes = {
-        'routeId':routing_names.index('routeId'), 
+        'routeId':routing_names.index('routeId'),
         'selfishExpectedTravelTime': routing_names.index('selfishExpectedTravelTime'),
         'isCheater' : routing_names.index('isCheater')}
-      
+
 
   if options.inputFile:
     inputFile = options.inputFile
-    
+
     if "capacity_main_bypass.tsv" in inputFile:
       names = [ 'flow', 'main', 'bypass']
       data = csv2rec(inputFile, delimiter='\t', names=names, skiprows=1)
@@ -107,7 +101,7 @@ def main():
       plotType = "line"
       outputFile =  options.outputDir + "capacity_main_bypas.png"
       plot(plotType, xData, yData, xLabel, "Average travel time", yLabels, outputFile)
-  
+
     if "edges_error" in inputFile:
       names = [ 'time', 'error', 'percent', 'vanet', 'sumo', 'difference']
       data = csv2rec(inputFile, delimiter='\t', names=names)
@@ -122,7 +116,7 @@ def main():
       plotType = "line"
       outputFile =  options.outputDir + "accuracy_error.png"
       plot(plotType, xData, yData, xLabel, "Accuracy error", yLabels, outputFile)
-  
+
     if "accuracy_error" in inputFile or "accuracy_percent_error" in inputFile:
       names = [ 'xShortest', 'Shortest', 'xProb', 'Probabilistic', 'xHybrid', 'Hybrid']
       xData = []
@@ -138,11 +132,11 @@ def main():
       labels.append('Shortest')
       labels.append('Probabilistic')
       labels.append('Hybrid')
-    
+
       plotType = "scatterplot"
       outputFile = options.outputDir + "accuracy_error_comparison2.png"
       plot(plotType, xData, yData, "Simulation time", "Accuracy error", labels, outputFile, [300,1300], None, None, None)
-      
+
 
   if options.inputFiles:
     inputFiles = options.inputFiles.split(' ')
@@ -156,12 +150,12 @@ def main():
       shortestExpectedTravelTimeIndex = 9
       expectedTravelTimeIndex = 10
       orderingColumn = 'startReroute'
-       
+
       cutColumnName = 'time'
       xBoundaries = [300,1300]
       # print "inputFiles {0}".format(inputFiles)
       inputData = readData(inputFiles, inputLabels, delimiterStr, routing_names, num_names, avg_output_file, cutColumnName, xBoundaries, options.outputDir)
-      
+
       clusters = {}
       clusterNames = ['cheater', 'noncheater']
       for clusterName in clusterNames:
@@ -186,7 +180,7 @@ def main():
           xData.append(clusteredData['bypass']['columns']['time'])
           yData.append(clusteredData['bypass']['columns']['travelTime'])
           yLabels.append("Travel time - bypass")
-        if "main" in clusteredData.keys():  
+        if "main" in clusteredData.keys():
           yData.append(clusteredData['main']['columns']['vehiclesOnRoute'])
           yLabels.append("Nuber of vehicles - main")
         if "bypass" in clusteredData.keys():
@@ -202,7 +196,7 @@ def main():
         plotType = "line"
         outputFile =  options.outputDir + name + "/routing_end_line_traveltime_number.png"
         plot(plotType, xData, yData, xLabel, "", yLabels, outputFile, linesX)
-        
+
         if "main" in clusteredData.keys() and "bypass" in clusteredData.keys():
           yData = [clusteredData['main']['columns']['price'], clusteredData['bypass']['columns']['price']]
           yLabels = ["Price - main", "Price - bypass"]
@@ -220,7 +214,7 @@ def main():
           yLabels = ["Main", "Bypass"]
           outputFile =  options.outputDir + name + "/routing_end_line_error_number.png"
           plot(plotType, xData, yData, xLabel, "Estimation error (seconds)", yLabels, outputFile, linesX)
-        
+
         for clusterName in clusterNames:
           if clusterName in clusteredData.keys():
             clusters[clusterName]['avgTravelTime'].append(clusteredData[clusterName]['stats']['travelTime']['average'])
@@ -229,7 +223,7 @@ def main():
               clusters[clusterName]['avgTravelTime_cut'].append(clusteredData[clusterName]['stats']['travelTime']['average_cut'])
             if 'count_cut' in clusteredData[clusterName]['stats']['travelTime'].keys():
               clusters[clusterName]['count_cut'].append(clusteredData[clusterName]['stats']['travelTime']['count_cut'])
-      
+
       # out = open(options.outputDir + "cheaters.txt", 'w')
       out = open(avg_output_file, 'a+')
       for clusterName in clusterNames:
@@ -249,7 +243,7 @@ def main():
           out.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(clusterName + "Count", avg, min, max, std))
         else:
           out.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(clusterName + "Count", 0,0,0,0))
-        
+
         out.write("{2} cut\t{0}\t{1}\n".format(xBoundaries[0], xBoundaries[1], cutColumnName))
         if len(clusters[clusterName]['avgTravelTime_cut']) > 0:
           avg = np.average(clusters[clusterName]['avgTravelTime_cut'])
@@ -267,8 +261,8 @@ def main():
           out.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(clusterName + "CountCut", avg, min, max, std))
         else:
           out.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(clusterName + "CountCut", 0,0,0,0))
-      calculateAvg(inputData, num_names, options.outputFile)  
-         
+      calculateAvg(inputData, num_names, options.outputFile)
+
     if "price.tsv" in inputFiles[0]:
       names = [ 'time-main', 'main', 'time-bypass', 'bypass']
       i = 0
@@ -285,7 +279,7 @@ def main():
         yData.append(data['bypass'])
         labels.append(inputLabels[i])
         i += 1
-      
+
       plotType = "scatterplot"
       outputFile = options.outputDir + "price_comparison.png"
       plot(plotType, xData, yData, "Simulation time", "Price", ["Hybrid","Probabilistic"], outputFile, [300,1300], None, None, None)
@@ -308,7 +302,7 @@ def main():
         outputFile =  options.outputDir + name + "/global_costs_line_traveltime_number.png"
         plotType = "line"
         plot(plotType, xData, yData, xLabel, "", yLabels, outputFile, linesX)
-     
+
         plotType = "scatterplot"
         outputFile =  options.outputDir + name + "/global_costs_traveltime_number.png"
         plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
@@ -316,7 +310,7 @@ def main():
         outputFile = "{0}/{1}/plot_global_traveltime.png".format(options.outputDir,name)
         yLabel = "Travel time"
         plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
-    
+
   if options.inputCheaterFiles:
     inputFiles = options.inputCheaterFiles.split(' ')
     inputLabels = options.labelTitles.split(' ')
@@ -328,8 +322,8 @@ def main():
     output_file = options.outputFile
     out = open(output_file, 'w')
     names = ['name', 'avg', 'min_avg', 'max_avg', 'std_avg', 'min', 'std_min', 'mean', 'mean_std', 'max', 'std_max', 'sum', 'std_sum']
-    plot_names = ['travelTime', 'travelTimeCut', 
-    'cheaterTravelTime', 'cheaterCount', 'cheaterTravelTimeCut', 'cheaterCountCut', 
+    plot_names = ['travelTime', 'travelTimeCut',
+    'cheaterTravelTime', 'cheaterCount', 'cheaterTravelTimeCut', 'cheaterCountCut',
     'noncheaterTravelTime', 'noncheaterCount', 'noncheaterTravelTimeCut', 'noncheaterCountCut']
     plotValues = {}
     for name in plot_names:
@@ -353,10 +347,10 @@ def main():
             plotValues[name][cheaterPercent]['avg'] = data['avg'][i]
             plotValues[name][cheaterPercent]['min'] = data['min_avg'][i]
             plotValues[name][cheaterPercent]['max'] = data['max_avg'][i]
-            print "percent {0}\t name {1}, avg {2}, min {3}, max {4}".format(cheaterPercent, name, 
-              plotValues[name][cheaterPercent]['avg'], plotValues[name][cheaterPercent]['min'], plotValues[name][cheaterPercent]['max'])          
-          i += 1  
-    # write results          
+            print "percent {0}\t name {1}, avg {2}, min {3}, max {4}".format(cheaterPercent, name,
+              plotValues[name][cheaterPercent]['avg'], plotValues[name][cheaterPercent]['min'], plotValues[name][cheaterPercent]['max'])
+          i += 1
+    # write results
     out.write("cheaters_percent")
     for name in plot_names:
       out.write("\t{0}_avg\t{0}_min\t{0}_max".format(name))
@@ -380,7 +374,7 @@ def main():
     xData = data["cheaters_percent"]
     plotType = "line"
     xLabel = "Percentage of seflish drivers"
-    
+
     plotnames = ["travelTime"]
     yData = []
     yLabel = "Average travel time"
@@ -397,7 +391,7 @@ def main():
     # plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, None, yMins, yMaxs)
 
     plotnames = ["travelTime","cheaterTravelTime", "noncheaterTravelTime"]
-    plottitles = ["All", "Selfish", "Hybrid"]  
+    plottitles = ["All", "Selfish", "Hybrid"]
     yData = []
     yLabel = "Average travel time"
     yLabels = []
@@ -422,7 +416,7 @@ def main():
     yMins = []
     yMaxs = []
     i = 0
-    for plotname in plotnames:  
+    for plotname in plotnames:
       yData.append(data[plotname+"_avg"])
       yLabels.append(plottitles[i])
       yMins.append(data[plotname+"_min"])
@@ -444,7 +438,7 @@ def main():
       avgTotalTravelTimes = {}
       out = open(options.outputDir+'averageTravelTimes.txt', 'w')
       out.write("flow\tavg total travel time\n")
-    
+
       for name,data in inputData.iteritems():
         # data['recarray']['totalTravelTime']
         recarrayData = data['recarray']
@@ -480,7 +474,7 @@ def main():
       yLabels = ["Average travel time"]
       outputFile =  options.outputDir + "traveltime_flow.png"
       plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile)
-        
+
   if options.inputFile:
     inputFile = options.inputFile
 
@@ -489,9 +483,9 @@ def main():
       context = etree.iterparse(inputFile, events=('end',), tag=args['tagName'])
       fastIter(context, processElem, args)
       data = args['data'].copy()
-      
+
       array = np.array(map(float, data['meanTravelTime']))
-      y = np.array(filter(lambda x: x >= 0, array))  
+      y = np.array(filter(lambda x: x >= 0, array))
       out = open(options.outputFile, 'w')
       out.write("meanTravelTime\n")
       out.write("len \t{0}\n".format(len(y)))
@@ -522,7 +516,7 @@ def main():
       args['data'] = {}
       plot("line", data['time'], [data['loaded'], data['emitted']], "Simulation time", "Number of vehicles", ["loaded", "emitted"], options.outputDir + "plot_loaded.png")
       plot("line", data['time'], [data['meanTravelTime']], "Simulation time", "Averag travel time", ["Average travel time"], options.outputDir + "plot_meantraveltime.png")
-    
+
     if "average_age" in inputFile:
       names=["range", "min", "first_quartile", "meadian", "third_quartile", "max", "average", "count"]
       data = csv2rec(inputFile, delimiter='\t', names=names, skiprows=1)
@@ -530,9 +524,9 @@ def main():
       xData = []
       for range in data["range"]:
         xData.append(range.strip().split("-")[1])
-      
+
       plot("errorbar", [xData], [data], "Distance", "Average age", ["minimum", "average", "maximum"], options.outputDir + "plot_age.png")
-      
+
 
     if "data_quality_age" in inputFile:
       directory = options.inputDir
@@ -551,7 +545,7 @@ def main():
         else:
           filename = directory+str(i)+"/"+inputFile
           # filename = directory+str(i)+"/ovnisOutput/"+inputFile
-        print "Reading file {0}".format(filename) 
+        print "Reading file {0}".format(filename)
         data = csv2rec(filename, delimiter='\t', names=names)
         datas.append(data)
         # print data
@@ -563,7 +557,7 @@ def main():
         if name != "range":
           if len(sum[name]) > 0:
             avg[name] = sum[name] / len(sum[name])
-      
+
       avg_output_file = options.outputDir + "average_age"
       out = open(avg_output_file, 'w')
       print "writing " + avg_output_file
@@ -607,11 +601,11 @@ def main():
       yData = [data['main']['columns']['travelTime'], data['bypass']['columns']['travelTime']]
       outputFile = options.outputDir + "plot_traveltime.png"
       plot(plotType, xData, yData, xLabel, yLabel, yLabels, outputFile, linesX)
-    
+
 
     return
-    
-# --------------------------------------------  
+
+# --------------------------------------------
 
 def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xColumnName = None, xBoundaries = None, dir = None):
   data = {}
@@ -672,7 +666,7 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xCo
       data[dataSetName]['fileName'] = fileName
       data[dataSetName]['name'] = dataSetName
       data[dataSetName]['recarray'] = csv2rec(fileName, delimiter=delimiterStr, names=names)
-      
+
       if not xColumnName:
         xColumnName = data[dataSetName]['recarray'].dtype.names[0]
       array = data[dataSetName]['recarray'][xColumnName]
@@ -693,7 +687,7 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xCo
           cutIndexes[1] = 0
         subarray = array[cutIndexes[0]:cutIndexes[1]]
         stats['N_cut'].append(len(subarray))
-      
+
       for num_name in num_names:
         array = data[dataSetName]['recarray'][num_name]
         subarray = array[cutIndexes[0]:cutIndexes[1]]
@@ -710,13 +704,13 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xCo
           stats[num_name]['max_cut'].append(np.max(subarray))
           stats[num_name]['std_cut'].append(np.std(subarray))
           stats[num_name]['sum_cut'].append(np.sum(subarray))
-  
-  
+
+
   if dir:
     avg_error_out.write("\n{0}\t{1}\n".format(avg_error_sum, avg_percent_error_sum))
     avg_error_out.write("{0}\t{1}\n".format(avg_error_sum/len(labels), avg_percent_error_sum/len(labels)))
-  
-  # writr results          
+
+  # writr results
   out.write("\tavg\t(min)\t(max)\t(std)\tmin\t(std)\tmean\t(std)\tmax\t(std)\tstd\t(std)\tsum\t(std)\n")
   for num_name in num_names:
     statarray = np.array(stats[num_name]['avg'])
@@ -744,7 +738,7 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xCo
       out.write("\t{1}\t{2}".format(num_name, np.average(statarray), np.std(statarray)))
       statarray = np.array(stats[num_name]['sum_cut'])
       out.write("\t{1}\t{2}\n".format(num_name, np.average(statarray), np.std(statarray)))
-    
+
   num_name = 'N'
   statarray = np.array(stats['N'])
   out.write("{0}\t{1}\t{2}\n".format(num_name, np.average(statarray), np.std(statarray)))
@@ -757,10 +751,10 @@ def readData(files, labels, delimiterStr, names, num_names, avg_output_file, xCo
 def processRoutingData(data, clusterIndexes, columnnames, num_columnnames, sortColumn="", cutIndexes=None):
   if sortColumn:
     data = np.sort(data, order=sortColumn)
-  
+
   clusteredData = {}
   drivercolumns = ['price','error','error_sqrt_root', 'error_abs']
-  
+
   if not cutIndexes:
     cutIndexes = [0,len(data)-1]
 
@@ -781,25 +775,25 @@ def processRoutingData(data, clusterIndexes, columnnames, num_columnnames, sortC
       if columnnames[clusterIndex] == "selfishExpectedTravelTime":
         clusterValue = row[clusterIndex+1] - clusterValue > 0.5
         if clusterValue == True:
-          clusterValue = "sacrificed" 
-        else: 
+          clusterValue = "sacrificed"
+        else:
           clusterValue = "nonsacrificed"
-      if columnnames[clusterIndex] == "isCheater": 
+      if columnnames[clusterIndex] == "isCheater":
         clusterValue = row[clusterIndex] == 1
         if clusterValue == True:
-          clusterValue = "cheater" 
-        else: 
+          clusterValue = "cheater"
+        else:
           clusterValue = "noncheater"
-      # initialize cluster             
+      # initialize cluster
       if not clusterValue in clusteredData.keys():
         clusteredData[clusterValue] = {}
         clusteredData[clusterValue]['columns'] = {}
         clusteredData[clusterValue]['cutIndexes'] = [-1,-1]
         clusteredData[clusterValue]['stats'] = {}
         for columnname in columnnames:
-          clusteredData[clusterValue]['columns'][columnname] = []  
+          clusteredData[clusterValue]['columns'][columnname] = []
         for columnname in drivercolumns:
-          clusteredData[clusterValue]['columns'][columnname] = [] 
+          clusteredData[clusterValue]['columns'][columnname] = []
       # populate
       # todo get cutindexes for each cluster set
       if clusteredData[clusterValue]['cutIndexes'][0] == -1 and row['time'] >= cutValues[0]:
@@ -810,11 +804,11 @@ def processRoutingData(data, clusterIndexes, columnnames, num_columnnames, sortC
         clusteredData[clusterValue]['cutIndexes'][1] = currentIndex
       for columnname in columnnames:
         clusteredData[clusterValue]['columns'][columnname].append(row[columnname])
-      clusteredData[clusterValue]['columns']['price'].append(price) # price > 0 for sacrificed users 
+      clusteredData[clusterValue]['columns']['price'].append(price) # price > 0 for sacrificed users
       clusteredData[clusterValue]['columns']['error'].append(error) # actual travel time - system travel time, error > 0 for users who traveled longer than promised
-      clusteredData[clusterValue]['columns']['error_sqrt_root'].append(sqrt_error)  
-      clusteredData[clusterValue]['columns']['error_abs'].append(abs_error)    
-  
+      clusteredData[clusterValue]['columns']['error_sqrt_root'].append(sqrt_error)
+      clusteredData[clusterValue]['columns']['error_abs'].append(abs_error)
+
   for key,value in clusteredData.iteritems():
     if clusteredData[key]['cutIndexes'][0] == -1:
       clusteredData[key]['cutIndexes'][0] = 0
@@ -860,7 +854,7 @@ def processRoutingData(data, clusterIndexes, columnnames, num_columnnames, sortC
 def processGlobalCostsData(data, names, num_names, sep, sortColumn=""):
   if sortColumn:
     data = np.sort(data, order=sortColumn)
-  
+
   clusteredData = {}
   for row in data:
     time = row[0]
@@ -881,8 +875,8 @@ def processGlobalCostsData(data, names, num_names, sep, sortColumn=""):
         clusteredData[clusterValue]['columns']['time'] = []
         clusteredData[clusterValue]['columns']['routeId'] = []
         for column_name in num_names:
-          clusteredData[clusterValue]['columns'][column_name] = [] 
-      
+          clusteredData[clusterValue]['columns'][column_name] = []
+
       clusteredData[clusterValue]['columns']['time'].append(time)
       clusteredData[clusterValue]['columns']['routeId'] = clusterValue
       j = 1
@@ -951,7 +945,7 @@ def calculateAvg(inputData, num_names, outputFile):
       #   out.write("{0}\t".format(np.average(statarray)))
       #   out.write("{0}\t".format(np.max(statarray)))
       #   out.write("{0}\n".format(np.std(statarray)))
-  
+
 
   return
 
@@ -966,14 +960,14 @@ def processElem(elem, args={}):
   # element = {}
   inRange = False
   for name, value in elem.items():
-    
+
     if name == xLabel:
       xValue = float(value)
       if xValue >= startX and xValue <= endX:
         inRange = True
         break
   if inRange:
-    for name, value in elem.items():   
+    for name, value in elem.items():
       if name not in data:
         data[name] = []
       else:
@@ -1051,7 +1045,7 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
           x = xData[i % len(xData)]
       else :
         x = xData
-      # check 0 
+      # check 0
       # x = xData
       y = column
       if removeZeros:
@@ -1062,7 +1056,7 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
         for xIndex in xToRemove.keys():
           x = np.delete(x,xIndex)
         print "X without zeros " , len(x)
-        y = y[y != 0] 
+        y = y[y != 0]
       ax.plot(x, y, linestyle=linestyle, color=color, linewidth=2.0, label="{0}".format(yLabels[i]))
       # plot boundaries
       if yMins and yMaxs:
@@ -1077,12 +1071,12 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
         ax.plot(x, yMax, linestyle=linestyles[1 % len(linestyles)], color="red", linewidth=2.0, label="{0}".format("Maximum average travel time"))
         # ax.fill_between(x, yMin, yMax, linestyle=linestyle, linewidth=2.0,  facecolor='none', alpha=0.4, label=["sdlslss","s"])
         # ax.fill_between(x, yMin, yMax, linestyle=linestyle, linewidth=2.0,  facecolor='none', alpha=0.4, label=["sdlslss","s"])
-  
+
     if plotType == "scatterplot":
       # s=data['steps_count']**2
       xIndex = i % len(xData)
-      ax.scatter(xData[xIndex], column, alpha=0.5, c=color, s=10, marker = style, linewidth=0, label="{0}".format(yLabels[i]))  
-    
+      ax.scatter(xData[xIndex], column, alpha=0.5, c=color, s=10, marker = style, linewidth=0, label="{0}".format(yLabels[i]))
+
     if plotType == "errorbar":
       if len(xData) == 1:
         x = xData[0]
@@ -1090,7 +1084,7 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
       ax.errorbar(xData[0], y['average'], yerr=[y['min'], y['max']], fmt='--o')
       ax.set_title('H, V asymmetric')
 
-    ymax = float(max(column)) 
+    ymax = float(max(column))
     if ymax > ymaxall:
       ymaxall = ymax
     ymin = float(min(column))
@@ -1100,7 +1094,7 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
     legend = ax.legend(loc='best')
     # legend = ax.legend(loc='lower left')
     legend.get_frame().set_alpha(0.5)
-  
+
   if linesX:
     for lineX in linesX:
       l = plt.axvline(x=lineX)
@@ -1112,10 +1106,10 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
   # plt.ylim([-20,50])
   fig.autofmt_xdate(bottom=0.2, rotation=0, ha='left')
   print "saving figure to {0}".format(outputFile)
-  plt.savefig(outputFile) 
+  plt.savefig(outputFile)
 
-  #   
-  # #read x column  
+  #
+  # #read x column
   # label = inputData.keys()[0]
   # data = inputData[label]
   # x = data[xColumn]
@@ -1131,9 +1125,9 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
   #     label = "{0}{1}".format(legends[column], label)
   #     label = re.sub(r'[\[\]]', '', label)
   #     axis[label] = data[column]
-  
+
   # # read multiple columns for each given label (data from different files)
-  # axisNum = 0   
+  # axisNum = 0
   # for label,y in axis.items():
   #   color = colors[axisNum % len(colors)]
   #   if seriesType == "line":
@@ -1141,13 +1135,13 @@ def plot(plotType, xData, data, xLabel, yLabel, yLabels, outputFile, linesX=None
   #     # y = np.split(y, [indexStart, indexStop])
   #     y = y[indexStart: indexStop]
 
-  #     ax.plot(x, y, linestyle=linestyle, color=color, linewidth=2.0, markersize=10, label="{0}".format(label))  
+  #     ax.plot(x, y, linestyle=linestyle, color=color, linewidth=2.0, markersize=10, label="{0}".format(label))
   #     legend = ax.legend(loc='best')
   #     legend.get_frame().set_alpha(0.5)
   #     for label in legend.get_texts():
   #         label.set_fontsize('large')
   #     for label in legend.get_lines():
-  #         label.set_linewidth(2) 
+  #         label.set_linewidth(2)
   #   if seriesType == "scatterplot":
   #     style = styles[axisNum % len(styles)]
   #     # s=data['steps_count']**2
@@ -1170,7 +1164,7 @@ def plot2(x, y, plotname):
   rect = fig.patch
   rect.set_facecolor('black')
 
-  ax1 = fig.add_subplot(1,1,1, axisbg='grey') # height, width, chart # 
+  ax1 = fig.add_subplot(1,1,1, axisbg='grey') # height, width, chart #
   # ax1 = fig.add_subplot(2,2,1, axisbg='grey') # height, width, chart # -> 2 rows, 2 square charts on thhe top row
   # ax1 = fig.add_subplot(2,2,2, axisbg='grey') # height, width, chart # -
   # ax1 = fig.add_subplot(2,1,2, axisbg='grey') # height, width, chart # -> 1 rectangle chart on the bottom row
@@ -1199,7 +1193,7 @@ def plot2(x, y, plotname):
 
   # plt.show()
   outputfile = "plot_" + plotname + "_" + xtitle + "-" + ytitle + ".png"
-  plt.savefig(outputfile)   
+  plt.savefig(outputfile)
 
   return
 

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-"""A Python program 
-  usage: 
+"""A Python program
+  usage:
   python '/media/sf_shared/runovnis.py' \
   --sumoConfig=scenario_accident_const_1111.sumocfg \
   --scenarioFolder="/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/" \
@@ -19,11 +19,11 @@
   --startTime=0 \
   --stopTime=150 \
   --ttl=180
-  
+
 """
 import sys
 import os
-from optparse import OptionParser 
+from optparse import OptionParser
 
 
 # Define a main() function.
@@ -51,7 +51,8 @@ def main():
   parser.add_option('--decayFactor', help=("decayFactor"), type="float", dest='decayFactor')
   parser.add_option('-c', '--cluster', help=("cluster"), action="store_true", dest='cluster', default=False)
   parser.add_option('--runOvnis', help=("run ovnis"), action="store_true", dest='runOvnis', default=False)
-  
+  parser.add_option('--scenario', help=("scenario"), type="string", dest='scenario')
+
   (options, args) = parser.parse_args()
   print options
 
@@ -60,7 +61,7 @@ def main():
   ovnisdir = "~/Documents/workshop/ovnis"
   sumodir = "~/Documents/workshop/sumo-0.18.0/bin/"
   cluster = options.cluster or False
-  if cluster: 
+  if cluster:
     ns3dir="/home/users/agrzybek/ovnis/repos/ns-allinone-3.18/ns-3.18/build/"
     ovnisdir="/home/users/agrzybek/ovnis/ovnis/"
     sumodir = "/home/users/agrzybek/ovnis/repos/sumo-0.18.0/bin/"
@@ -86,13 +87,14 @@ def main():
   decayFactor = options.decayFactor or 0.5
   knowledgeType = options.knowledgeType or "perfect"
   runOvnis = options.runOvnis or False
+  scenario = options.scenario or "Kirchberg"
 
-  # run ovnis   
+  # run ovnis
   if runOvnis:
     args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType)
     call = ovnisapp + args
     print "running ", call
-    os.system(call)
+    #os.system(call)
 
   # add headers to the output file
   filename = "output_log_routing_end"
@@ -102,22 +104,26 @@ def main():
   first_line = output_file.readline()
   if first_line != headers:
     call = "printf \"%s$( cat %s )\" > %s" % (headers, routing_end_filepath, routing_end_filepath)
-    print "running ", call 
+    print "running ", call
     os.system(call)
   else:
-    print "header line already is there" 
-  
+    print "header line already is there"
+
   # analyse output file
   script_filepath = os.path.join(ovnisdir, "python", "analyse.py")
-  call = "python %s --inputFile %s --outputDir %s" %(script_filepath, routing_end_filepath, outputFolder+"/")
+  call = "python %s --inputFile %s --outputDir %s --scenario %s" % (
+      script_filepath, routing_end_filepath, outputFolder+"/",
+      scenario)
   print "running ", call
   os.system(call)
 
-  # analyse error file 
+  # analyse error file
   filename = "output_log_edges_error"
   routing_end_filepath = os.path.join(outputFolder, filename)
   script_filepath = os.path.join(ovnisdir, "python", "analyse.py")
-  call = "python %s --inputFile %s --outputDir %s" %(script_filepath, routing_end_filepath, outputFolder+"/")
+  call = "python %s --inputFile %s --outputDir %s --scenario %s" % (
+      script_filepath, routing_end_filepath, outputFolder+"/",
+      scenario)
   print "running ", call
   os.system(call)
 
