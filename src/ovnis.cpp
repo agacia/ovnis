@@ -306,25 +306,37 @@ void Ovnis::InitializeCrowdz() {
 	}
 }
 
+
+void Ovnis::runSumo() {
+	traci = CreateObject<SumoTraciConnection> ();
+	traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder, outputFolder);
+	traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
+	traci->NextSimStep(departedVehicles, arrivedVehicles);
+	vector<double> bounds = traci->GetSimulationBoundaries();
+	if (bounds.size() > 3) {
+		boundaries[0] = bounds[2];
+		boundaries[1] = bounds[3];
+	}
+	Names::Add("SumoTraci", traci);
+	sumo_pid = traci->pid;
+}
+
+
 void Ovnis::InitializeSumo() {
-	 try {
-		traci = CreateObject<SumoTraciConnection> ();
-		traci->RunServer(sumoConfig, sumoHost, sumoPath, sumoPort, scenarioFolder, outputFolder);
-		traci->SubscribeSimulation(startTime*SIMULATION_TIME_UNIT, stopTime*SIMULATION_TIME_UNIT);
-		traci->NextSimStep(departedVehicles, arrivedVehicles);
-		vector<double> bounds = traci->GetSimulationBoundaries();
-		if (bounds.size() > 3) {
-			boundaries[0] = bounds[2];
-			boundaries[1] = bounds[3];
-		}
-		Names::Add("SumoTraci", traci);
-		sumo_pid = traci->pid;
+	try {
+		runSumo();
 	}
 	catch (TraciException &e) {
 		Log::getInstance().getStream("sumo") << "Initialize sumo , error in traci connection " << e.what();
 	}
 	catch(exception & e) {
-		Log::getInstance().getStream("sumo") << "#Error while connecting: " << e.what();
+		Log::getInstance().getStream("sumo") << "#1 Error while connecting: " << e.what();
+		try {
+			runSumo();
+		}
+		catch(exception & e) {
+			Log::getInstance().getStream("sumo") << "#2 Error while connecting: " << e.what();
+		}
 	}
 	Log::getInstance().getStream("sumo") << "after InitializeSumo" << endl;
 }

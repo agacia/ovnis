@@ -105,13 +105,17 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string scenar
 
 
 void SumoTraciConnection::SubscribeSimulation(int startTime, int stopTime) {
+
 	stepQuery.SetCurrentTime(startTime);
 	vector<int> variables;
 	variables.push_back(VAR_TIME_STEP);
 	variables.push_back(VAR_DEPARTED_VEHICLES_IDS);
 	variables.push_back(VAR_ARRIVED_VEHICLES_IDS);
+
 	SubscribeQuery subscribeQuery(&socket, CMD_SUBSCRIBE_SIM_VARIABLE, variables, startTime, stopTime);
+	cerr << "SubscribeSimulation " << startTime << " " << stopTime << " &socket" << &socket << endl;
 	subscribeQuery.DoCommand();
+	cerr << "ala\n";
 }
 
 void SumoTraciConnection::NextSimStep(vector<string> & departedVehicles, vector<string> & arrivedVehicles) {

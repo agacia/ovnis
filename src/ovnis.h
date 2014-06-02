@@ -67,6 +67,8 @@ namespace ns3
 	typedef std::map<Mac48Address, string>::iterator MacVehIdMapIterator;
 	typedef	std::map <Mac48Address,uint16_t> MacAddrMap;
 	typedef std::map<Mac48Address, uint16_t>::iterator MacAddrMapIterator;
+	void runSumo();
+
   protected:
     virtual void DoDispose(void);
     virtual void DoInitialize	(void);

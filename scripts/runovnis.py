@@ -93,8 +93,9 @@ def main():
   if runOvnis:
     args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType)
     call = ovnisapp + args
-    print "running ", call
-    #os.system(call)
+    print "running ovnis", call
+    os.system(call)
+  return
 
   # add headers to the output file
   filename = "output_log_routing_end"
