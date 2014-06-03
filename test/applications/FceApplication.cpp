@@ -107,6 +107,7 @@ void FceApplication::InitializeParams() {
 	m_params["routingStrategy"] = TIS::getInstance().getEvent(probabilities);
 	Log::getInstance().getStream("scenarioSettings") << "\nSelected routing strategy " << m_params["routingStrategy"] << endl;
 	SetNetwork(m_params["networkId"]);
+	Log::getInstance().getStream("scenarioSettings") << "\nNetworkId " << m_params["networkId"] << endl;
 	ttl =  atof(m_params["ttl"].c_str());
 	accidentStartTime = atof(m_params["accidentStartTime"].c_str());
 	accidentStopTime = atof(m_params["accidentStopTime"].c_str());

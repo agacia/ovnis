@@ -73,7 +73,7 @@ int main(int argc, char ** argv) {
 	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/test";
 	string sumoConfig = "scenario_accident_const_1111.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
-	int stopTime = 700; // 25200; // 7h
+	int stopTime = 400; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
@@ -81,7 +81,7 @@ int main(int argc, char ** argv) {
     string networkId = "Highway";
     string knowledgeType = "vanet";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "0,1,0,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
@@ -128,6 +128,7 @@ int main(int argc, char ** argv) {
 	srand(time(0));
 	cout << "Start time\t" << time(0) << endl;
 	cout << "config\t" << sumoConfig << endl;
+	cout << "networkId\t" << networkId << endl;
 	cout << "scenarioFolder\t" << scenarioFolder << endl;
 	cout << "outputFolder\t" << outputFolder << endl;
 	cout << "startTime\t" << startTime << endl;

@@ -130,7 +130,7 @@ def process_average_calculation(inputdir, scenario):
     if scenario == "Kirchberg":
         routenames = ["routedist#0", "routedist#1", "routedist#2"]
     else:
-        routenames = [" main", "bypass"]
+        routenames = ["main", "bypass"]
     averages, route_averages = read_stats(
         inputdir, filepattern, statnames, indexes, routenames)
     # total averages
@@ -342,7 +342,7 @@ def process_edges_error(filename, outputdir, scenario):
 
     title = "Vanet Travel times"
     if scenario == "Kirchberg":
-        ylabels = ["Kennedy Vanet", "Bypass  Vanet"]
+        ylabels = ["Kennedy Vanet", "Adenauer Vanet", "Thuengen Vanet"]
     else:
         ylabels = ["Main Vanet", "Bypass Vanet"]
     plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, outputdir)

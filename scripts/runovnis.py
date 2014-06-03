@@ -91,11 +91,10 @@ def main():
 
   # run ovnis
   if runOvnis:
-    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType)
+    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s networkId=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType, scenario)
     call = ovnisapp + args
     print "running ovnis", call
     os.system(call)
-  return
 
   # add headers to the output file
   filename = "output_log_routing_end"
@@ -106,6 +105,7 @@ def main():
   if first_line != headers:
     call = "printf \"%s$( cat %s )\" > %s" % (headers, routing_end_filepath, routing_end_filepath)
     print "running ", call
+    print "\n"
     os.system(call)
   else:
     print "header line already is there"
@@ -116,6 +116,7 @@ def main():
       script_filepath, routing_end_filepath, outputFolder+"/",
       scenario)
   print "running ", call
+  print "\n"
   os.system(call)
 
   # analyse error file
@@ -126,6 +127,7 @@ def main():
       script_filepath, routing_end_filepath, outputFolder+"/",
       scenario)
   print "running ", call
+  print "\n"
   os.system(call)
 
 # This is the standard boilerplate that calls the main() function.
