@@ -223,6 +223,7 @@ def write_average_stats(filepath, statnames, averages, route_averages,
                         strategy_averages,
                         error_statnames, error_averages,
                         links, error_link):
+    print "writing to .. ", filepath
     outf = open(filepath, 'w')
     outf.write("total\n")
     outf.write("statistic\tmean\tstd\tmin\tmax\n")

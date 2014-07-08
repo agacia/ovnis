@@ -80,7 +80,7 @@ int main(int argc, char ** argv) {
 //    string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
     string networkId = "Highway";
     string knowledgeType = "vanet";
-    knowledgeType = "perfect";
+//    knowledgeType = "perfect";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
     string routingStrategiesProbabilities = "0,1,0,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
@@ -88,11 +88,11 @@ int main(int argc, char ** argv) {
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
     string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
     string cheatersRatio = "0";
-    string accidentStartTime = "600";
+    string accidentStartTime = "300";
     string accidentStopTime = "3600";
-    string ttl = "180";
+    string ttl = "120";
     string timeEstimationMethod = "last";
-    timeEstimationMethod = "tmc";
+    timeEstimationMethod = "average";
     string decayFactor = "0.5";
 
 	CommandLine cmd;

@@ -107,9 +107,9 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	for (map<string, RecordEntry>::iterator it = ttdb.begin(); it != ttdb.end(); ++it) {
 		RecordEntry recordEntry = it->second;
 		string edgeId = it->first;
-//		cout << edgeId << ":" << endl;
  		double travelTime = recordEntry.getValue(estimationMethod);
 
+//		cout << edgeId << ":" << travelTime << " " << (travelTime > 0) << " " << (travelTime < maxInformationAge) << endl;
 		double packetDate = recordEntry.getTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average

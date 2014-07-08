@@ -39,7 +39,7 @@ void RecordEntry::reset() {
 	alfa = TIS::getInstance().getDecayFactor();
 	decayValue = -1.0;
 	decayTime = 0.0;
-	memoryLength = 300;
+	memoryLength = 30;
 	memoryMin = 0;
 	memoryMax = memoryLength;
 }
@@ -164,6 +164,23 @@ double RecordEntry::getValue(string estimationMethod) {
 //		if (times.size()  > 0) {
 //			cout << Simulator::Now().GetSeconds() << " estimationMethod " << estimationMethod << " " << value << " " << min << "-" << max << " times.size " << times.size() << endl;
 //		}
+		int eraseTo = 0;
+		min = min - memoryLength;
+		int i = 0;
+		for (vector<double>::iterator it = times.begin(); it != times.end(); ++it) {
+			if (*it >= min && *it < max) {
+				eraseTo = i;
+				break;
+			}
+			++i;
+		}
+		if (eraseTo > 0) {
+//			cout << Simulator::Now().GetSeconds() << "  Erasing " << times.size() << " from " << times[0] << " to " << times[eraseTo];
+			times.erase(times.begin() + 1, times.begin() + eraseTo + 1);
+			values.erase(values.begin() + 1, values.begin() + eraseTo + 1);
+			packetIds.erase(packetIds.begin() + 1, packetIds.begin() + eraseTo + 1);
+//			cout << " after " << times.size() << endl;
+		}
 	}
 	if (estimationMethod == "tmc") {
 		int nowSeconds = static_cast<int>(Simulator::Now().GetSeconds());
