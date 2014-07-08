@@ -56,7 +56,7 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 
 void TIS::reportEndingEdge(string vehicleId, string edgeId, double travelTime) {
 	perfectTravelTimes[edgeId].add(0, "", Simulator::Now().GetSeconds(), travelTime);
-	Log::getInstance().getStream("reports") << edgeId << " " << perfectTravelTimes[edgeId].getInfo();
+//	Log::getInstance().getStream("reports") << edgeId << " " << perfectTravelTimes[edgeId].getInfo();
 }
 
 std::map<std::string, RecordEntry> TIS::getPerfectTravelTimes() {

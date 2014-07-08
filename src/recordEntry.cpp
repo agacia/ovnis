@@ -161,9 +161,9 @@ double RecordEntry::getValue(string estimationMethod) {
 		int min = nowSeconds - memoryLength;
 		int max = min + memoryLength;
 		value = getAverageValue(min, max);
-		if (times.size()  > 0) {
-			cout << Simulator::Now().GetSeconds() << " estimationMethod " << estimationMethod << " " << value << " " << min << "-" << max << " times.size " << times.size() << endl;
-		}
+//		if (times.size()  > 0) {
+//			cout << Simulator::Now().GetSeconds() << " estimationMethod " << estimationMethod << " " << value << " " << min << "-" << max << " times.size " << times.size() << endl;
+//		}
 	}
 	if (estimationMethod == "tmc") {
 		int nowSeconds = static_cast<int>(Simulator::Now().GetSeconds());
@@ -171,9 +171,9 @@ double RecordEntry::getValue(string estimationMethod) {
 		int min = nowSeconds / memoryLength * memoryLength - delay;
 		int max = min + memoryLength;
 		value = getAverageValue(min, max);
-		if (times.size()  > 0) {
-			cout << Simulator::Now().GetSeconds() << " estimationMethod " << estimationMethod << " " << value << " " << min << "-" << max << " times.size " << times.size() << endl;
-		}
+//		if (times.size()  > 0) {
+//			cout << Simulator::Now().GetSeconds() << " estimationMethod " << estimationMethod << " " << value << " " << min << "-" << max << " times.size " << times.size() << endl;
+//		}
 		// remove
 		int eraseTo = 0;
 		int i = 0;
