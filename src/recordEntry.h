@@ -29,10 +29,11 @@ public:
 	RecordEntry();
 	virtual ~RecordEntry();
 	void add(long packetId, std::string senderId, double time, double value);
-	void printValues();
+//	void printValues();
 //	double computeAverageValue();
-
-	double getValue();
+	void setLocalMemorySize(int size); // size of an array
+	void setLocalMemoryLength(int length); // time in seconds
+//	double getValue();
 	double getTime();
 	double getValue(std::string estimationMethod);
 	double setCapacity(double expectedValue);
@@ -43,6 +44,8 @@ public:
 	std::string getLatestSenderId();
 	long getLatestPacketId();
 	void reset();
+	std::string getInfo();
+	double getAverageValue(int min, int max);
 
 private:
 	double getLatestValue();
@@ -55,13 +58,22 @@ private:
 	double decayValue;
 	double decayTime;
 	double alfa;
-	int count;
-	double times[LOCAL_MEMORY_SIZE];
-	double values[LOCAL_MEMORY_SIZE];
-	std::string senders[LOCAL_MEMORY_SIZE];
-	long packetIds[LOCAL_MEMORY_SIZE];
+//	int count;
+//	int memoryStartTime;
+//	double times[LOCAL_MEMORY_SIZE];
+//	double values[LOCAL_MEMORY_SIZE];
+//	std::string senders[LOCAL_MEMORY_SIZE];
+//	long packetIds[LOCAL_MEMORY_SIZE];
+	std::vector<double> times;
+	std::vector<double> values;
+	std::vector<long> packetIds;
+	std::vector<std::string> senders;
 	double expectedValue;
 	double actualCapacity;
+	int size;
+	int memoryLength;
+	int memoryMin;
+	int memoryMax;
 };
 
 } /* namespace ovnis */

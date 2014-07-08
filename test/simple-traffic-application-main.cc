@@ -73,24 +73,26 @@ int main(int argc, char ** argv) {
 	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/test";
 	string sumoConfig = "scenario_accident_const_1111.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
-	int stopTime = 400; // 25200; // 7h
+	int stopTime = 3600; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
 //    string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
     string networkId = "Highway";
     string knowledgeType = "vanet";
+    knowledgeType = "perfect";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "1,0,0,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,1,0,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;
     string vanetDisseminationPenetrationRate = "1"; // PENETRATION_RATE;
     string cheatersRatio = "0";
     string accidentStartTime = "600";
-    string accidentStopTime = "1800";
-    string ttl = "120";
+    string accidentStopTime = "3600";
+    string ttl = "180";
     string timeEstimationMethod = "last";
+    timeEstimationMethod = "tmc";
     string decayFactor = "0.5";
 
 	CommandLine cmd;

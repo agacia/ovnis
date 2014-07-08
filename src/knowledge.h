@@ -48,7 +48,7 @@ public:
 	void record(vector<Data> data);
 	map<string,RecordEntry> & getRecords();
 
-	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeType);
+	void analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeTypeL, string estimationMethod);
 	map<string,map<string,vector<string> > > analyseCorrelation(map<string, Route> routes, string startEdgeId, string endEdgeId);
 
 
@@ -58,7 +58,7 @@ public:
 	map<std::string,double> getDelayOnRoutes();
 	vector<string> getEdgesList(Route route, string startEdgeId, string endEdgeId);
 	std::vector<std::string> getEdgesList(std::map<std::string, Route> routes, std::string startEdgeId, std::string endEdgeId);
-	map<std::string,double> getEdgesCosts(std::vector<std::string> edgesList, double ttl, string knowledgeType);
+	map<std::string,double> getEdgesCosts(std::vector<std::string> edgesList, double ttl, string knowledgeType, string estimationMethod);
     bool isCongestedFlow() const;
     bool isDenseFlow() const;
 

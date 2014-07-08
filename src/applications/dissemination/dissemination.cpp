@@ -24,7 +24,7 @@ Dissemination::~Dissemination() {
 /**
  * Takes only the information about requested edges
  */
-vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges, double ttl, double valueTh) {
+vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, vector<string> edges, double ttl, double valueTh, string estimationMethod) {
 	vector<Data> trafficData;
 	if (knowledge.getRecords().size() > 0) {
 		double now =  Simulator::Now().GetSeconds();
@@ -38,7 +38,7 @@ vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, v
 //					}
 				}
 
-				double packetValue = knowledge.getRecords()[*it].getValue();
+				double packetValue = knowledge.getRecords()[*it].getValue(estimationMethod);
 //				double staticValue = TIS::getInstance().getStaticRecords()[*it].getStaticCost();
 
 //				Log::getInstance().getStream("aaa") <<  packetValue  << "-" << staticValue << "= " <<packetValue - staticValue  << " , valueTh " << valueTh << endl;
@@ -61,30 +61,30 @@ vector<Data> Dissemination::getTrafficInformationToSend(Knowledge & knowledge, v
 	return trafficData;
 }
 
-vector<Data> Dissemination::getTrafficInformationToSend(map<string,RecordEntry> edges, double ttl, double valueTh) {
-	vector<Data> trafficData;
-	double now =  Simulator::Now().GetSeconds();
-	for (map<string, RecordEntry>::iterator it = edges.begin(); it != edges.end(); ++it) {
-		double packetDate =  it->second.getTime();
-		// fresher than ttl
-//		if (packetDate == 0 or (now-packetDate) > ttl) {
-////			cerr << "Discarding packet about " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << ", " << trafficData.size() << " (of " << edges.size() << " requested) " << endl;
+//vector<Data> Dissemination::getTrafficInformationToSend(map<string,RecordEntry> edges, double ttl, double valueTh) {
+//	vector<Data> trafficData;
+//	double now =  Simulator::Now().GetSeconds();
+//	for (map<string, RecordEntry>::iterator it = edges.begin(); it != edges.end(); ++it) {
+//		double packetDate =  it->second.getTime();
+//		// fresher than ttl
+////		if (packetDate == 0 or (now-packetDate) > ttl) {
+//////			cerr << "Discarding packet about " << it->first << " packetDate " << packetDate << " now-packetDate " << (now-packetDate) << ", " << trafficData.size() << " (of " << edges.size() << " requested) " << endl;
+////			continue;
+////		}
+//		double packetValue = it->second.getValue();
+//		double staticValue = TIS::getInstance().getStaticRecords()[it->first].getStaticCost();
+//		// with a significant change in value
+//		if (packetValue - staticValue > valueTh*staticValue) {
 //			continue;
 //		}
-		double packetValue = it->second.getValue();
-		double staticValue = TIS::getInstance().getStaticRecords()[it->first].getStaticCost();
-		// with a significant change in value
-		if (packetValue - staticValue > valueTh*staticValue) {
-			continue;
-		}
-		Data data;
-		data.edgeId = it->first;
-		data.date = packetDate;
-		data.travelTime = packetValue;
-		trafficData.push_back(data);
-	}
-	return trafficData;
-}
+//		Data data;
+//		data.edgeId = it->first;
+//		data.date = packetDate;
+//		data.travelTime = packetValue;
+//		trafficData.push_back(data);
+//	}
+//	return trafficData;
+//}
 
 //void FceApplication::ReceiveTrafficInfoPacket(OvnisPacket ovnisPacket) {
 //

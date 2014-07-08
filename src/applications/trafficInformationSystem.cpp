@@ -56,10 +56,14 @@ void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string cur
 
 void TIS::reportEndingEdge(string vehicleId, string edgeId, double travelTime) {
 	perfectTravelTimes[edgeId].add(0, "", Simulator::Now().GetSeconds(), travelTime);
-//	cout << "Perfect ttdb\t" << edgeId << "\t" << Simulator::Now().GetSeconds() << "\t" << travelTime << "\tperfectTTDB\t" << perfectTravelTimes.size() << endl;
+	Log::getInstance().getStream("reports") << edgeId << " " << perfectTravelTimes[edgeId].getInfo();
 }
 
 std::map<std::string, RecordEntry> TIS::getPerfectTravelTimes() {
+	return perfectTravelTimes;
+}
+
+std::map<std::string, RecordEntry> TIS::getTMCTravelTimes() {
 	return perfectTravelTimes;
 }
 
@@ -100,6 +104,8 @@ void TIS::initializeStaticTravelTimes(map<string, Route> routes) {
 				if (staticRecords.find(*it2) == staticRecords.end()) {
 					// add info about the edge
 					staticRecords[*it2] = route.getEdgeInfo(*it2);
+					// initialize perfect travel times with large size
+					perfectTravelTimes[*it2].setLocalMemorySize(100);
 				}
 			}
 			// print route to file

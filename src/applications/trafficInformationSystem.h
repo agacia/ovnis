@@ -75,6 +75,7 @@ public:
 	std::string chooseRandomRoute();
 	std::string getEvent(std::map<std::string, double> probabilities);
     std::map<std::string, RecordEntry> getPerfectTravelTimes();
+    std::map<std::string, RecordEntry> getTMCTravelTimes();
 
     bool executeOnce;
     int communities;
@@ -94,6 +95,7 @@ private:
     std::map<std::string,double> travelTimesOnRoute;
     std::map<std::string,double> travelTimeDateOnRoute;
 	std::map<std::string, RecordEntry> perfectTravelTimes; // info about travel times on routes
+//	std::map<std::string, RecordEntry> TMCTravelTimes; // info about travel times on routes
 
     bool congestion;
     bool comp_prob(const pair<string,double> & v1, const pair<string,double> & v2);

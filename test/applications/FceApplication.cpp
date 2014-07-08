@@ -323,7 +323,8 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 	for (map<string,Route>::iterator it = vehicle.getScenario().getAlternativeRoutes().begin(); it != vehicle.getScenario().getAlternativeRoutes().end(); ++it) {
 		routeTTL[it->first] = ttl;
 	}
-	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, knowledgeType);
+	string estimationMethod = TIS::getInstance().getTimeEstimationMethod();
+	vanetsKnowledge.analyseLocalDatabase(vehicle.getScenario().getAlternativeRoutes(), currentEdgeId, endEdgeId, routeTTL, knowledgeType, estimationMethod);
 	map<string, double> travelTimeCost = vanetsKnowledge.getTravelTimesOnRoutes();
 //	map<string, double> delayTimeCost = vanetsKnowledge.getDelayOnRoutes();
 //	map<string, double> congestionLengthCost = vanetsKnowledge.getCongestedLengthOnRoutes();
@@ -465,9 +466,10 @@ void FceApplication::CalculateError(string currentEdge) {
 
 	string currentEdgeId = vehicle.getItinerary().getCurrentEdge().getId();
 	vector<string> edgeList = vanetsKnowledge.getEdgesList(vehicle.getScenario().getAlternativeRoutes(), currentEdge, vehicle.getDestinationEdgeId());
-	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "vanet"); // refer to the last call of vanetsKnowledge.getCosts !
-	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect"); // refer to the last call of vanetsKnowledge.getCosts !
-	map<string, double> staticEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static"); // refer to the last call of vanetsKnowledge.getCosts !
+	string estimationMethod = "last";
+	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "vanet", estimationMethod); // refer to the last call of vanetsKnowledge.getCosts !
+	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect", estimationMethod); // refer to the last call of vanetsKnowledge.getCosts !
+	map<string, double> staticEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static", estimationMethod); // refer to the last call of vanetsKnowledge.getCosts !
 
 	// error
 	double error_vanet = 0;
@@ -488,21 +490,24 @@ void FceApplication::CalculateError(string currentEdge) {
 
 	for (std::map<std::string, Route>::iterator itRoutes= vehicle.getScenario().getAlternativeRoutes().begin(); itRoutes != vehicle.getScenario().getAlternativeRoutes().end(); ++itRoutes) {
 		vector<string> edgeList = vanetsKnowledge.getEdgesList(itRoutes->second, currentEdge, vehicle.getDestinationEdgeId());
-		map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "vanet"); // refer to the last call of vanetsKnowledge.getCosts !
-		map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect"); // refer to the last call of vanetsKnowledge.getCosts !
-		map<string, double> staticEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static"); // refer to the last call of vanetsKnowledge.getCosts !
+		map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "vanet", "last"); // refer to the last call of vanetsKnowledge.getCosts !
+		map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect", "average"); // refer to the last call of vanetsKnowledge.getCosts !
+		map<string, double> tmcEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect", "tmc"); // refer to the last call of vanetsKnowledge.getCosts !
+		map<string, double> staticEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static", "last"); // refer to the last call of vanetsKnowledge.getCosts !
 
 		double error_vanet = 0;
 		double sumVanet = 0;
 		double sumPerfect = 0;
+		double sumTMC = 0;
 		double sumStatic = 0;
 		for (vector<string>::iterator it=edgeList.begin(); it!=edgeList.end(); ++it) {
 			error_vanet += abs(perfectEdgesCosts[*it] - vanetEdgesCosts[*it]);
 			sumPerfect += perfectEdgesCosts[*it];
 			sumVanet += vanetEdgesCosts[*it];
 			sumStatic += staticEdgesCosts[*it];
+			sumTMC += tmcEdgesCosts[*it];
 		}
-		Log::getInstance().getStream("edges_error") <<  "routes\t" << itRoutes->second.getId()<< "\t" << error_vanet << "\t" << sumPerfect << "\t" << sumVanet << "\t" << sumVanet-sumPerfect << "\t" << sumStatic << "\t";
+		Log::getInstance().getStream("edges_error") <<  "routes\t" << itRoutes->second.getId()<< "\t" << error_vanet << "\t" << sumPerfect << "\t" << sumVanet << "\t" << sumVanet-sumPerfect << "\t" << sumStatic << "\t" << sumTMC << "\t";
 	}
 	Log::getInstance().getStream("edges_error") << endl;
 }
@@ -526,7 +531,9 @@ void FceApplication::SendTrafficInformation(void) {
 			// todo get value threshold
 			double valueTh = 0;
 //			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge.getRecords(), ttl, valueTh);
-			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead(), ttl, valueTh);
+//			string estimationMethod = TIS::getInstance().getTimeEstimationMethod();
+			string estimationMethod = "last";
+			vector<Data> records = dissemination.getTrafficInformationToSend(vanetsKnowledge, vehicle.getEdgesAhead(), ttl, valueTh, estimationMethod);
 	//		for (vector<Data>::iterator it = records.begin(); it < records.end(); ++it) {
 	//			if (it->edgeId == "56640728#3") {
 	//				cerr << now << " Vehicle " << vehicle.getId() << " on edge " << vehicle.getItinerary().getCurrentEdge().getId() << " will send information with accident " << it->edgeId << " " << it->date << " " << it->travelTime << endl;

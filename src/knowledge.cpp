@@ -70,7 +70,7 @@ map<string,RecordEntry> & Knowledge::getRecords()
 	return travelTimes;
 }
 
-void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeType) {
+void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdgeId, string endEdgeId, map<string,double> routeTTL, string knowledgeType, string estimationMethod = "last") {
 	ifCongestedFlow = false;
 	ifDenseFlow = false;
 	sumLength = 0;
@@ -99,7 +99,7 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	map<string, RecordEntry> ttdb = travelTimes;
 	if (knowledgeType == "perfect") {
 		ttdb = TIS::getInstance().getPerfectTravelTimes();
-//		cout << "use perfect " << ttdb.size() << "\tlocal\t" << travelTimes.size() << endl;
+//		cout << "knowledgeType " << knowledgeType << " " << ttdb.size() << "\tlocal\t" << travelTimes.size() << endl;
 	}
 //	cout << "travelTimes.size() " << travelTimes.size() << endl;
 //	cout << "perfectTravelTimes.size() " << TIS::getInstance().getPerfectTravelTimes().size() << endl;
@@ -107,7 +107,9 @@ void Knowledge::analyseLocalDatabase(map<string, Route> routes, string startEdge
 	for (map<string, RecordEntry>::iterator it = ttdb.begin(); it != ttdb.end(); ++it) {
 		RecordEntry recordEntry = it->second;
 		string edgeId = it->first;
-		double travelTime = recordEntry.getValue();
+//		cout << edgeId << ":" << endl;
+ 		double travelTime = recordEntry.getValue(estimationMethod);
+
 		double packetDate = recordEntry.getTime();
 		double packetAge = packetDate == 0 ? 0 : Simulator::Now().GetSeconds() - packetDate;
 		// xxx average
@@ -315,7 +317,7 @@ vector<string> Knowledge::getEdgesList(map<string, Route> routes, string startEd
 	return edgesList;
 }
 
-map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, double ttl, string knowledgeType = "vanet")
+map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, double ttl, string knowledgeType = "vanet", string estimationMethod = "last")
 {
 	map<string, RecordEntry> ttdb = travelTimes;
 	if (knowledgeType == "perfect") {
@@ -329,7 +331,7 @@ map<std::string,double> Knowledge::getEdgesCosts(vector<string> edgesList, doubl
 			edgesCosts[*it] = TIS::getInstance().getStaticRecords()[*it].getStaticCost();
 		}
 		else {
-			double travelTime = ttdb[*it].getValue();
+			double travelTime = ttdb[*it].getValue(estimationMethod);
 
 //			if (knowledgeType == "vanet") {
 //				Log::getInstance().getStream("aaa") << travelTime << " " << TIS::getInstance().getTimeEstimationMethod() << endl;
