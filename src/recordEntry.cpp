@@ -39,7 +39,7 @@ void RecordEntry::reset() {
 	alfa = TIS::getInstance().getDecayFactor();
 	decayValue = -1.0;
 	decayTime = 0.0;
-	memoryLength = 30;
+	memoryLength = 60;
 	memoryMin = 0;
 	memoryMax = memoryLength;
 }
