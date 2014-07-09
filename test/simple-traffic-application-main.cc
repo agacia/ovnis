@@ -82,7 +82,7 @@ int main(int argc, char ** argv) {
     string knowledgeType = "vanet";
 //    knowledgeType = "perfect";
     string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "0,1,0,0"; // no-routing - uninformed drivers,
+    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;

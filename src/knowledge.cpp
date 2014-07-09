@@ -53,7 +53,7 @@ bool Knowledge::record(Data data) {
 	if (travelTimes.find(data.edgeId) == travelTimes.end() ||
 			(travelTimes.find(data.edgeId) != travelTimes.end() && travelTimes[data.edgeId].getTime() < data.date)) {
 		travelTimes[data.edgeId].add(0, "", data.date, data.travelTime);
-//		cout << "Record in ttdb\t" << data.edgeId << "\t" << data.date << "\t" << data.travelTime  << "\tvanetTTDB\t" << travelTimes.size() << endl;
+//		cout << "Record in ttdb\t" << data.edgeId << "\t" << data.date << "\t" << data.travelTime  << "\tvanetTTDB\t" << travelTimes.size() << "\t" << travelTimes[data.edgeId].getInfo();
 		return true;
 	}
 	return false;

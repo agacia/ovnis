@@ -39,7 +39,7 @@ void RecordEntry::reset() {
 	alfa = TIS::getInstance().getDecayFactor();
 	decayValue = -1.0;
 	decayTime = 0.0;
-	memoryLength = 60;
+	memoryLength = 120;
 	memoryMin = 0;
 	memoryMax = memoryLength;
 }
@@ -64,9 +64,10 @@ void RecordEntry::setLocalMemoryLength(int length) {
 
 string RecordEntry::getInfo() {
 	std::stringstream ss;
+	int i = 0;
 	ss << Simulator::Now().GetSeconds() << "\tsize:\t" << times.size() << "\ttimes\t";
 	for (vector<double>::iterator it = times.begin(); it != times.end(); ++it) {
-		ss << "\t" << *it;
+		ss << "\t" << *it <<"," << values[i];
 	}
 	ss << endl;
 	std::string s = ss.str();
