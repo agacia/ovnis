@@ -82,6 +82,8 @@ def main():
   routingStrategiesProbabilities = options.routingStrategiesProbabilities or "1,0,0,0"
   startTime = options.startTime or 0
   stopTime = options.stopTime or 10
+  accidentStartTime = options.accidentStartTime or 0
+  accidentStopTime = options.accidentStopTime or 10
   ttl = options.ttl or 60
   timeEstimationMethod = options.timeEstimationMethod or "last"
   decayFactor = options.decayFactor or 0.5
@@ -91,7 +93,7 @@ def main():
 
   # run ovnis
   if runOvnis:
-    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s --networkId=%s" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType, scenario)
+    args = " --sumoPath=%s --sumoConfig=%s --scenarioFolder=%s --outputFolder=%s --routingStrategiesProbabilities=%s --startTime=%d --stopTime=%d --ttl=%d --timeEstimationMethod=%s --decayFactor=%f --knowledgeType=%s --networkId=%s --accidentStartTime=%d --accidentStopTime=%d" % (sumoPath, sumoConfig, scenarioFolder, outputFolder, routingStrategiesProbabilities, startTime, stopTime, ttl, timeEstimationMethod, decayFactor, knowledgeType, scenario, accidentStartTime, accidentStopTime)
     call = ovnisapp + args
     print "running ovnis", call
     os.system(call)

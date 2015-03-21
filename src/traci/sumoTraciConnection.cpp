@@ -40,6 +40,7 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "local
 	this->port = port;
 	if (!sumoConfig.empty()) {
 		this->port = StartSumo(sumoConfig, sumoPath, scenarioFolder, outputFolder);
+		return;
 	}
 	if (port != 0) {
 		this->port = port;
@@ -47,10 +48,12 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "local
 	socket = Socket(this->host, this->port);
 	sleep(2);
 	try {
-		socket.connect();
 		Log::getInstance().getStream("sumo") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
+
+		socket.connect();
 	}
 	catch (SocketException & e) {
+		Log::getInstance().getStream("sumo") << "socket error " << e.what() << endl;
 		cerr << e.what();
 		return;
 	}
@@ -70,35 +73,41 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string scenar
 	// retrieve SUMO network port number and simulation boundaries from config files
 	int sumoPort;
 	string configPath = scenarioFolder+config;
-	cout << "Reading config file " << configPath << endl;
+	Log::getInstance().getStream("sumo") << "Reading config file " << configPath << endl;
 	XMLSumoConfParser::parseConfiguration(configPath, &sumoPort, boundaries);
 	this->port = sumoPort;
 	if (this->port == 0) {
 		this->port = SUMO_PORT;
 	}
+	Log::getInstance().getStream("sumo") << "sumoPath: " << sumoPath << ", port " << this->port << endl;
 	if ((pid = fork()) == 0) {
 		char buff[512];
 		ofstream out;
 		out.open((outputFolder+"/output_sumo.log").c_str());
-		out << "Output log file from sumo's execution.";
+		cout << "Output log file from sumo's execution." << endl;
 		FILE * fp;
-		string args = " "
-//				+ " --summary-output=" + outputFolder+"summary.xml "
-//				+ "--fcd-output=" + outputFolder + "fcd.xml "
-//				+ " --netstate="   + outputFolder + "netsate.xml"
-//				+ "--tripinfo-output=" + outputFolder + "tripinfo.xml "
-//				+ "--full-output=" + outputFolder + "/full.xml";
-				;
+		string args = " --netstate="  + outputFolder + "/netstate.xml --fcd-output=" + outputFolder + "/fcd.xml"
+////				+ " --summary-output=" + outputFolder+"/summary.xml "
+////				+ "--fcd-output=" + outputFolder + "/fcd.xml "
+////				+ " --netstate="  + outputFolder + "/netstate.xml"
+////				+ "--tripinfo-output=" + outputFolder + "/tripinfo.xml "
+////				+ "--full-output=" + outputFolder + "/full.xml";
+				+ "";
+		cout << sumoPath << " -c " << configPath << " " << args << endl;
 		if ((fp = popen((sumoPath + " -c " + configPath + " " + args + " 2>&1").c_str(), "r")) == NULL) {
 			cerr <<  "#Error: Sumo processes cannot be created" << endl;
 			throw;
 		}
+		cout << "Started sumo!" << endl;
 		while (fgets(buff, sizeof(buff), fp) != NULL) {
+			cout << "buff " << buff << endl;
 			out << buff;
 			out.flush();
 		}
 		pclose(fp);
 		exit(0);
+	} else {
+		Log::getInstance().getStream("sumo") << "pid = fork()) != 0, return port " << port << " pid " << pid << endl;
 	}
 	return port;
 }

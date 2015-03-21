@@ -603,17 +603,17 @@ def process_trips(filename, outputdir, scenario):
     groupby_col2 = "routingStrategy"
     df[xlabel] = df[xlabel].convert_objects(convert_numeric=True)
     df[ylabel] = df[ylabel].convert_objects(convert_numeric=True)
-    plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle,
-                     ytitle, route_names, outputdir)
-    plot_group_lines_v(df, groupby_col, xlabel, ylabel, title, xtitle,
-                       ytitle, route_names, outputdir)
+    #plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle,
+    #                 ytitle, route_names, outputdir)
+    #plot_group_lines_v(df, groupby_col, xlabel, ylabel, title, xtitle,
+    #                   ytitle, route_names, outputdir)
     plot_group_lines_a(df, groupby_col, xlabel, ylabel, title, xtitle,
                        ytitle, route_names, outputdir)
-    # plot_group_lines_a(df, groupby_col, xlabel, 'travelTime',
-    #                   'Travel time on routes', xtitle, ytitle,
-    #                   route_names, outputdir)
-    plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle,
-                     ytitle, route_names, outputdir)
+    plot_group_lines_a(df, groupby_col, xlabel, 'travelTime',
+                       'Travel time on routes', xtitle, ytitle,
+                       route_names, outputdir)
+    #plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle,
+    #                 ytitle, route_names, outputdir)
     write_group_stats(df, groupby_col, groupby_col2,  xlabel, ylabel,
                       route_names, outputdir, skipped_lines)
 
@@ -655,12 +655,16 @@ def plot_group_lines_a(df, groupby_col, xlabel, ylabel, title, xtitle,
     grouped = df.groupby(groupby_col)
     fig = plt.figure()
     [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel)
+    print "ylabel", ylabel, xmin, xmax, ymin, ymax
     axes = []
     axes.append(fig.add_subplot(2, 1, 1, axisbg='white'))
+    #ymax = 800
     axes[0].set_ylim([ymin, ymax])
     axes[0].set_xlim([xmin, xmax])
     ylabel2 = 'vehiclesOnRoute'
     [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel2)
+    print "ylabel2", ylabel2, xmin, xmax, ymin, ymax
+    #ymax = 100
     axes.append(plt.subplot(2, 1, 2, axisbg='white', sharex=axes[0]))
     axes[1].set_ylim([ymin, ymax])
     axes[1].set_xlim([xmin, xmax])
@@ -668,33 +672,34 @@ def plot_group_lines_a(df, groupby_col, xlabel, ylabel, title, xtitle,
     # axes[0].locator_params(nbins=4)
     for i, value in enumerate(grouped):
         name, group = value
-        print "group", type(group)
         # smooth
-        group['Time2'] = floor_number(group[xlabel], average_span)
-        smoothed = group.groupby('Time2').aggregate(np.mean).reset_index()
+        #group['Time2'] = floor_number(group[xlabel], average_span)
+        #smoothed = group.groupby('Time2').aggregate(np.mean).reset_index()
         # print smoothed.head()
         color = colors[i % len(colors)]
         x = group[xlabel]
         y = group[ylabel]
         y2 = group['vehiclesOnRoute']
-        x = smoothed[xlabel]
-        y = smoothed[ylabel]
-        y2 = smoothed['vehiclesOnRoute']
+        # x = smoothed[xlabel]
+        # y = smoothed[ylabel]
+        # y2 = smoothed['vehiclesOnRoute']
         style = styles[(i*2+3) % len(styles)]
         # linestyle = linestyles[i % len(linestyles)]
         print i, name, color, style
-        axes[0].plot(x, y, linestyle='-', marker=style, color=color, lw=2,
-                     markeredgewidth=2, markersize=8, markeredgecolor=color,
-                     markerfacecolor='none', markevery=5,
-                     label=route_names[name])
-        axes[1].plot(x, y2, linestyle='-', marker=style, color=color,
-                     markersize=8, markeredgecolor=color,
-                     markerfacecolor='none', markevery=5)
+        axes[0].plot(x, y, linestyle='-', color=color, lw=1, label=route_names[name],
+                     # marker=style,  
+		     # markeredgewidth=2, markersize=8, markeredgecolor=color,
+                     # markerfacecolor='none', markevery=5
+			)
+        axes[1].plot(x, y2, linestyle='-', color=color, lw=1,
+                     # markersize=8, markeredgecolor=color, marker=style,
+                     # markerfacecolor='none', markevery=5
+			)
 
     axes[0].legend(loc='lower right')
     # axes[0].set_xlabel(xtitle)
     axes[0].set_ylabel(ytitle)
-    leg = axes[0].legend(loc='lower right', fancybox=True)
+    leg = axes[0].legend(loc='upper right', fancybox=True)
     leg.get_frame().set_alpha(0.5)
 
     axes[1].set_xlabel(xtitle)

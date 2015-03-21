@@ -142,7 +142,6 @@ void Ovnis::DoInitialize(void) {
    TIS::getInstance().setDecayFactor(decayFactor);
 
    InitializeSumo();
-
    //InitializeCrowdz();
 
    //application
@@ -152,7 +151,7 @@ void Ovnis::DoInitialize(void) {
 	UpdateInOutVehicles();
 	UpdateVehiclesPositions();
 	StartApplications();
-	start =  time(0);
+	start = time(0);
 	Log::getInstance().getStream("") << "Starting simulation from " << startTime << " to " << stopTime << "..." << endl;
 	Log::getInstance().getStream("simulation") << "start\t" << start << endl;
 	Log::getInstance().getStream("simulation") << "communication range\t" << communicationRange << endl;
@@ -324,6 +323,7 @@ void Ovnis::runSumo() {
 
 void Ovnis::InitializeSumo() {
 	try {
+		Log::getInstance().getStream("sumo") << "starting sumo..." << endl;
 		runSumo();
 	}
 	catch (TraciException &e) {
