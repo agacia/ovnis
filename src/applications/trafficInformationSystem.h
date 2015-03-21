@@ -68,6 +68,7 @@ public:
 	void setDecayFactor(double factor);
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
+	map<string, double> getProbabilities(map<string,double> costs);
 	map<string, double> getProbabilities(map<string,double> costs, map<string, double> correlated);
 	map<string, double> getMNLProbabilities(map<string, double> costs, Vehicle * vehicle);
 	map<string, double> getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta);

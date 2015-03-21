@@ -227,6 +227,11 @@ bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 	return v1.second < v2.second;
 }
 
+map<string, double> TIS::getProbabilities(map<string,double> costs) {
+	map<string, double> correlated;
+	return getProbabilities(costs, correlated);
+}
+
 map<string, double> TIS::getProbabilities(map<string,double> costs, map<string, double> correlated) {
 	double minCost = numeric_limits<double>::max();
 	double sumCost = 0;

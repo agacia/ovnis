@@ -89,12 +89,14 @@ def main():
         if "communities.csv" in filename:
             process_communities(filename, options.outputDir)
 
-        if "edges_error" in filename:
-            process_edges_error(filename, options.outputDir, scenario)
+        # if "edges_error" in filename:
+        #     process_edges_error(filename, options.outputDir, scenario)
 
         if "tripinfo" in filename or "output_log_routing_end" in filename:
             print "TODO uncomment"
             process_trips(filename, options.outputDir, scenario)
+
+
 
 
 def read_average_stats(filepath, groupnames, statnames):
@@ -112,16 +114,53 @@ def read_average_stats(filepath, groupnames, statnames):
             if len(data) > 0:
                 statname = data[0]
                 if statname in statnames:
+                    print groupname, statname, data
                     result[groupname][statname] = float(data[1])
-                    groupname = None
+                    # groupname = None
     return result
 
+def plot_total_with_ranges(ax, percents, values, color, label, markerstyle):
+    columns = ["min", "mean", "max"]
+    styles = ['--','-','--']
+    labels = [None,label,None]
+    linewidths = [1, 2, 1]
+    for col, style, lw, lbl in zip(columns, styles, linewidths, labels):
+        if col == "mean":
+            ax.plot(percents, values[col], label=lbl, lw=lw, 
+                color=color, linestyle=style, 
+                marker=markerstyle, markersize=8, markevery=2, markeredgecolor=color,
+                markerfacecolor='none', markeredgewidth=2)
+        else :
+            ax.plot(percents, values[col], label=lbl, lw=lw, 
+                color=color, linestyle=style)
+
+def plot_total_without_ranges(ax, percents, values, color, label, markerstyle):
+    columns = ["std"]
+    styles = ['-']
+    labels = [label]
+    linewidths = [2]
+    for col, style, lw, lbl in zip(columns, styles, linewidths, labels):
+        ax.plot(percents, values[col], label=lbl, lw=lw, 
+                color=color, linestyle=style, 
+                marker=markerstyle, markersize=8, markevery=2, markeredgecolor=color,
+                markerfacecolor='none', markeredgewidth=2)
+        
 
 def process_compare_dirs(inputdir, filename, scenario):
     percents = range(0, 105, 5)
-    groupnames = ["total", "shortest", "probabilistic"]
-    titlenames = ["All vehicles", "Shortest-time", "Probabilistic"]
-    statnames = ["mean"]
+    groupnames = []
+    titlenames = []
+    # groupnames = ["total", "shortest", "probabilistic"]
+    # titlenames = ["All vehicles", "Shortest-time", "Probabilistic"]
+    # titlenames = ["All vehicles", "TrafficEQ-ST", "TrafficEQ-P"]
+    if scenario == "Highway":
+        groupnames += ["main", "bypass"]
+        titlenames += ["Main", "Bypass"]
+    elif scenario == "Kirchberg":
+        groupnames += ["routedist#0", "routedist#1", "routedist#2"]
+        titlenames += ["Kennedy", "Adenauer", "Thuengen"]
+    statnames = ["mean", "min", "max"]
+    statnames = ["std"]
     values = {name: {name: list() for name in statnames}
               for name in groupnames}
     for percent in percents:
@@ -129,39 +168,63 @@ def process_compare_dirs(inputdir, filename, scenario):
         dirname = "%03d-%03d" % (percent_shortest, percent)
         filepath = os.path.join(inputdir, dirname, filename)
         result = read_average_stats(filepath, groupnames, statnames)
+
         for groupname, groupstats in result.items():
             for statname, stat in groupstats.items():
                 val = None if stat == 0 or stat == [] else stat
                 values[groupname][statname].append(val)
     title = "Penetration rate"
+    measure = "std" # "mean"
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     for i, groupname in enumerate(groupnames):
         color = colors[i % len(colors)]
         style = styles[(i*3) % len(styles)]
-        ax.plot(percents, values[groupname]["mean"], label=titlenames[i], lw=2,
-                color=color, markeredgecolor=color,
-                linestyle='-', marker=style, markersize=8, markevery=i+1,
-                markerfacecolor='none', markeredgewidth=2)
-    outputfile = os.path.join(inputdir, "plot_" + title + "_lines" + ".png")
-    ax.legend(loc='lower left')
+        if "std" == measure:
+            plot_total_without_ranges(ax, percents, values[groupname], color, titlenames[i], style)
+        else:
+            plot_total_with_ranges(ax, percents, values[groupname], color, titlenames[i], style)
+            
+        # if groupname == "routedist#0":
+        #     print values[groupname]
+        #     plot_total_with_ranges(ax, percents, values[groupname], color, titlenames[i], style)
+        # else:
+        #     ax.plot(percents, values[groupname]["mean"], label=titlenames[i], lw=2,
+        #         color=color, markeredgecolor=color,
+        #         linestyle='-', marker=style, markersize=8, markevery=i+1,
+        #         markerfacecolor='none', markeredgewidth=2)
+    outputfile = os.path.join(inputdir, "plot_" + title + "_lines" + ".pdf")
+    leg = ax.legend(loc='lower left', fancybox=True)
+    leg.get_frame().set_alpha(0.5)
     # ax.yaxis.set_ticks(np.arange(200, 400, 10))
     ax.xaxis.set_ticks(np.arange(percents[0], percents[len(percents)-1], 5))
     ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%d'))
-    ax.set_xlabel("Percentage of vehicles using probabilistic routing")
-    ax.set_ylabel("Average travel time (seconds)")
+    ax.set_xlabel("Percentage of TrafficEQ-P vehicles")
+    if measure == "std":
+        plot_title = "Standard deviation of travel times (seconds)"
+    elif measure == "mean":
+        plot_title = "Average travel time (seconds)"
+    ax.set_ylabel(plot_title)
     plt.grid()
     plt.savefig(outputfile)
+    epsfilename = os.path.join(inputdir, "plot_" + title + "_lines" + ".eps")
+    print "plotting to " + epsfilename
+    plt.savefig(epsfilename)
 
-    outputfile = os.path.join(inputdir, "penetration_rate.csv")
+    outputfile = os.path.join(inputdir, "penetration_rate_"+measure+".csv")
     fout = open(outputfile, 'w')
     fout.write("Percentage\tTotal\tShortest\tProbabilistic")
+    total, shortest, probabilistic = 0, 0, 0
     for i, percent in enumerate(percents):
-        total = values["total"]["mean"][i]
-        shortest = values["shortest"]["mean"][i] \
-            if values["shortest"]["mean"][i] is not None else 0
-        probabilistic = values["probabilistic"]["mean"][i] \
-            if values["probabilistic"]["mean"][i] is not None else 0
+        if "total" in values:
+            total = values["total"][measure][i]
+        if "shortest" in values:
+            shortest = values["shortest"][measure][i] \
+                if values["shortest"][measure][i] is not None else 0
+        if "probabilistic" in values:
+            probabilistic = values["probabilistic"][measure][i] \
+                if values["probabilistic"][measure][i] is not None else 0
+        
         fout.write("%d\t%.2f\t%.2f\t%.2f\n" % (percent, total,
                                                shortest, probabilistic))
 # markeredgecolor=color, markerfacecolor='none', markevery=5, label=ylabel)
@@ -350,7 +413,7 @@ def process_communities(filename, outputdir):
     title = "Average speed"
     plt.figure(1)
     plt.scatter(df['step'], df['timeMeanSpeed'])
-    outputfile = os.path.join(outputdir, "plot_" + title + ".png")
+    outputfile = os.path.join(outputdir, "plot_" + title + ".pdf")
     plt.savefig(outputfile)
 
 
@@ -448,6 +511,7 @@ def get_axes_ranges(df, xlabel, ylabels):
     ymin = 0
     xmax = 0
     ymax = 0
+    print(df.head())
     x = max(df[xlabel])
     if x > xmax:
         xmax = x
@@ -483,7 +547,7 @@ def plot_lines(df, xlabel, ylabels, title, xtitle, ytitle, outputdir):
             axes[j].legend(loc='lower right')
             axes[j].set_xlabel(xtitle)
     axes[0].set_ylabel(ytitle)
-    outputfile = outputdir + "plot_" + title + "_lines" + ".png"
+    outputfile = outputdir + "plot_" + title + "_lines" + ".pdf"
     plt.savefig(outputfile)
 
 
@@ -512,6 +576,8 @@ def process_edges_error(filename, outputdir, scenario):
     filename, skipped_lines = clean_file(filename, False, new_header)
     xlabel = "Time"
     df = pd.read_csv(filename, sep="\t", index_col=False)
+    print("processing" , filename)
+    print("df", df.head())
     xtitle = 'Time (seconds)'
     ytitle = 'Duration (seconds)'
     title = "Total travel times"
@@ -603,17 +669,17 @@ def process_trips(filename, outputdir, scenario):
     groupby_col2 = "routingStrategy"
     df[xlabel] = df[xlabel].convert_objects(convert_numeric=True)
     df[ylabel] = df[ylabel].convert_objects(convert_numeric=True)
-    #plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle,
-    #                 ytitle, route_names, outputdir)
-    #plot_group_lines_v(df, groupby_col, xlabel, ylabel, title, xtitle,
-    #                   ytitle, route_names, outputdir)
+    # plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle,
+    #                  ytitle, route_names, outputdir)
+    # plot_group_lines_v(df, groupby_col, xlabel, ylabel, title, xtitle,
+                       # ytitle, route_names, outputdir)
     plot_group_lines_a(df, groupby_col, xlabel, ylabel, title, xtitle,
                        ytitle, route_names, outputdir)
-    plot_group_lines_a(df, groupby_col, xlabel, 'travelTime',
-                       'Travel time on routes', xtitle, ytitle,
-                       route_names, outputdir)
-    #plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle,
-    #                 ytitle, route_names, outputdir)
+    # plot_group_lines_a(df, groupby_col, xlabel, 'travelTime',
+    #                   'Travel time on routes', xtitle, ytitle,
+    #                   route_names, outputdir)
+    # plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle,
+    #                  ytitle, route_names, outputdir)
     write_group_stats(df, groupby_col, groupby_col2,  xlabel, ylabel,
                       route_names, outputdir, skipped_lines)
 
@@ -646,7 +712,7 @@ def plot_group_lines_v(df, groupby_col, xlabel, ylabel, title, xtitle, ytitle,
         axes[i].set_xlabel(xtitle)
     axes[0].set_ylabel(ytitle)
     outputfile = os.path.join(outputdir,
-                              "plot_groups_v_" + title + "_lines" + ".png")
+                              "plot_groups_v_" + title + "_lines" + ".pdf")
     plt.savefig(outputfile)
 
 
@@ -655,56 +721,56 @@ def plot_group_lines_a(df, groupby_col, xlabel, ylabel, title, xtitle,
     grouped = df.groupby(groupby_col)
     fig = plt.figure()
     [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel)
-    print "ylabel", ylabel, xmin, xmax, ymin, ymax
     axes = []
     axes.append(fig.add_subplot(2, 1, 1, axisbg='white'))
-    #ymax = 800
-    axes[0].set_ylim([ymin, ymax])
+    axes[0].set_ylim([ymin, 800])
     axes[0].set_xlim([xmin, xmax])
     ylabel2 = 'vehiclesOnRoute'
     [xmin, xmax, ymin, ymax] = get_group_axes_ranges(grouped, xlabel, ylabel2)
-    print "ylabel2", ylabel2, xmin, xmax, ymin, ymax
-    #ymax = 100
     axes.append(plt.subplot(2, 1, 2, axisbg='white', sharex=axes[0]))
-    axes[1].set_ylim([ymin, ymax])
+    axes[1].set_ylim([ymin, 100])
     axes[1].set_xlim([xmin, xmax])
 
     # axes[0].locator_params(nbins=4)
     for i, value in enumerate(grouped):
         name, group = value
+        print "group", type(group)
         # smooth
-        #group['Time2'] = floor_number(group[xlabel], average_span)
-        #smoothed = group.groupby('Time2').aggregate(np.mean).reset_index()
+        group['Time2'] = floor_number(group[xlabel], average_span)
+        smoothed = group.groupby('Time2').aggregate(np.mean).reset_index()
         # print smoothed.head()
         color = colors[i % len(colors)]
         x = group[xlabel]
         y = group[ylabel]
         y2 = group['vehiclesOnRoute']
-        # x = smoothed[xlabel]
-        # y = smoothed[ylabel]
-        # y2 = smoothed['vehiclesOnRoute']
+        # smoothed
+        x = smoothed[xlabel]
+        y = smoothed[ylabel]
+        y2 = smoothed['vehiclesOnRoute']
         style = styles[(i*2+3) % len(styles)]
         # linestyle = linestyles[i % len(linestyles)]
         print i, name, color, style
-        axes[0].plot(x, y, linestyle='-', color=color, lw=1, label=route_names[name],
-                     # marker=style,  
-		     # markeredgewidth=2, markersize=8, markeredgecolor=color,
-                     # markerfacecolor='none', markevery=5
-			)
-        axes[1].plot(x, y2, linestyle='-', color=color, lw=1,
-                     # markersize=8, markeredgecolor=color, marker=style,
-                     # markerfacecolor='none', markevery=5
-			)
+        axes[0].plot(x, y, linestyle='-', marker=style, color=color, lw=1,
+                     markeredgewidth=2, markersize=8, markeredgecolor=color,
+                     markerfacecolor='none', markevery=5,
+                     label=route_names[name])
+        axes[1].plot(x, y2, linestyle='-', marker=style, color=color,
+                     markersize=8, markeredgecolor=color,
+                     markerfacecolor='none', markevery=5)
 
-    axes[0].legend(loc='lower right')
+    # axes[0].legend(loc='lower right')
     # axes[0].set_xlabel(xtitle)
     axes[0].set_ylabel(ytitle)
-    leg = axes[0].legend(loc='upper right', fancybox=True)
+    leg = axes[0].legend(loc='upper left', fancybox=True)
     leg.get_frame().set_alpha(0.5)
 
     axes[1].set_xlabel(xtitle)
     axes[1].set_ylabel("Number of vehicles")
-    outputfile = outputdir + "plot_groups_a_" + title + "_lines" + ".png"
+    outputfile = outputdir + "plot_groups_a_" + title + "_lines" + ".pdf"
+    print "plotting to {}".format(outputfile)
+    plt.savefig(outputfile)
+    outputfile = outputdir + "plot_groups_a_" + title + "_lines" + ".eps"
+    print "plotting to {}".format(outputfile)
     plt.savefig(outputfile)
 
 
@@ -731,7 +797,7 @@ def plot_group_lines(df, groupby_col, xlabel, ylabel, title, xtitle,
         axes[i].set_xlabel(xtitle)
 
     axes[0].set_ylabel(ytitle)
-    outputfile = outputdir + "plot_groups_" + title + "_lines" + ".png"
+    outputfile = outputdir + "plot_groups_" + title + "_lines" + ".pdf"
     plt.savefig(outputfile)
 
 
@@ -751,7 +817,7 @@ def plot_scatterplot(df, groupby_col, xlabel, ylabel, title, xtitle,
     plt.xlabel(xtitle)
     plt.ylabel(ytitle)
     plt.legend(loc='lower right')
-    outputfile = outputdir + "plot_" + title + "_scatterplot" + ".png"
+    outputfile = outputdir + "plot_" + title + "_scatterplot" + ".pdf"
     plt.savefig(outputfile)
 
 

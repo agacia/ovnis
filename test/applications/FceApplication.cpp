@@ -61,26 +61,15 @@ FceApplication::FceApplication() {
 	neededProbabilistic = false;
 	startReroute = 0;
 	isVanet = true;
-//	_neighborCount = 0;
-//	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
-//	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
-//	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
-//	m_params["accidentStartTime"] = "300"; // ACCIDENT_START_TIME;
-//	m_params["accidentStopTime"] = "1300"; // ACCIDENT_END_TIME;
-//	m_params["networkId"] = "Highway"; // "Kirchberg";
-//	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
-//	m_params["routingStrategiesProbabilities"] = "0,1,0,0"; // no-routing - uninformed drivers,
-//	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
-//	m_params["costFunctionProbabilities"] = "1,0,0";
 
 	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
 	m_params["cheatersRatio"] = "0"; // CHEATER_RATE;
-	m_params["accidentStartTime"] = "600"; // ACCIDENT_START_TIME;
-	m_params["accidentStopTime"] = "1800"; // ACCIDENT_END_TIME;
+	m_params["accidentStartTime"] = "0"; // ACCIDENT_START_TIME;
+	m_params["accidentStopTime"] = "3600"; // ACCIDENT_END_TIME;
 	m_params["networkId"] = "Kirchberg";
-	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid,mnl";
-	m_params["routingStrategiesProbabilities"] = "0,0,0,0,1";
+	m_params["routingStrategies"] = "noRouting,shortest,probabilistic-simple,probabilistic,hybrid,mnl";
+	m_params["routingStrategiesProbabilities"] = "0,0,1,0,0,0"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
 }
@@ -354,7 +343,15 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 	string routeChoice = shortest_choice;
 
 	// probabilistic
-	if (routingStrategy == "probabilistic") {
+	if (routingStrategy == "probabilistic-simple") {
+		map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost);
+		string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
+		if (probabilistic_choice != "") {
+			routeChoice = probabilistic_choice;
+		}
+	}
+	// probabilistic
+	else if (routingStrategy == "probabilistic") {
 		map<string, double> correlatedValues = AnalyseRouteCorrelation();
 		map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
 		string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
