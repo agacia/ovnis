@@ -120,11 +120,6 @@ void Ovnis::DoDispose() {
 }
 
 void Ovnis::DoInitialize(void) {
-//	LogComponentEnable("YansWifiChannel", LOG_LEVEL_INFO);
-//	LogComponentEnable("YansWifiPhy", LOG_LEVEL_INFO);
-//	LogComponentEnable("OvnisWifiChannel", LOG_LEVEL_INFO);
-//	LogComponentEnable("OvnisWifiPhy", LOG_LEVEL_INFO);
-
 	sumoHost = "localhost";
     is80211p = true;
     isOvnisChannel = false;

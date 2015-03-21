@@ -40,12 +40,11 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "local
 	this->port = port;
 	if (!sumoConfig.empty()) {
 		this->port = StartSumo(sumoConfig, sumoPath, scenarioFolder, outputFolder);
-		return;
 	}
 	if (port != 0) {
 		this->port = port;
 	}
-	socket = Socket(this->host, this->port);
+	socket = Socket(this->host, 1111);
 	sleep(2);
 	try {
 		Log::getInstance().getStream("sumo") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
@@ -87,11 +86,6 @@ int SumoTraciConnection::StartSumo(string config, string sumoPath, string scenar
 		cout << "Output log file from sumo's execution." << endl;
 		FILE * fp;
 		string args = " --netstate="  + outputFolder + "/netstate.xml --fcd-output=" + outputFolder + "/fcd.xml"
-////				+ " --summary-output=" + outputFolder+"/summary.xml "
-////				+ "--fcd-output=" + outputFolder + "/fcd.xml "
-////				+ " --netstate="  + outputFolder + "/netstate.xml"
-////				+ "--tripinfo-output=" + outputFolder + "/tripinfo.xml "
-////				+ "--full-output=" + outputFolder + "/full.xml";
 				+ "";
 		cout << sumoPath << " -c " << configPath << " " << args << endl;
 		if ((fp = popen((sumoPath + " -c " + configPath + " " + args + " 2>&1").c_str(), "r")) == NULL) {

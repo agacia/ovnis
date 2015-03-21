@@ -45,7 +45,6 @@ void TIS::setDecayFactor(double factor) {
 void TIS::reportStartingRoute(string vehicleId, string currentEdgeId, string currentRouteId, string newEdgeId, string newRouteId,
 		string originEdgeId, string destinationEdgeId, bool isCheater, bool isCongested,
 		double expectedTravelTime, double shortestExpectedTravelTime) {
-	// xxx only one entering on route - no need for subtract
 	++vehiclesOnRoute[newRouteId];
 	// time	vehicleId	currentEdgeId	currentRouteId	newEdgeId	newRouteId	originEdgeId	destinationEdgeId	isCheater	isCongested	expectedTravelTime	shortestExpectedTravelTime	vehiclesOnRoute[newRouteId]
 //	Log::getInstance().getStream("routing_start") << Simulator::Now().GetSeconds() << "\t" << vehicleId << "\t" << currentEdgeId << "\t"
@@ -187,22 +186,9 @@ string TIS::getEvent(map<string, double> probabilities) {
     	r -= shifting_weight;
     	lastChoice = it->first;
     	if (r < eps) {
-//    		Log::getInstance().getStream("probabilities2") << Simulator::Now().GetSeconds() << "\t" << r;
-//			for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-//				Log::getInstance().getStream("probabilities2") << "\t" << it->first << "\t" << it->second << "\t";
-//			}
-//			Log::getInstance().getStream("probabilities2") << lastChoice << endl;
-
 			return lastChoice;
 		}
     }
-
-//	Log::getInstance().getStream("probabilities2") << Simulator::Now().GetSeconds() << "\t" << r;
-//	for (vector<pair<string, double> >::iterator it = sortedProbabilities.begin(); it != sortedProbabilities.end(); ++it) {
-//		Log::getInstance().getStream("probabilities2") << "\t" << it->first << "\t" << it->second << "\t";
-//	}
-//	Log::getInstance().getStream("probabilities2") << lastChoice << endl;
-
 	return lastChoice;
 }
 
@@ -236,40 +222,10 @@ string TIS::chooseRandomRoute() {
 	return chosenRouteId;
 }
 
-/**
- * If flow exceeds the capacity of the fastest road, then split the rest of the flow proportionally to other alternative routes
- */
-//string TIS::chooseFlowAwareRoute(double flow, map<string,double> costs) {
-//	string chosenRouteId = chooseMinCostRoute(costs);
-//	double capacity = staticRoutes[chosenRouteId].getCapacity();
-//	double flowRatioNeededToUseOtherAlternatives = (flow - capacity) / flow;
-//	if (flowRatioNeededToUseOtherAlternatives <= 0) {
-//		flowRatioNeededToUseOtherAlternatives = 0;
-//	}
-//	else if (flowRatioNeededToUseOtherAlternatives >= 1) {
-//		flowRatioNeededToUseOtherAlternatives = 1;
-//	}
-//	//double random = rando.GetValue(0, 1);
-//	double random = (double)(rand()%RAND_MAX)/(double)RAND_MAX;
-//	if (random < flowRatioNeededToUseOtherAlternatives) {
-//		map<string, double>::iterator it = costs.find(chosenRouteId);
-//		if (it != costs.end()) {
-//			costs.erase(it);
-//		}
-//		chosenRouteId = chooseProbTravelTimeRoute(costs);
-//	}
-//	return chosenRouteId;
-//}
-
 bool comp_prob(const pair<string,double>& v1, const pair<string,double>& v2)
 {
 	return v1.second < v2.second;
 }
-
-//string TIS::chooseProbTravelTimeRoute(map<string,double> costs) {
-//	map<string, double> correlated;
-//	return chooseProbTravelTimeRoute(costs, correlated);
-//}
 
 map<string, double> TIS::getProbabilities(map<string,double> costs, map<string, double> correlated) {
 	double minCost = numeric_limits<double>::max();
@@ -310,28 +266,63 @@ map<string, double> TIS::getProbabilities(map<string,double> costs, map<string, 
 	return probabilities;
 }
 
-/**
- * Costs = travel time on routes
- *
- */
-//string TIS::chooseProbTravelTimeRoute(map<string,double> costs, map<string, double> correlated) {
+
+map<string, double> TIS::getMNLProbabilities(map<string,double> costs, Vehicle * vehicle) {
+	return getCLogitProbabilities(costs, vehicle, 0.0, 1.0);
+}
+
+map<string, double> TIS::getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta) {
+	map<string, double> probabilities;
+	map<string, double> commonalities;
+	std::map<std::string,Route> alternatives = vehicle->getScenario().getAlternativeRoutes();
+	Log::getInstance().getStream("mnl") << Simulator::Now().GetSeconds() << " vehicle " << vehicle->getId()
+			<< " mnl choice of " << alternatives.size() << " alternatives: " << endl;
+
+	if (beta > 0) {
+		// C-logit
+	}
+
+	double probSum = 0;
+	for (std::map<std::string, Route>::iterator itR = alternatives.begin(); itR != alternatives.end(); ++itR) {
+		double weightedSum = 0.0;
+		string r = (itR->second).getId();
+		for (std::map<std::string, Route>::iterator itS = alternatives.begin(); itS != alternatives.end(); ++itS) {
+			string s = (itS->second).getId();
+			weightedSum += exp(theta * (costs[r] - costs[s] + commonalities[r] - commonalities[s]));
+		}
+		probabilities[r] = 1.0 / weightedSum;
+		Log::getInstance().getStream("mnl") << "p[" << r << "]=" << probabilities[r] << ", ";
+		probSum += probabilities[r];
+	}
+	Log::getInstance().getStream("mnl") << ". Sum: " << probSum << endl;
+
+	return probabilities;
+}
+
+//vector<string> edgeList = vanetsKnowledge.getEdgesList(itRoutes->second, currentEdge, vehicle.getDestinationEdgeId());
+//	map<string, double> vanetEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "vanet", "last"); // refer to the last call of vanetsKnowledge.getCosts !
+//	map<string, double> perfectEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect", "average"); // refer to the last call of vanetsKnowledge.getCosts !
+//	map<string, double> tmcEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "perfect", "tmc"); // refer to the last call of vanetsKnowledge.getCosts !
+//	map<string, double> staticEdgesCosts = vanetsKnowledge.getEdgesCosts(edgeList, ttl, "static", "last"); // refer to the last call of vanetsKnowledge.getCosts !
 //
-//	// todo remove
-////	probabilities = map<string, double>();
-////	probabilities["main"] = 0.52;
-////	probabilities["bypass"] = 0.48;
-////	Log::getInstance().getStream("probabilities2") << Simulator::Now().GetSeconds() << "\t" << probabilities["bypass"] << "\t" << probabilities["main"]<< "\n";
-//	map<string, double> probabilities = getProbabilities(costs, correlated);
-//	Log::getInstance().getStream("probabilities") << Simulator::Now().GetSeconds();
-//	for (map<string, double>::iterator it = probabilities.begin(); it != probabilities.end(); ++it) {
-//		Log::getInstance().getStream("probabilities") << "\t" << it->first << "\t" << it->second << "\t";
+//	double error_vanet = 0;
+//	double sumVanet = 0;
+//	double sumPerfect = 0;
+//	double sumTMC = 0;
+//	double sumStatic = 0;
+//	for (vector<string>::iterator it=edgeList.begin(); it!=edgeList.end(); ++it) {
+//		error_vanet += abs(perfectEdgesCosts[*it] - vanetEdgesCosts[*it]);
+//		sumPerfect += perfectEdgesCosts[*it];
+//		sumVanet += vanetEdgesCosts[*it];
+//		sumStatic += staticEdgesCosts[*it];
+//		sumTMC += tmcEdgesCosts[*it];
 //	}
-//	Log::getInstance().getStream("probabilities") << endl;
 //
-//	string chosenRouteId = getEvent(probabilities);
-//
-//	return chosenRouteId;
-//}
+//string endEdgeId = vehicle.getDestinationEdgeId();
+//map<string,map<string,vector<string> > > correlated = vanetsKnowledge.analyseCorrelation(, currentEdgeId, endEdgeId);
+////map<string,map<string,vector<string> > > correlated;
+//map<string, double> correlatedValues;
+//string defaultRoute = vehicle.getItinerary().getId();
 
 double TIS::getEdgeLength(std::string edgeId) {
 	if (this->staticRecords.find(edgeId) != this->staticRecords.end()) {
@@ -363,35 +354,5 @@ void TIS::setCongestion(bool congestion, bool ifDense, bool ifCongested)
 		this->congestion = congestion;
 	}
 }
-
-//void TIS::DetectJam(double currentSpeed, double maxSpeed, string currentEdge) {
-//
-////	double maxLaneSpeed = vehicle.getItinerary().getEdgeMaxSpeed(currentEdge);
-//	//decide if JAM or not according to a threshold
-//	if (currentSpeed < (SPEED_THRESHOLD * maxSpeed)) {
-//		if (m_time_jammed == 0) {
-//			m_time_jammed = Simulator::Now().GetSeconds();
-//		}
-//		if (Simulator::Now().GetSeconds() - m_time_jammed > JAMMED_TIME_THRESHOLD) {
-//			// I am in a jam for more than JAMMED_TIME_THRESHOLD send only ofr the first time
-//			if (!m_jam_state) {
-////				Ptr<Packet> packet = CreateWarningPacket();
-////				SendPacket(packet);
-//	//			m_sendEvent = Simulator::ScheduleNow(&TestApplication::SendMyState,this, Simulator::Now().GetSeconds(), vehicle.getCurrentEdge());
-//			}
-//			m_jam_state = true;
-//			}
-//	}
-//	else {
-//		// if ever I was in JAM state, then I am not anymore
-//		if (m_jam_state) {
-////			Ptr<Packet> packet = CreateWarningPacket();
-////			SendPacket(packet);
-//			m_jam_state = false;
-//			m_time_jammed = 0;
-//		}
-//	}
-//}
-
 
 }

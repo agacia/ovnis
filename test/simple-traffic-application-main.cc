@@ -46,18 +46,6 @@ NS_LOG_COMPONENT_DEFINE("MainTA");
 
 int main(int argc, char ** argv) {
 
-//  LogComponentEnableAll(LOG_LEVEL_ALL);
-//  LogComponentEnable("FceApplication", LOG_LEVEL_ALL);
-//  LogComponentEnable("MyApplication", LOG_LEVEL_ALL);
-//  LogComponentEnable("Main", LOG_LEVEL_ALL);
-//  LogComponentEnable("SubdividedWifiChannel", LOG_LEVEL_ALL);
-//  LogComponentEnable("WifiChannel", LOG_LEVEL_ALL);
-//  LogComponentEnable("OvnisWifiChannel", LOG_LEVEL_ALL);
-//  LogComponentEnable("OvnisErrorRateModel", LOG_LEVEL_ALL);
-//  LogComponentEnable("OvnisWifiPhy", LOG_LEVEL_ALL);
-//  LogComponentEnable("TraciClient", LOG_LEVEL_ALL);
-//  LogComponentEnable("Ovnis", LOG_LEVEL_ALL);
-
 	// ovnis params
 	bool startSumo = true;
 	string sumoHost = "localhost";
@@ -66,23 +54,24 @@ int main(int argc, char ** argv) {
 
 	string sumoPath = "/opt/sumo/bin/sumo-gui";
 	sumoPath="/opt/sumo/bin/sumo";
-	sumoPath = "/home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
-//	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/";
-//	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/test";
-	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/";
-	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/test";
-	string sumoConfig = "scenario_accident_const_1111.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
+	sumoPath = "/"
+			"home/agata/Documents/workshop/sumo-0.18.0/bin/sumo";
+	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/";
+	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Kirchberg/test";
+//	string scenarioFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/";
+//	string outputFolder = "/home/agata/Documents/workshop/ovnis/scenarios/Highway/test";
+	string sumoConfig = "scenario_accident_const.sumocfg"; // "scenario_bypass_test.sumocfg"  "scenario_main_test.sumocfg" "scenario_bypass_test_capacity.sumocfg";
 	int startTime = 0; // 21600; // 6h
 	int stopTime = 3600; // 25200; // 7h
     string penetrationRate = "1";
 
 	// TrafficEQ (FceApplication) params
-//    string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
-    string networkId = "Highway";
+    string networkId = "Kirchberg"; // "Highway", "Kirchberg, Luxembourg, Berkeley"
+//    string networkId = "Highway";
     string knowledgeType = "vanet";
 //    knowledgeType = "perfect";
-    string routingStrategies = "noRouting,shortest,probabilistic,hybrid";
-    string routingStrategiesProbabilities = "0,0,1,0"; // no-routing - uninformed drivers,
+    string routingStrategies = "noRouting,shortest,probabilistic,hybrid,mnl";
+    string routingStrategiesProbabilities = "0,0,0,0,1"; // no-routing - uninformed drivers,
     string costFunctions = "travelTime,congestionLength,delayTime";
     string costFunctionProbabilities = "1,0,0";
     string vanetKnowlegePenetrationRate = "1"; // re rest uses global ideal knowledge;

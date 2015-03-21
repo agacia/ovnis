@@ -75,12 +75,12 @@ FceApplication::FceApplication() {
 
 	m_params["vanetKnowlegePenetrationRate"] = "1"; // re rest uses global ideal knowledge;
 	m_params["vanetDisseminationPenetrationRate"] = "1"; // PENETRATION_RATE;
-	m_params["cheatersRatio"] = "0"; // CHEATER_RATE; // always shortest
+	m_params["cheatersRatio"] = "0"; // CHEATER_RATE;
 	m_params["accidentStartTime"] = "600"; // ACCIDENT_START_TIME;
 	m_params["accidentStopTime"] = "1800"; // ACCIDENT_END_TIME;
 	m_params["networkId"] = "Kirchberg";
-	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid";
-	m_params["routingStrategiesProbabilities"] = "0,0,0,1"; // no-routing - uninformed drivers,
+	m_params["routingStrategies"] = "noRouting,shortest,probabilistic,hybrid,mnl";
+	m_params["routingStrategiesProbabilities"] = "0,0,0,0,1";
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
 }
@@ -342,48 +342,58 @@ map<string, double> FceApplication::EstimateTravelCostBasedOnVanets(double now, 
 }
 
 string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string, double> routeCost, string routingStrategy, double cheatersRatio) {
-	string shortest_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
-	map<string, double> correlatedValues = AnalyseRouteCorrelation();
-	map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
-	string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
-
 	isDense = vanetsKnowledge.isDenseFlow();
 	isCongested = vanetsKnowledge.isCongestedFlow();
-
-	neededProbabilistic = isCongested; //|| isDense;
-	//	neededProbabilistic = vanetsKnowledge.getSumDelay() > 0;
+	neededProbabilistic = isCongested;
 	bool isAccident = now > accidentStartTime && now < accidentStopTime;
 	neededProbabilistic = isAccident;
 	TIS::getInstance().setCongestion(neededProbabilistic, isDense, isCongested);
 
+	// shortest
+	string shortest_choice = TIS::getInstance().chooseMinCostRoute(routeCost);
 	string routeChoice = shortest_choice;
-	if (shortest_choice != "") {
-		routeChoice = shortest_choice;
-	}
-	if (routingStrategy == "probabilistic" && probabilistic_choice != "") {
-		  routeChoice = probabilistic_choice;
+
+	// probabilistic
+	if (routingStrategy == "probabilistic") {
+		map<string, double> correlatedValues = AnalyseRouteCorrelation();
+		map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
+		string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
+		if (probabilistic_choice != "") {
+			routeChoice = probabilistic_choice;
+		}
 	}
 	// hybrid - probabilistic only if 'needed'
-	if (routingStrategy == "hybrid" && neededProbabilistic && probabilistic_choice != "") {
-		routeChoice = probabilistic_choice;
+	else if (routingStrategy == "hybrid" && neededProbabilistic) {
 		Log::getInstance().needProbabilistic ++;
+		map<string, double> correlatedValues = AnalyseRouteCorrelation();
+		map<string, double> probabilities = TIS::getInstance().getProbabilities(routeCost, correlatedValues);
+		string probabilistic_choice = TIS::getInstance().getEvent(probabilities);
+		if (probabilistic_choice != "") {
+			routeChoice = probabilistic_choice;
+		}
 	}
+
 	// no routing
-	if (routingStrategy == "noRouting") {
+	else if (routingStrategy == "noRouting") {
 		routeChoice = vehicle.getItinerary().getId();
 	}
+
+	// mnl
+	else if (routingStrategy == "mnl") {
+		map<string, double> probabilities = TIS::getInstance().getMNLProbabilities(routeCost, &vehicle);
+		string mnl_choice = TIS::getInstance().getEvent(probabilities);
+		if (mnl_choice != "") {
+			routeChoice = mnl_choice;
+		}
+	}
 	// cheaters
-	if (routeChoice != shortest_choice) {
+	if (routeChoice > shortest_choice) {
 		isCheater = false;
 		Log::getInstance().couldCheat ++;
 		double r = (double)(rand()%RAND_MAX)/(double)RAND_MAX * 100;
-//		cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
+		cout << "cheatersRatio " << cheatersRatio << ", r " << r << ", routeChoice: " << routeChoice << " shortest_choice: " << shortest_choice << endl;
 		if (cheatersRatio > 0 && r < cheatersRatio) {
 			routeChoice = shortest_choice;
-			isCheater = true;
-		}
-		if (cheatersRatio < 0 && -r > cheatersRatio) {
-			routeChoice = probabilistic_choice;
 			isCheater = true;
 		}
 	}

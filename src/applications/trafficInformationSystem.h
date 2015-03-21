@@ -69,8 +69,9 @@ public:
 
 	std::string chooseMinCostRoute(std::map<std::string,double> costs);
 	map<string, double> getProbabilities(map<string,double> costs, map<string, double> correlated);
-//	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs);
-//	std::string chooseProbTravelTimeRoute(std::map<std::string,double> costs, std::map<std::string, double> correlated);
+	map<string, double> getMNLProbabilities(map<string, double> costs, Vehicle * vehicle);
+	map<string, double> getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta);
+
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();
 	std::string getEvent(std::map<std::string, double> probabilities);
