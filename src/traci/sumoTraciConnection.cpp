@@ -44,7 +44,7 @@ void SumoTraciConnection::RunServer(string sumoConfig = "", string host = "local
 	if (port != 0) {
 		this->port = port;
 	}
-	socket = Socket(this->host, 1111);
+	socket = Socket(this->host, this->port);
 	sleep(2);
 	try {
 		Log::getInstance().getStream("sumo") << "starting SUMO with config " << sumoConfig << " on " << this->host << ":" << this->port << endl;
