@@ -57,6 +57,7 @@ public:
 	void initializeStaticTravelTimes(map<string, Route> routes);
 	map<string, double> getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId);
 	double computeStaticCostExcludingMargins(string routeId, string startEdgeId, string endEdgeId);
+	double computeLengthExcludingMargins(string routeId, string startEdgeId, string endEdgeId);
 	std::map<std::string, EdgeInfo> & getStaticRecords();
 	double getEdgeLength(std::string edgeId);
 	double getEdgeStaticCost(std::string edgeId);
@@ -71,7 +72,7 @@ public:
 	map<string, double> getProbabilities(map<string,double> costs);
 	map<string, double> getProbabilities(map<string,double> costs, map<string, double> correlated);
 	map<string, double> getMNLProbabilities(map<string, double> costs, Vehicle * vehicle);
-	map<string, double> getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta);
+	map<string, double> getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta, double gamma);
 
 	std::string chooseFlowAwareRoute(double flow, std::map<std::string,double> costs);
 	std::string chooseRandomRoute();

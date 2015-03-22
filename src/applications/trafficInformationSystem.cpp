@@ -141,6 +141,26 @@ double TIS::computeStaticCostExcludingMargins(string routeId, string startEdgeId
 		return staticCost;
 }
 
+double TIS::computeLengthExcludingMargins(string routeId, string startEdgeId, string endEdgeId) {
+	double length = 0.0;
+		if (staticRoutes.find(routeId) != staticRoutes.end()) {
+			bool isMonitored = false;
+			vector<string> edgeIds = staticRoutes[routeId].getEdgeIds();
+			for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+				if (*it == endEdgeId) {
+					isMonitored = false;
+				}
+				if (isMonitored) {
+					length += staticRecords[*it].getLength();
+				}
+				if (*it == startEdgeId) {
+					isMonitored = true;
+				}
+			}
+		}
+		return length;
+}
+
 map<string, double> TIS::getCosts(map<string, Route> routes, string startEdgeId, string endEdgeId) {
 	map<string, double> costs;
 	map<string, double> packetAges;
@@ -273,18 +293,71 @@ map<string, double> TIS::getProbabilities(map<string,double> costs, map<string, 
 
 
 map<string, double> TIS::getMNLProbabilities(map<string,double> costs, Vehicle * vehicle) {
-	return getCLogitProbabilities(costs, vehicle, 0.0, 1.0);
+	return getCLogitProbabilities(costs, vehicle, 0.0, 1.0, 1.0);
 }
 
-map<string, double> TIS::getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta) {
+map<string, double> TIS::getCLogitProbabilities(map<string,double> costs, Vehicle * vehicle, double beta, double theta, double gamma) {
 	map<string, double> probabilities;
 	map<string, double> commonalities;
+	string startEdgeId = (vehicle->getItinerary()).getCurrentEdge().getId();
+	string endEdgeId = vehicle->getDestinationEdgeId();
 	std::map<std::string,Route> alternatives = vehicle->getScenario().getAlternativeRoutes();
 	Log::getInstance().getStream("mnl") << Simulator::Now().GetSeconds() << " vehicle " << vehicle->getId()
 			<< " mnl choice of " << alternatives.size() << " alternatives: " << endl;
+	Log::getInstance().getStream("c-logit") << Simulator::Now().GetSeconds() << " vehicle " << vehicle->getId()
+					<< " edges: " << startEdgeId << "-" << endEdgeId
+					<< " c-logit choice of " << alternatives.size() << " alternatives: " << endl;
 
 	if (beta > 0) {
-		// C-logit
+		// C-logit - calculate commonalities
+		for (std::map<std::string, Route>::iterator itR = alternatives.begin(); itR != alternatives.end(); ++itR) {
+			string r = (itR->second).getId();
+			double lengthR = 0.0;
+			// get edges of route r between start and end eges
+			vector<string> edgesR;
+			vector<string> edgeIds = staticRoutes[r].getEdgeIds();
+			bool isMonitored = false;
+			for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+				if (*it == endEdgeId) {
+					isMonitored = false;
+				}
+				if (isMonitored) {
+					lengthR += staticRecords[*it].getLength();
+					edgesR.push_back(*it);
+				}
+				if (*it == startEdgeId) {
+					isMonitored = true;
+				}
+			}
+
+			double overlapSum = 0.0;
+			for (std::map<std::string, Route>::iterator itS = alternatives.begin(); itS != alternatives.end(); ++itS) {
+				string s = (itS->second).getId();
+				if (staticRoutes.find(s) != staticRoutes.end()) {
+					bool isMonitored = false;
+					double lengthS = 0.0;
+					double overlapLength = 0.0;
+					vector<string> edgeIds = staticRoutes[s].getEdgeIds();
+					for (vector<string>::iterator it = edgeIds.begin(); it != edgeIds.end(); ++it) {
+						if (*it == endEdgeId) {
+							isMonitored = false;
+						}
+						if (isMonitored) {
+							lengthS += staticRecords[*it].getLength();
+							if (std::find(edgesR.begin(), edgesR.end(), *it) != edgesR.end()) {
+								overlapLength += staticRecords[*it].getLength();
+							}
+						}
+						if (*it == startEdgeId) {
+							isMonitored = true;
+						}
+					}
+					overlapSum += pow(overlapLength / sqrt(lengthR * lengthS), gamma);
+				}
+			}
+			commonalities[r] = beta * log(overlapSum);
+			Log::getInstance().getStream("c-logit") << "commonalities[" << r << "]=" << commonalities[r] << ", ";
+		}
 	}
 
 	double probSum = 0;

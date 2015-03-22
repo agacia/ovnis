@@ -68,8 +68,8 @@ FceApplication::FceApplication() {
 	m_params["accidentStartTime"] = "0"; // ACCIDENT_START_TIME;
 	m_params["accidentStopTime"] = "3600"; // ACCIDENT_END_TIME;
 	m_params["networkId"] = "Kirchberg";
-	m_params["routingStrategies"] = "noRouting,shortest,probabilistic-simple,probabilistic,hybrid,mnl";
-	m_params["routingStrategiesProbabilities"] = "0,0,1,0,0,0"; // no-routing - uninformed drivers,
+	m_params["routingStrategies"] = "noRouting,shortest,probabilistic-simple,probabilistic,hybrid,mnl,clogit";
+	m_params["routingStrategiesProbabilities"] = "0,0,0,0,0,0,1"; // no-routing - uninformed drivers,
 	m_params["costFunctions"] = "travelTime,congestionLength,delayTime";
 	m_params["costFunctionProbabilities"] = "1,0,0";
 }
@@ -383,6 +383,19 @@ string FceApplication::ChooseRoute(double now, string currentEdgeId, map<string,
 			routeChoice = mnl_choice;
 		}
 	}
+
+	// c-logit
+	else if (routingStrategy == "clogit") {
+		double beta = 1.0;
+		double theta = 1.0;
+		double gamma = 1.0;
+		map<string, double> probabilities = TIS::getInstance().getCLogitProbabilities(routeCost, &vehicle, beta, theta, gamma);
+		string mnl_choice = TIS::getInstance().getEvent(probabilities);
+		if (mnl_choice != "") {
+			routeChoice = mnl_choice;
+		}
+	}
+
 	// cheaters
 	if (routeChoice > shortest_choice) {
 		isCheater = false;
